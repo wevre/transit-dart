@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'cache.dart';
 import 'write_handler.dart';
 
@@ -29,6 +32,12 @@ abstract class Emitter {
           return emitString(null, null, escape(h.rep(o)), asMapKey);
         case '?':
           return emitBoolean(h.rep(o), asMapKey);
+        case 'i':
+          return emitInteger(h.rep(o), asMapKey);
+        case 'd':
+          return emitDouble(h.rep(o), asMapKey);
+        case 'b':
+          return emitBinary(h.rep(o), asMapKey);
         default:
           return emitEncoded(tag, h, o, asMapKey);
       }
@@ -50,10 +59,13 @@ abstract class Emitter {
   emitNull(bool asMapKey);
   emitString(String? prefix, String? tag, String s, bool asMapKey);
   emitBoolean(bool b, bool asMapKey);
+  emitInteger(int i, bool asMapKey);
+  emitDouble(double d, bool asMapKey);
+  emitBinary(Uint8List b, bool asMapKey);
   emitMap(Map m, bool asMapKey);
 
   emitArray(List l, bool asMapKey) {
-    return l.map((e) => marshal(e, false));
+    return [...l.map((e) => marshal(e, false))];
   }
 
   emitEncoded(String t, WriteHandler h, o, bool asMapKey) {
@@ -129,13 +141,34 @@ class JsonEmitter extends Emitter {
   }
 
   @override
+  emitInteger(int i, bool asMapKey) {
+    if (asMapKey || i != i.toSigned(53)) {
+      return emitString('~', 'i', i.toString(), asMapKey);
+    } else {
+      return i;
+    }
+  }
+
+  @override
+  emitDouble(double d, bool asMapKey) {
+    if (asMapKey) {
+      return emitString('~', 'd', d.toString(), asMapKey);
+    } else {
+      return d;
+    }
+  }
+
+  @override
+  emitBinary(Uint8List b, bool asMapKey) {
+    return emitString('~', 'b', base64.encode(b), asMapKey);
+  }
+
+  @override
   emitMap(Map m, bool asMapKey) {
-    var l = [];
-    l.add('^ ');
-    m.forEach((key, value) {
-      l.add(marshal(key, true));
-      l.add(marshal(value, false));
-    });
-    return l;
+    return [
+      '^ ',
+      ...m.entries
+          .expand((e) => [marshal(e.key, true), marshal(e.value, false)])
+    ];
   }
 }

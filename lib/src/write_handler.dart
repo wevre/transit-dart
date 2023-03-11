@@ -6,7 +6,7 @@ abstract class WriteHandler<T, R> {
 
   R rep(T obj);
 
-  String? stringRep(T obj);
+  String? stringRep(T obj) => obj.toString();
 
   bool handles(dynamic obj) {
     return obj is T;
@@ -36,8 +36,6 @@ class WriteHandlersMap extends Object implements TagProvider {
     handlers[Map] = MapWriteHandler(this);
   }
 
-// TODO: also, java initializes this with a method to be able to reuse some of
-// the handlers.
   static final defaults = {
     Null: NullWriteHandler(),
     String: StringWriteHandler(),
@@ -46,6 +44,7 @@ class WriteHandlersMap extends Object implements TagProvider {
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
     List: ArrayWriteHandler(),
+    TaggedValue: TaggedValueWriteHandler(),
   };
 
   @override
@@ -70,9 +69,6 @@ abstract class AbstractWriteHandler<T> extends WriteHandler<T, dynamic> {
 
   @override
   rep(T obj) => obj;
-
-  @override
-  String? stringRep(T obj) => obj.toString();
 }
 
 // ignore: prefer_void_to_null
@@ -169,6 +165,14 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
       return TaggedValue('array', l);
     }
   }
+}
+
+class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
+  @override
+  tag(obj) => obj.tag;
+
+  @override
+  rep(obj) => obj.value;
 }
 
 class DefaultWriteHandler extends WriteHandler {

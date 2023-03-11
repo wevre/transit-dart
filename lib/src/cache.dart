@@ -36,16 +36,23 @@ class CacheEncoder extends Converter<String, String> {
     _reset();
   }
 
+  bool isCacheable(String s, bool asMapKey) {
+    return (s.length >= 4) &&
+        (asMapKey ||
+            ('~' == s[0] && (':' == s[1] || '\$' == s[1] || '#' == s[1])));
+  }
+
   @override
   String convert(String input, {bool asMapKey = false}) {
-    if (_cache.containsKey(input)) {
-      return _cache[input]!;
-    }
-    if (input.length > 3) {
-      if (_cache.length == _maxEntries) {
-        _reset();
+    if (isCacheable(input, asMapKey)) {
+      if (_cache.containsKey(input)) {
+        return _cache[input]!;
+      } else {
+        if (_cache.length == _maxEntries) {
+          _reset();
+        }
+        _cache[input] = _cacheEncode(_cache.length);
       }
-      _cache[input] = _cacheEncode(_cache.length);
     }
     return input;
   }

@@ -15,12 +15,12 @@ void main() {
   print(emitter.emit([
     {'hello': true, 'there': null, 'you': true, 'slime': null},
     {'hello': 1, 'there': 2, 'you': 3, 'slime': 4},
-    // TODO: I need a TaggedValueWriteHandler to deal with this 'cmap'.
+    {null: 'hello', 1: 'there', true: 'you', 4.5: 'slime'},
     {
-      [0, 'hello']: 1,
-      'there': 2,
-      'you': 3,
-      'slime': 4
+      [0, 'hello']: 1.1,
+      'there': 2.2,
+      'you': 3.3,
+      'slime': 4.4
     }
   ], false));
 }
