@@ -1,0 +1,72 @@
+:project transit-dart
+   :author Mike Weaver
+   :created 2023-02-26
+
+:section Introduction
+
+   My ultimate goal is to have transit in place in ClojureDart, to make it dead
+   simple for passing data between back-end and front-end. I could go right to
+   transit-cljd, but an underlying transit-dart library makes it available to a
+   wider audience outside of Clojure, and then the ClojureDart can live as a
+   layer on top of that.
+
+:section Legacy project
+
+   There is an {existing project} that was last updated over nine years ago,
+   which I think was before Dart 2. I could, but I'm not going to, try to build
+   on top of that, but there are so many compiler warnings just opening the
+   project. I'm not sure that I care to gain a lot of first-hand knowledge about
+   the differences between ancient and current Dart, which I predict would be
+   the main outcome of such an approach.
+
+   :link existing project
+      https://github.com/cleandart/transit-dart
+
+   That project follows along pretty closely to the java implementation,
+   although it does use Dart's `Converter`s and `Codec`s, which I am also going
+   to use. In fact, I'm going to double-down on that architecture.
+
+:section Architecture
+
+   I'm goign to build this in three layers. The first is a codec for translating
+   between Dart objects and transit semantic values. Semantic values are
+   represented with class `TaggedObject` which pairs a Dart object with a transit
+   tag. Collections are recursively transformed so that their elements and keys
+   are also `TaggedObjects`.
+
+   The next layer moves from `TaggedObject` to `FormattedValue` wich converts
+   the Dart object and tag into transit-formatted, json-ready collections. This
+   conversion layer is where we deal with caching and escaping of strings.
+
+   The next layer I don't have to build, we just utilize the Dart-provided json
+   Codec.
+
+:section Streams
+
+   The java implementation is built around readers and writers and streams,
+   whereas this approach is more focused on transforming (single) objects with
+   Codecs. And for many (most?) applications marshalling a single object in and
+   out of transit might be enough. But to be fully compatible with transit I'll
+   add a final layer that reads and writes from streams.
+
+:section Re-think
+
+   Maybe I do more closely follow the java implementation, basing around
+   Read- and WriteHandlers. These would be classes that don't really hold state,
+   but just know how to spit back a tag and a rep, where rep is a converted
+   object. And when I ask for that converted object,
+
+   :section WriteHandlers
+
+      These are not objects per se, they are justs converters. They don't hold
+      any state on their own. A WriteHandler's contract is "you give me an
+      object of the type that I like, and I'll give you back something that can
+      be emitted to JSON". Then the emitter is similar, in that it holds no
+      state, but it can take a written object and spit out JSON (or, in our
+      case, JSON-friendly objects). So a writer converts any object to
+      transit-friendly, and the emitter converts to JSON-friendly.
+
+      I think I'll still use a TaggedObject, but it won't be about conversion or
+      functionality, it will just be about holding on to the tag and the
+      semantic object, basically a tuple. And that will be a handy place to
+      stash (and possibly mutate) collections of TaggedObjects.
