@@ -18,19 +18,19 @@ void main() {
 
 void someTests() {
   var emitter = JsonEmitter(handlers, CacheEncoder());
-  print('hello');
+  print(emitter.emit("hello", false));
   print(emitter.emit([
-    {'hello': true, 'there': null, 'you': true, 'slime': 4.56},
-    {'hello': 1, 'there': 2, 'you': 3, 'slime': double.negativeInfinity},
-    {null: 'hello', 4.56: 'there', true: 'you'},
+    {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
+    {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
+    {null: 'hello', 4.56: '`there', true: '~you'},
     {Keyword('my-key'): 13},
-    {4.56: 'slime'},
+    {4.56: '^cutie'},
     {Keyword('my-key'): 14},
     {
       [0, 'hello']: 1.1,
       'there': 2.2,
       'you': 3.3,
-      'slime': 4.4
+      'cutie': 4.4
     },
     [
       'keyword',
@@ -50,8 +50,8 @@ void someTests() {
     Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
         render: 'image'),
     DateTime.now(),
-    {'hello', 'there', 'you', 'slime'},
-    TransitList(['hello', 'there', 'you', 'slime']),
+    {'hello', 'there', 'you', 'cutie'},
+    TransitList(['hello', 'there', 'you', 'cutie']),
     Uuid(yuli_uuid.Uuid().v1()),
   ], false));
 }
