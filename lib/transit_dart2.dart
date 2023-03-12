@@ -18,7 +18,7 @@ void main() {
 
 void someTests() {
   var emitter = JsonEmitter(handlers, CacheEncoder());
-  print(emitter.emit("hello", false));
+  print(emitter.emit("hello"));
   print(emitter.emit([
     {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
     {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
@@ -53,5 +53,5 @@ void someTests() {
     {'hello', 'there', 'you', 'cutie'},
     TransitList(['hello', 'there', 'you', 'cutie']),
     Uuid(yuli_uuid.Uuid().v1()),
-  ], false));
+  ]));
 }

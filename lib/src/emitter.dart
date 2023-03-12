@@ -18,10 +18,10 @@ abstract class Emitter {
     if (1 == tag.length) {
       return emitTagged(QUOTE, o, false);
     }
-    return marshal(o, false);
+    return marshal(o);
   }
 
-  marshal(o, bool asMapKey) {
+  marshal(o, {bool asMapKey = false}) {
     var h = writeHandlerMap.getHandler(o);
     h ??= DefaultWriteHandler();
     var tag = h.tag(o);
@@ -55,7 +55,7 @@ abstract class Emitter {
 
   // If we turn this into a coder/codec then this `emit` method will become the
   // `convert` method.
-  emit(o, bool asMapKey) => marshalTop(o);
+  emit(o, {bool asMapKey = false}) => marshalTop(o);
 
   emitNull(bool asMapKey);
   emitString(String? prefix, String? tag, String s, bool asMapKey);
@@ -66,7 +66,7 @@ abstract class Emitter {
   emitMap(Map m, bool asMapKey);
 
   emitArray(List l, bool asMapKey) {
-    return [...l.map((e) => marshal(e, false))];
+    return [...l.map((e) => marshal(e))];
   }
 
   emitEncoded(String t, WriteHandler h, o, bool asMapKey) {
@@ -92,7 +92,7 @@ abstract class Emitter {
   }
 
   emitTagged(String t, o, bool asMapKey) {
-    return [emitString(ESC_TAG, t, '', false), marshal(o, false)];
+    return [emitString(ESC_TAG, t, '', false), marshal(o)];
   }
 
   String escape(String s) {
@@ -169,7 +169,7 @@ class JsonEmitter extends Emitter {
     return [
       MAP,
       ...m.entries
-          .expand((e) => [marshal(e.key, true), marshal(e.value, false)])
+          .expand((e) => [marshal(e.key, asMapKey: true), marshal(e.value)])
     ];
   }
 }
