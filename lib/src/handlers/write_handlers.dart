@@ -2,9 +2,9 @@ import 'dart:typed_data';
 import 'package:fixed/fixed.dart';
 import '../values/keyword.dart';
 import '../values/link.dart';
+import '../values/list.dart';
 import '../values/symbol.dart';
 import '../values/tagged_value.dart';
-import '../values/list.dart';
 import '../values/uuid.dart';
 
 abstract class WriteHandler<T, R> {
@@ -19,7 +19,7 @@ abstract class WriteHandler<T, R> {
   }
 }
 
-class WriteHandlersMap extends Object implements TagProvider {
+class WriteHandlersMap implements TagProvider {
   final Map<Type, WriteHandler> handlers;
 
   WriteHandler? getHandler(o) {
@@ -35,7 +35,7 @@ class WriteHandlersMap extends Object implements TagProvider {
       }
     }
 
-    throw NoHandlerForObjectError(o);
+    return null;
   }
 
   WriteHandlersMap.json() : handlers = Map.from(defaults) {
@@ -233,35 +233,6 @@ class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
 
   @override
   rep(obj) => obj.value;
-}
-
-class DefaultWriteHandler extends WriteHandler {
-  _throwException(obj) {
-    throw Exception('Not supported $obj');
-  }
-
-  @override
-  String tag(obj) {
-    return _throwException(obj);
-  }
-
-  @override
-  rep(obj) {
-    return _throwException(obj);
-  }
-
-  @override
-  String? stringRep(obj) {
-    return _throwException(obj);
-  }
-}
-
-class NoHandlerForObjectError extends Error {
-  final dynamic obj;
-  NoHandlerForObjectError(this.obj);
-
-  @override
-  toString() => 'No handler for object $obj';
 }
 
 abstract class TagProvider {

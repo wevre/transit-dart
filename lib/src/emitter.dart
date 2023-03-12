@@ -6,56 +6,61 @@ import 'constants.dart';
 import 'handlers/write_handlers.dart';
 
 abstract class Emitter {
-  WriteHandlersMap writeHandlerMap;
-  CacheEncoder cache;
+  final WriteHandlersMap writeHandlersMap;
+  final CacheEncoder cache;
+  WriteHandler? defaultHandler;
 
-  Emitter(this.writeHandlerMap, this.cache);
+  Emitter(this.writeHandlersMap, this.cache);
 
-  marshalTop(o) {
-    var h = writeHandlerMap.getHandler(o);
-    h ??= DefaultWriteHandler();
-    var tag = h.tag(o);
-    if (1 == tag.length) {
-      return emitTagged(QUOTE, o, false);
+  marshalTop(obj) {
+    var h = writeHandlersMap.getHandler(obj) ?? defaultHandler;
+    if (null == h) {
+      throw Exception('Not supported: $obj');
     }
-    return marshal(o);
+    var tag = h.tag(obj);
+    if (1 == tag.length) {
+      return emitTagged(QUOTE, obj, false);
+    }
+    return marshal(obj);
   }
 
-  marshal(o, {bool asMapKey = false}) {
-    var h = writeHandlerMap.getHandler(o);
-    h ??= DefaultWriteHandler();
-    var tag = h.tag(o);
+  marshal(obj, {bool asMapKey = false}) {
+    var h = writeHandlersMap.getHandler(obj) ?? defaultHandler;
+    if (null == h) {
+      throw Exception('Not supported: $obj');
+    }
+    var tag = h.tag(obj);
     if (1 == tag.length) {
       switch (tag) {
         case '_':
           return emitNull(asMapKey);
         case 's':
-          return emitString(null, null, escape(h.rep(o)), asMapKey);
+          return emitString(null, null, escape(h.rep(obj)), asMapKey);
         case '?':
-          return emitBoolean(h.rep(o), asMapKey);
+          return emitBoolean(h.rep(obj), asMapKey);
         case 'i':
-          return emitInteger(h.rep(o), asMapKey);
+          return emitInteger(h.rep(obj), asMapKey);
         case 'd':
-          return emitDouble(h.rep(o), asMapKey);
+          return emitDouble(h.rep(obj), asMapKey);
         case 'b':
-          return emitBinary(h.rep(o), asMapKey);
+          return emitBinary(h.rep(obj), asMapKey);
         default:
-          return emitEncoded(tag, h, o, asMapKey);
+          return emitEncoded(tag, h, obj, asMapKey);
       }
     } else {
       if ('array' == tag) {
-        return emitArray(h.rep(o), asMapKey);
+        return emitArray(h.rep(obj), asMapKey);
       } else if ('map' == tag) {
-        return emitMap(h.rep(o), asMapKey);
+        return emitMap(h.rep(obj), asMapKey);
       } else {
-        return emitEncoded(tag, h, o, asMapKey);
+        return emitEncoded(tag, h, obj, asMapKey);
       }
     }
   }
 
   // If we turn this into a coder/codec then this `emit` method will become the
   // `convert` method.
-  emit(o, {bool asMapKey = false}) => marshalTop(o);
+  emit(obj, {bool asMapKey = false}) => marshalTop(obj);
 
   emitNull(bool asMapKey);
   emitString(String? prefix, String? tag, String s, bool asMapKey);
@@ -111,7 +116,7 @@ class JsonEmitter extends Emitter {
   // concrete implementations for emitting strings, booleans, decimals, etc.
   // What we actually emit is formatted data, json-friendly.
 
-  JsonEmitter(super.writeHandlerMap, super.cache);
+  JsonEmitter(super.writeHandlersMap, super.cache);
 
   @override
   prefersStrings() => true;
