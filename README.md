@@ -1,39 +1,75 @@
-<!-- 
+<!--
 This README describes the package. If you publish this package to pub.dev,
 this README's contents appear on the landing page for your package.
 
 For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
 
 For general information about developing packages, see the Dart guide for
 [creating packages](https://dart.dev/guides/libraries/create-library-packages)
 and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
+[developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Transit is a data format and set of libraries for conveying values between
+applications written in different languages. This library provides support for
+marshalling Transit data to/from Dart.
 
-## Features
+* [Rationale](https://blog.cognitect.com/blog/2014/7/22/transit)
+* API docs coming soon
+* [Specification](https://github.com/cognitect/transit-format)
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+This implementation's major.minor version number corresponds to the version of
+the Transit specification it supports.
+
+_NOTE: Transit is intended primarily as a wire protocol for transferring data
+between applications. If storing Transit data durably, readers and writers are
+expected to use the same version of Transit and you are responsible for
+migrating/transforming/re-storing that data when and if the transit format
+changes._
+
+## Releases and Dependency Information
+
+* Latest release: 0.8.0
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+TODO: Any Dart-specific installation things to mention here?
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+TODO: This is a terrible example, even though it works, because you have to
+cobble together the pieces by hand. In future we'll have a more friendly API
+with examples showing how to convert directly to JSON or write to a stream.
 
 ```dart
-const like = 'sample';
+import 'package:transit_dart2/transit-dart';
+
+var handlers = WriteHandlersMap.json();
+
+void main() {
+  var emitter = JsonEmitter(handlers, CacheEncoder());
+  print(emitter.emit("hello"));
+}
 ```
+
+## Default Type Mapping
+
+TODO: Provide table of transit semantic types mapped to Dart language objects.
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
+TODO: Tell users more about the package: where to find more information, how to
+contribute to the package, how to file issues, what response they can expect
 from the package authors, and more.
+
+## Copyright and License
+
+Copyright (c) 2023 Mike Weaver
+
+This library is a Dart port of the Java version created and maintained by
+Cognitect, therefore
+
+Copyright (c) 2014 Cognitect
+
+TODO: Put in the Apache 2.0 license verbiage.

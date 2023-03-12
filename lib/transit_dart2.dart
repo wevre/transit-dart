@@ -50,8 +50,20 @@ void someTests() {
     Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
         render: 'image'),
     DateTime.now(),
-    {'hello', 'there', 'you', 'cutie'},
-    TransitList(['hello', 'there', 'you', 'cutie']),
+    {
+      'hello',
+      'there',
+      'you',
+      'cutie',
+      Keyword('test'),
+    },
+    TransitList([
+      'hello',
+      'there',
+      'you',
+      'cutie',
+      Keyword('transit/test'),
+    ]),
     Uuid(yuli_uuid.Uuid().v1()),
   ]));
 }
