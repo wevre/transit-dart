@@ -10,6 +10,7 @@ For general information about developing packages, see the Dart guide for
 and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
+# transit-dart2
 
 Transit is a data format and set of libraries for conveying values between
 applications written in different languages. This library provides support for
