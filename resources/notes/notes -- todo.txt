@@ -8,11 +8,19 @@
 
 :section ToDo
 
-   [] Implement Keyword and Symbol and the rest of the scalar extension types.
-   How will those eventually play with cljd?
+   [] Support custom write handlers.
+
+   [] Read-handlers.
 
    [] Build some tests where we convert all the way to JSON and confirm against
    the transit samples. Figure out how to integrate the testing that is part of
    transit-format.
 
-   [] Read-handlers.
+   [] Time will need to be different for msgpack and verbose.
+
+   [] Uuid is also different for msgpack.
+
+:section Done
+
+   [✓] Implement Keyword and Symbol and the rest of the scalar extension types.
+   How will those eventually play with cljd?

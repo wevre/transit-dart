@@ -1,10 +1,11 @@
-import 'dart:ffi';
 import 'dart:typed_data';
 import 'package:fixed/fixed.dart';
 import 'keyword.dart';
 import 'link.dart';
 import 'symbol.dart';
 import 'tagged_value.dart';
+import 'list.dart';
+import 'uuid.dart';
 
 abstract class WriteHandler<T, R> {
   String tag(T obj);
@@ -52,14 +53,12 @@ class WriteHandlersMap extends Object implements TagProvider {
     Symbol: ToStringWriteHandler<Symbol>('\$'),
     Fixed: ToStringWriteHandler<Fixed>('f'),
     BigInt: ToStringWriteHandler<BigInt>('n'),
-    // instant
-    // timestamp
-    // uuid
+    DateTime: TimeWriteHandler(),
+    Uuid: ToStringWriteHandler<Uuid>('u'),
     Uri: ToStringWriteHandler<Uri>('r'),
-    Char: ToStringWriteHandler<Char>('c'),
     List: ArrayWriteHandler(),
-    // Set
-    // List
+    Set: SetWriteHandler(),
+    TransitList: ListWriteHandler(),
     Link: LinkWriteHandler(),
     TaggedValue: TaggedValueWriteHandler(),
   };
@@ -155,6 +154,16 @@ class KeywordWriteHandler extends AbstractWriteHandler<Keyword> {
   stringRep(obj) => obj.toString().substring(1);
 }
 
+class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
+  TimeWriteHandler() : super('m');
+
+  @override
+  rep(obj) => obj.millisecondsSinceEpoch;
+
+  @override
+  stringRep(obj) => rep(obj).toString();
+}
+
 class ArrayWriteHandler extends AbstractWriteHandler<List> {
   ArrayWriteHandler() : super('array');
 }
@@ -195,6 +204,20 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
       return TaggedValue('array', l);
     }
   }
+}
+
+class SetWriteHandler extends AbstractWriteHandler<Set> {
+  SetWriteHandler() : super('set');
+
+  @override
+  rep(obj) => TaggedValue('array', obj.toList(growable: false));
+}
+
+class ListWriteHandler extends AbstractWriteHandler<TransitList> {
+  ListWriteHandler() : super('list');
+
+  @override
+  rep(obj) => TaggedValue('array', obj.value);
 }
 
 class LinkWriteHandler extends AbstractWriteHandler<Link> {

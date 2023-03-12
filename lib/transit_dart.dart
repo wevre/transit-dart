@@ -4,6 +4,7 @@
 library transit_dart;
 
 import 'package:fixed/fixed.dart';
+import 'package:uuid/uuid.dart' as yuli_uuid;
 
 import 'src/transit_dart_base.dart';
 
@@ -12,6 +13,10 @@ export 'src/transit_dart_base.dart';
 var handlers = WriteHandlersMap.json();
 
 void main() {
+  someTests();
+}
+
+void someTests() {
   var emitter = JsonEmitter(handlers, CacheEncoder());
   print('hello');
   print(emitter.emit([
@@ -44,5 +49,9 @@ void main() {
         name: 'a-name', render: 'link', prompt: 'a-prompt'),
     Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
         render: 'image'),
+    DateTime.now(),
+    {'hello', 'there', 'you', 'slime'},
+    TransitList(['hello', 'there', 'you', 'slime']),
+    Uuid(yuli_uuid.Uuid().v1()),
   ], false));
 }

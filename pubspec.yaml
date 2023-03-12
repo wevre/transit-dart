@@ -14,3 +14,4 @@ dev_dependencies:
   test: ^1.21.0
 dependencies:
   fixed: ^2.3.3
+  uuid: ^3.0.7

@@ -78,6 +78,9 @@
       case, JSON-friendly values). So a writer converts any object to
       transit-friendly, and the emitter converts to JSON-friendly.
 
+      I have not implemented a WriteHandler for `char` because no such object
+      exists in Dart. But we will need a ReadHandler.
+
 :section Common mistakes
 
    I'm always forgetting to put `return`.
