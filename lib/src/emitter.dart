@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'cache.dart';
+import 'cacher.dart';
 import 'constants.dart';
-import 'write_handler.dart';
+import 'handlers/write_handlers.dart';
 
 abstract class Emitter {
   WriteHandlersMap writeHandlerMap;
