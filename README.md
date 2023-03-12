@@ -66,11 +66,11 @@ from the package authors, and more.
 
 ## Copyright and License
 
-Copyright (c) 2023 Mike Weaver
+Copyright © 2023 Mike Weaver
 
 This library is a Dart port of the Java version created and maintained by
 Cognitect, therefore
 
-Copyright (c) 2014 Cognitect
+Copyright © 2014 Cognitect
 
 TODO: Put in the Apache 2.0 license verbiage.
