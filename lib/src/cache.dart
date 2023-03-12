@@ -11,9 +11,9 @@ String _cacheEncode(int index) {
   int h = index ~/ _digits + _base;
   int l = index % _digits + _base;
   if (h == _base) {
-    return "$_prefix${String.fromCharCode(l)}";
+    return '$_prefix${String.fromCharCode(l)}';
   } else {
-    return "$_prefix${String.fromCharCode(h)}${String.fromCharCode(l)}";
+    return '$_prefix${String.fromCharCode(h)}${String.fromCharCode(l)}';
   }
 }
 

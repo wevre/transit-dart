@@ -78,13 +78,13 @@ abstract class Emitter {
         if (sr != null) {
           return emitString('~', t, sr, asMapKey);
         } else {
-          throw Exception("Cannot be encoded as a string $o");
+          throw Exception('Cannot be encoded as a string $o');
         }
       } else {
         emitTagged(t, r, asMapKey);
       }
     } else if (asMapKey) {
-      throw Exception("Cannot be used as map key $o");
+      throw Exception('Cannot be used as map key $o');
     } else {
       return emitTagged(t, h.rep(o), asMapKey);
     }
@@ -97,7 +97,7 @@ abstract class Emitter {
   String escape(String s) {
     if (s.isNotEmpty) {
       if (s.startsWith('~') || s.startsWith('^') || s.startsWith('``')) {
-        return "~$s";
+        return '~$s';
       }
     }
     return s;
@@ -126,7 +126,7 @@ class JsonEmitter extends Emitter {
 
   @override
   emitString(String? prefix, String? tag, String s, bool asMapKey) {
-    s = "${prefix ?? ''}${tag ?? ''}$s";
+    s = '${prefix ?? ''}${tag ?? ''}$s';
     s = cache.convert(s, asMapKey: asMapKey);
     return s;
   }

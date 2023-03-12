@@ -1,4 +1,9 @@
+import 'dart:ffi';
 import 'dart:typed_data';
+import 'package:fixed/fixed.dart';
+import 'keyword.dart';
+import 'link.dart';
+import 'symbol.dart';
 import 'tagged_value.dart';
 
 abstract class WriteHandler<T, R> {
@@ -38,12 +43,24 @@ class WriteHandlersMap extends Object implements TagProvider {
 
   static final defaults = {
     Null: NullWriteHandler(),
-    String: StringWriteHandler(),
+    String: ToStringWriteHandler<String>('s'),
     bool: BooleanWriteHandler(),
     int: IntegerWriteHandler(),
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
+    Keyword: KeywordWriteHandler(),
+    Symbol: ToStringWriteHandler<Symbol>('\$'),
+    Fixed: ToStringWriteHandler<Fixed>('f'),
+    BigInt: ToStringWriteHandler<BigInt>('n'),
+    // instant
+    // timestamp
+    // uuid
+    Uri: ToStringWriteHandler<Uri>('r'),
+    Char: ToStringWriteHandler<Char>('c'),
     List: ArrayWriteHandler(),
+    // Set
+    // List
+    Link: LinkWriteHandler(),
     TaggedValue: TaggedValueWriteHandler(),
   };
 
@@ -82,8 +99,11 @@ class NullWriteHandler extends AbstractWriteHandler<Null> {
   stringRep(obj) => '';
 }
 
-class StringWriteHandler extends AbstractWriteHandler<String> {
-  StringWriteHandler() : super('s');
+class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
+  ToStringWriteHandler(String tag) : super(tag);
+
+  @override
+  rep(obj) => stringRep(obj);
 }
 
 class BooleanWriteHandler extends AbstractWriteHandler<bool> {
@@ -123,6 +143,16 @@ class DoubleWriteHandler extends AbstractWriteHandler<double> {
 
 class BinaryWriteHandler extends AbstractWriteHandler<Uint8List> {
   BinaryWriteHandler() : super('b');
+}
+
+class KeywordWriteHandler extends AbstractWriteHandler<Keyword> {
+  KeywordWriteHandler() : super(':');
+
+  @override
+  rep(obj) => stringRep(obj);
+
+  @override
+  stringRep(obj) => obj.toString().substring(1);
 }
 
 class ArrayWriteHandler extends AbstractWriteHandler<List> {
@@ -167,6 +197,13 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
   }
 }
 
+class LinkWriteHandler extends AbstractWriteHandler<Link> {
+  LinkWriteHandler() : super('link');
+
+  @override
+  rep(obj) => obj.toMap();
+}
+
 class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
   @override
   tag(obj) => obj.tag;
@@ -177,7 +214,7 @@ class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
 
 class DefaultWriteHandler extends WriteHandler {
   _throwException(obj) {
-    throw Exception("Not supported $obj");
+    throw Exception('Not supported $obj');
   }
 
   @override
@@ -197,10 +234,11 @@ class DefaultWriteHandler extends WriteHandler {
 }
 
 class NoHandlerForObjectError extends Error {
-  final obj;
+  final dynamic obj;
   NoHandlerForObjectError(this.obj);
 
-  toString() => "No handler for object $obj";
+  @override
+  toString() => 'No handler for object $obj';
 }
 
 abstract class TagProvider {

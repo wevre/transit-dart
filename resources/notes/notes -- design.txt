@@ -1,4 +1,4 @@
-:project transit-dart
+:project transit-dart2
    :author Mike Weaver
    :created 2023-02-26
 
@@ -22,24 +22,36 @@
    :link existing project
       https://github.com/cleandart/transit-dart
 
-   That project follows along pretty closely to the java implementation,
-   although it does use Dart's `Converter`s and `Codec`s, which I am also going
-   to use. In fact, I'm going to double-down on that architecture.
+   That project (sort of?) follows along to the java implementation, although as
+   far as I can tell without actually compiling it and running test, there
+   appear to be some gaps in the implementation. It does use Dart's `Converter`s
+   and `Codec`s, which I like.
 
 :section Architecture
 
-   I'm goign to build this in three layers. The first is a codec for translating
+   I'm going to build this in three layers. The first is a codec for translating
    between Dart objects and transit semantic values. Semantic values are
-   represented with class `TaggedObject` which pairs a Dart object with a transit
+   represented with class `TaggedValue` which pairs a Dart object with a transit
    tag. Collections are recursively transformed so that their elements and keys
-   are also `TaggedObjects`.
+   are also `TaggedValue`s.
 
-   The next layer moves from `TaggedObject` to `FormattedValue` wich converts
-   the Dart object and tag into transit-formatted, json-ready collections. This
-   conversion layer is where we deal with caching and escaping of strings.
+   The next layer moves from `TaggedValue` to `FormattedValue` wich converts
+   the Dart object and tag into transit-formatted, json-friendly values. This
+   conversion layer is where we deal with escaping of strings.
+
+   The next layer deals with caching. It requires traversing a graph of objects
+   and replacing map keys (and keywords and symbols and ~#tag). I've been
+   pondering if that is less efficient, since the java implementation does the
+   caching at the same moment that it is emitting the tagged value. This would
+   also be very dirty mutation, since I plan on caching values 'in situ'.
 
    The next layer I don't have to build, we just utilize the Dart-provided json
    Codec.
+
+   UPDATE: (2023-03-11) The above is still my plan, but I found it easier to
+   deal with stuff by adhering pretty closely to the java implentation. I'm
+   still thinking about the above and may eventually convert to that approach,
+   but first I want to get it working.
 
 :section Streams
 
@@ -49,12 +61,12 @@
    out of transit might be enough. But to be fully compatible with transit I'll
    add a final layer that reads and writes from streams.
 
-:section Re-think
+:section Following java
 
    Maybe I do more closely follow the java implementation, basing around
    Read- and WriteHandlers. These would be classes that don't really hold state,
    but just know how to spit back a tag and a rep, where rep is a converted
-   object. And when I ask for that converted object,
+   object.
 
    :section WriteHandlers
 
@@ -63,10 +75,9 @@
       object of the type that I like, and I'll give you back something that can
       be emitted to JSON". Then the emitter is similar, in that it holds no
       state, but it can take a written object and spit out JSON (or, in our
-      case, JSON-friendly objects). So a writer converts any object to
+      case, JSON-friendly values). So a writer converts any object to
       transit-friendly, and the emitter converts to JSON-friendly.
 
-      I think I'll still use a TaggedObject, but it won't be about conversion or
-      functionality, it will just be about holding on to the tag and the
-      semantic object, basically a tuple. And that will be a handy place to
-      stash (and possibly mutate) collections of TaggedObjects.
+:section Common mistakes
+
+   I'm always forgetting to put `return`.
