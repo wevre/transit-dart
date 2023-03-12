@@ -2,9 +2,11 @@
 
 import 'dart:convert';
 
+import 'constants.dart';
+
 const _digits = 44;
 const _base = 48;
-const _prefix = '^';
+const _prefix = SUB;
 const _maxEntries = _digits * _digits;
 
 String _cacheEncode(int index) {
@@ -39,7 +41,7 @@ class CacheEncoder extends Converter<String, String> {
   bool isCacheable(String s, bool asMapKey) {
     return (s.length >= 4) &&
         (asMapKey ||
-            ('~' == s[0] && (':' == s[1] || '\$' == s[1] || '#' == s[1])));
+            (ESC == s[0] && (':' == s[1] || '\$' == s[1] || TAG == s[1])));
   }
 
   @override
@@ -71,7 +73,7 @@ class CacheDecoder extends Converter<String, String> {
 
   @override
   String convert(String input) {
-    if (_prefix == input[0] && input != '^ ') {
+    if (_prefix == input[0] && input != MAP) {
       return _cache[_cacheDecode(input)];
     }
     if (input.length > 3) {

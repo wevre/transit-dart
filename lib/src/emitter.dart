@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'cache.dart';
+import 'constants.dart';
 import 'write_handler.dart';
 
 abstract class Emitter {
@@ -15,7 +16,7 @@ abstract class Emitter {
     h ??= DefaultWriteHandler();
     var tag = h.tag(o);
     if (1 == tag.length) {
-      return emitTagged("'", o, false);
+      return emitTagged(QUOTE, o, false);
     }
     return marshal(o, false);
   }
@@ -72,11 +73,11 @@ abstract class Emitter {
     if (1 == t.length) {
       var r = h.rep(o);
       if (r is String) {
-        return emitString('~', t, r, asMapKey);
+        return emitString(ESC, t, r, asMapKey);
       } else if (prefersStrings() || asMapKey) {
         String? sr = h.stringRep(o);
         if (sr != null) {
-          return emitString('~', t, sr, asMapKey);
+          return emitString(ESC, t, sr, asMapKey);
         } else {
           throw Exception('Cannot be encoded as a string $o');
         }
@@ -91,13 +92,13 @@ abstract class Emitter {
   }
 
   emitTagged(String t, o, bool asMapKey) {
-    return [emitString('~#', t, '', false), marshal(o, false)];
+    return [emitString(ESC_TAG, t, '', false), marshal(o, false)];
   }
 
   String escape(String s) {
     if (s.isNotEmpty) {
-      if (s.startsWith('~') || s.startsWith('^') || s.startsWith('``')) {
-        return '~$s';
+      if (s.startsWith(ESC) || s.startsWith(SUB) || s.startsWith(RESERVED)) {
+        return '$ESC$s';
       }
     }
     return s;
@@ -118,7 +119,7 @@ class JsonEmitter extends Emitter {
   @override
   emitNull(bool asMapKey) {
     if (asMapKey) {
-      return emitString('~', '_', '', asMapKey);
+      return emitString(ESC, '_', '', asMapKey);
     } else {
       return null;
     }
@@ -134,7 +135,7 @@ class JsonEmitter extends Emitter {
   @override
   emitBoolean(bool b, bool asMapKey) {
     if (asMapKey) {
-      return emitString('~', '?', b ? 't' : 'f', asMapKey);
+      return emitString(ESC, '?', b ? 't' : 'f', asMapKey);
     } else {
       return b;
     }
@@ -143,7 +144,7 @@ class JsonEmitter extends Emitter {
   @override
   emitInteger(int i, bool asMapKey) {
     if (asMapKey || i != i.toSigned(53)) {
-      return emitString('~', 'i', i.toString(), asMapKey);
+      return emitString(ESC, 'i', i.toString(), asMapKey);
     } else {
       return i;
     }
@@ -152,7 +153,7 @@ class JsonEmitter extends Emitter {
   @override
   emitDouble(double d, bool asMapKey) {
     if (asMapKey) {
-      return emitString('~', 'd', d.toString(), asMapKey);
+      return emitString(ESC, 'd', d.toString(), asMapKey);
     } else {
       return d;
     }
@@ -160,13 +161,13 @@ class JsonEmitter extends Emitter {
 
   @override
   emitBinary(Uint8List b, bool asMapKey) {
-    return emitString('~', 'b', base64.encode(b), asMapKey);
+    return emitString(ESC, 'b', base64.encode(b), asMapKey);
   }
 
   @override
   emitMap(Map m, bool asMapKey) {
     return [
-      '^ ',
+      MAP,
       ...m.entries
           .expand((e) => [marshal(e.key, true), marshal(e.value, false)])
     ];
