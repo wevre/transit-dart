@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 import 'package:fixed/fixed.dart';
-import 'keyword.dart';
-import 'link.dart';
-import 'symbol.dart';
-import 'tagged_value.dart';
-import 'list.dart';
-import 'uuid.dart';
+import '../values/keyword.dart';
+import '../values/link.dart';
+import '../values/symbol.dart';
+import '../values/tagged_value.dart';
+import '../values/list.dart';
+import '../values/uuid.dart';
 
 abstract class WriteHandler<T, R> {
   String tag(T obj);
