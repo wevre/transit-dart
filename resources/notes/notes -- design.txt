@@ -4,8 +4,8 @@
 
 :section Introduction
 
-   My ultimate goal is to have transit in place in ClojureDart, to make it dead
-   simple for passing data between back-end and front-end. I could go right to
+   Ultimate goal is to have transit in place in ClojureDart, to make it dead
+   simple for passing data between back-end and front-end. Could go right to
    transit-cljd, but an underlying transit-dart library makes it available to a
    wider audience outside of Clojure, and then the ClojureDart can live as a
    layer on top of that.
@@ -13,11 +13,11 @@
 :section Legacy project
 
    There is an {existing project} that was last updated over nine years ago,
-   which I think was before Dart 2. I could, but I'm not going to, try to build
-   on top of that, but there are so many compiler warnings just opening the
-   project. I'm not sure that I care to gain a lot of first-hand knowledge about
-   the differences between ancient and current Dart, which I predict would be
-   the main outcome of such an approach.
+   which I think was before Dart 2. Could, but I'm not going to, try to build on
+   top of that, but there are so many compiler warnings just opening the
+   project. Not sure that I care to gain a lot of first-hand knowledge about the
+   differences between ancient and current Dart, which I predict would be the
+   main outcome of such an approach.
 
    :link existing project
       https://github.com/cleandart/transit-dart
@@ -27,9 +27,13 @@
    appear to be some gaps in the implementation. It does use Dart's `Converter`s
    and `Codec`s, which I like.
 
+   To avoid any confusion, going to call this transit-dart2 which makes it clear
+   that it is not the same as the legacy one, and also hints that it works with
+   Dart 2.
+
 :section Architecture
 
-   I'm going to build this in three layers. The first is a codec for translating
+   Going to build this in three layers. The first is a codec for translating
    between Dart objects and transit semantic values. Semantic values are
    represented with class `TaggedValue` which pairs a Dart object with a transit
    tag. Collections are recursively transformed so that their elements and keys
@@ -40,33 +44,32 @@
    conversion layer is where we deal with escaping of strings.
 
    The next layer deals with caching. It requires traversing a graph of objects
-   and replacing map keys (and keywords and symbols and ~#tag). I've been
-   pondering if that is less efficient, since the java implementation does the
-   caching at the same moment that it is emitting the tagged value. This would
-   also be very dirty mutation, since I plan on caching values 'in situ'.
+   and replacing map keys (and keywords and symbols and ~#tag). Been pondering
+   if that is less efficient, since the java implementation does the caching at
+   the same moment that it is emitting the tagged value. This would also be very
+   dirty mutation, since planning on caching values 'in situ'.
 
-   The next layer I don't have to build, we just utilize the Dart-provided json
+   The next layer don't have to build, just utilize the Dart-provided json
    Codec.
 
-   UPDATE: (2023-03-11) The above is still my plan, but I found it easier to
-   deal with stuff by adhering pretty closely to the java implentation. I'm
-   still thinking about the above and may eventually convert to that approach,
-   but first I want to get it working.
+   UPDATE: (2023-03-11) The above is still my plan, but found it easier to deal
+   with stuff by adhering pretty closely to the java implentation. Still
+   thinking about the above and may eventually convert to that approach, but
+   first want to get it working.
 
 :section Streams
 
    The java implementation is built around readers and writers and streams,
    whereas this approach is more focused on transforming (single) objects with
    Codecs. And for many (most?) applications marshalling a single object in and
-   out of transit might be enough. But to be fully compatible with transit I'll
-   add a final layer that reads and writes from streams.
+   out of transit might be enough. But to be fully compatible with transit, add
+   a final layer that reads and writes from streams.
 
 :section Following java
 
-   Maybe I do more closely follow the java implementation, basing around
-   Read- and WriteHandlers. These would be classes that don't really hold state,
-   but just know how to spit back a tag and a rep, where rep is a converted
-   object.
+   Maybe more closely follow the java implementation, basing around Read- and
+   WriteHandlers. These would be classes that don't really hold state, but just
+   know how to spit back a tag and a rep, where rep is a converted object.
 
    :section WriteHandlers
 
@@ -78,9 +81,19 @@
       case, JSON-friendly values). So a writer converts any object to
       transit-friendly, and the emitter converts to JSON-friendly.
 
-      I have not implemented a WriteHandler for `char` because no such object
-      exists in Dart. But we will need a ReadHandler.
+      Have not implemented a WriteHandler for `char` because no such object
+      exists in Dart. But will need a ReadHandler.
 
 :section Common mistakes
 
-   I'm always forgetting to put `return`.
+   Always forgetting to put `return`.
+
+:section Questions about transit
+
+   Why do java and clj implementations of transit say they are version 1.0 and
+   they match the spec, but the spec itself says version 0.8 (which is also what
+   js and cljs denote).
+
+   Why does transit clear the entire cache when it reaches the max of 44*44? Why
+   doesn't it just overwrite the cache at index 0, and so on incrementally as it
+   encounters new cacheable values?

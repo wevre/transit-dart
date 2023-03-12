@@ -1,7 +1,7 @@
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
-library transit_dart;
+library transit_dart2;
 
 import 'package:fixed/fixed.dart';
 import 'package:uuid/uuid.dart' as yuli_uuid;
