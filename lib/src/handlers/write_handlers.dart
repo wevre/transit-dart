@@ -25,7 +25,7 @@ class WriteHandlersMap implements TagProvider {
   WriteHandler? getHandler(o) {
     WriteHandler? h = handlers[o.runtimeType];
 
-    if (h != null) {
+    if (null != h) {
       return h;
     }
 
@@ -196,11 +196,14 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
     if (_stringableKeys(obj)) {
       return obj;
     } else {
-      var l = [];
-      obj.forEach((key, value) {
-        l.add(key);
-        l.add(value);
-      });
+      var l = [
+        ...obj.entries.expand((e) => [e.key, e.value])
+      ];
+      // var l = [];
+      // obj.forEach((key, value) {
+      //   l.add(key);
+      //   l.add(value);
+      // });
       return TaggedValue('array', l);
     }
   }

@@ -1,19 +1,26 @@
 class Link {
-  final Uri href;
-  final String rel;
-  final String? name;
-  final String? render;
-  final String? prompt;
+  final Map<String, String> m;
 
-  Link(this.href, this.rel, {this.name, this.render, this.prompt});
-
-  Map toMap() {
-    return {
-      'href': href.toString(),
-      'rel': rel,
-      if (null != name) 'name': name,
-      if (null != render) 'render': render,
-      if (null != prompt) 'prompt': prompt,
-    };
+  Link(String href, String rel, {String? name, String? render, String? prompt})
+      : m = {} {
+    m['href'] = href;
+    m['rel'] = rel;
+    if (null != name) {
+      m['name'] = name;
+    }
+    if (null != render) {
+      if ('link' == render || 'image' == render) {
+        m['render'] = render;
+      } else {
+        throw Exception('Value of render must be "link" or "image"');
+      }
+    }
+    if (null != prompt) {
+      m['prompt'] = prompt;
+    }
   }
+
+  Map toMap() => m;
+
+  Link.fromMap(this.m);
 }

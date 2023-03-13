@@ -1,32 +1,47 @@
-import 'package:transit_dart2/src/constants.dart';
+import 'package:collection/collection.dart';
 
 import 'cacher.dart';
+import 'constants.dart';
+import 'handlers/array_reader.dart';
+import 'handlers/map_reader.dart';
 import 'handlers/read_handlers.dart';
 import 'values/tag.dart';
+import 'values/tagged_value.dart';
 
 abstract class Parser {
   final ReadHandlersMap readHandlersMap;
   final CacheDecoder cache;
-  ReadHandler? defaultHandler;
+  late final DefaultReadHandler defaultHandler;
+  late final MapReader mapBuilder;
+  late final ArrayReader listBuilder;
 
-  Parser(this.readHandlersMap, this.cache);
+  Parser(this.readHandlersMap, this.cache,
+      {MapReader? mapBuilder,
+      ArrayReader? listBuilder,
+      DefaultReadHandler? defaultHandler}) {
+    this.mapBuilder = mapBuilder ?? MapBuilderImpl();
+    this.listBuilder = listBuilder ?? ListBuilderImpl();
+    this.defaultHandler = defaultHandler ?? TaggedValueReadHandler();
+  }
 
   parse(obj) => parseVal(obj);
 
   parseVal(obj, {bool asMapKey = false});
-  // TODO: JAVA has mapbuilder and listbuilder so it can work with clojure
-  // transients. Do we need something as well?
-  parseMap(obj, {bool asMapKey = false});
-  parseArray(obj, {bool asMapKey = false});
+  parseMap(Map obj, bool asMapKey, MapReadHandler? handler);
+  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler);
 
   decode(String tag, rep) {
-    var h = readHandlersMap.getHandler(tag) ?? defaultHandler;
-    if (h == null) {
-      throw Exception('Cannot fromRep $tag: ${rep.toString()}');
+    var h = readHandlersMap.getHandler(tag);
+    if (null != h) {
+      return h.fromRep(rep);
+    } else {
+      return defaultHandler.fromRep(tag, rep);
     }
-    return h.fromRep(rep);
   }
 
+  // This method used by the cache decoder. Interesting, there is nothing here
+  // that is tied to the parser (other than it is a task belonging to the
+  // parser) but it's not like the cacher would have
   parseString(s) {
     if (s is String) {
       if (s.length > 1) {
@@ -60,18 +75,103 @@ class JsonParser extends Parser {
 
   @override
   parseVal(obj, {bool asMapKey = false}) {
-    // Here we test if the obj is an array, a map, a string, number, null, bool
+    print('parseVal(obj: $obj)');
+    if (obj is Map) {
+      return parseMap(obj, asMapKey, null);
+    } else if (obj is List) {
+      return parseArray(obj, asMapKey, null);
+    } else if (obj is String) {
+      return cache.convert(obj, asMapKey: asMapKey, parser: this);
+    } else {
+      return obj;
+    }
+  }
+
+  dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
+    print('parseTag(tag: $tag, obj: $obj)');
+    ReadHandler? valHandler = readHandlersMap.getHandler(tag);
+    dynamic val;
+    if (null != valHandler) {
+      if (obj is Map && valHandler is MapReadHandler) {
+        val = parseMap(obj, asMapKey, valHandler);
+      } else if (obj is List && valHandler is ArrayReadHandler) {
+        val = parseArray(obj, asMapKey, valHandler);
+      } else {
+        val = valHandler.fromRep(parseVal(obj, asMapKey: asMapKey));
+      }
+    } else {
+      val = decode(tag, parseVal(obj, asMapKey: asMapKey));
+    }
+    return val;
   }
 
   @override
-  parseArray(obj, {bool asMapKey = false}) {
-    // TODO: implement parseArray
-    throw UnimplementedError();
+  parseMap(obj, bool asMapKey, MapReadHandler? handler) {
+    print('parseMap(obj: $obj, asMapKey: $asMapKey)');
+    MapReader mr = handler?.mapReader() ?? mapBuilder;
+    var mb = mr.init();
+    for (var e in obj.entries) {
+      var key = parseVal(e.key, asMapKey: true);
+      if (key is Tag) {
+        return parseTag(key.value, e.value, asMapKey);
+      } else {
+        mb = mr.add(mb, key, parseVal(e.value));
+      }
+    }
+    return mr.complete(mb);
+  }
+
+  parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
+    print('parseEntries(objs: $objs, asMapKey: $asMapKey');
+    MapReader mr = handler?.mapReader() ?? mapBuilder;
+    var mb = mr.init();
+    for (var e in objs) {
+      mb = mr.add(mb, parseVal(e.key, asMapKey: true),
+          parseVal(e.value, asMapKey: false));
+    }
+    return mr.complete(mb);
   }
 
   @override
-  parseMap(obj, {bool asMapKey = false}) {
-    // TODO: implement parseMap
-    throw UnimplementedError();
+  parseArray(obj, bool asMapKey, ArrayReadHandler? handler) {
+    print('parseArray(obj: $obj)');
+    if (obj.isNotEmpty) {
+      var firstVal = parseVal(obj[0], asMapKey: asMapKey);
+      print('firstVal == `$firstVal`');
+      if (null != firstVal) {
+        if (MAP == firstVal) {
+          // NO! this won't work because converting it into a MAP does not
+          // preserve the order of the entries, which screws up the cache.
+          // TODO: Let's create a parseEntries method that knows it is spitting
+          // out a map, but it's input is an ordered list of map entries.
+          return parseEntries(
+              [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
+              false,
+              null);
+        } else if (firstVal is Tag) {
+          return parseTag(firstVal.value, obj[1], asMapKey);
+        } else {}
+      }
+      // Process array w/o special decoding or interpretation
+      print('process array with arrayReader or listBuilder');
+      ArrayReader ar = handler?.arrayReader() ?? listBuilder;
+      var ab = ar.init();
+      for (var e in obj) {
+        ab = ar.add(ab, parseVal(e));
+      }
+      return ar.complete(ab);
+    }
+    // Make an empty list with the default Array/ListBuilder
+    ArrayReader ar = handler?.arrayReader() ?? listBuilder;
+    return ar.complete(ar.init());
   }
+}
+
+abstract class DefaultReadHandler<T> {
+  T fromRep(String tag, dynamic rep);
+}
+
+class TaggedValueReadHandler extends DefaultReadHandler<TaggedValue> {
+  @override
+  fromRep(tag, rep) => TaggedValue(tag, rep);
 }

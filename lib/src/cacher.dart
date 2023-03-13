@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'constants.dart';
+import 'parser.dart';
 
 const _digits = 44;
 const _base = 48;
@@ -27,6 +28,12 @@ int _cacheDecode(String s) {
   }
 }
 
+bool _isCacheable(String s, bool asMapKey) {
+  return (s.length >= 4) &&
+      (asMapKey ||
+          (ESC == s[0] && (':' == s[1] || '\$' == s[1] || TAG == s[1])));
+}
+
 class CacheEncoder extends Converter<String, String> {
   final Map<String, String> _cache = {};
 
@@ -44,9 +51,11 @@ class CacheEncoder extends Converter<String, String> {
             (ESC == s[0] && (':' == s[1] || '\$' == s[1] || TAG == s[1])));
   }
 
+  getCache() => _cache;
+
   @override
   String convert(String input, {bool asMapKey = false}) {
-    if (isCacheable(input, asMapKey)) {
+    if (_isCacheable(input, asMapKey)) {
       if (_cache.containsKey(input)) {
         return _cache[input]!;
       } else {
@@ -60,8 +69,8 @@ class CacheEncoder extends Converter<String, String> {
   }
 }
 
-class CacheDecoder extends Converter<String, String> {
-  final List<String> _cache = [];
+class CacheDecoder extends Converter<String, dynamic> {
+  final List<dynamic> _cache = [];
 
   void _reset() {
     _cache.clear();
@@ -72,16 +81,20 @@ class CacheDecoder extends Converter<String, String> {
   }
 
   @override
-  String convert(String input) {
+  dynamic convert(String input, {bool asMapKey = false, Parser? parser}) {
+    print('convert(input: $input, asMapKey: $asMapKey)');
     if (_prefix == input[0] && input != MAP) {
       return _cache[_cacheDecode(input)];
     }
-    if (input.length > 3) {
+    var parsed = parser?.parseString(input) ?? input;
+    if (_isCacheable(input, asMapKey)) {
       if (_cache.length == _maxEntries) {
         _reset();
       }
-      _cache.add(input);
+      _cache.add(parsed);
     }
-    return input;
+    print('cache is `$_cache`');
+    print('convert: parsed is `$parsed`');
+    return parsed;
   }
 }

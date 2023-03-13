@@ -8,9 +8,16 @@
 
 :section ToDo
 
-   [] Support custom write handlers.
+   [] Support custom write handlers. -- Actually think the support already
+   exists, but there isn't an API to get them inserted into the WriteHandlersMap.
+
+   [] Support custom read handlers. -- Same thing as above, need an API to
+   register them.
 
    [] Read-handlers.
+
+   [] Double check this in Java version, but I think the emitter and parser
+   should clear the cache on each call for each top-level object.
 
    [] Build some tests where we convert all the way to JSON and confirm against
    the transit samples. Figure out how to integrate the testing that is part of

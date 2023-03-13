@@ -81,7 +81,7 @@ abstract class Emitter {
         return emitString(ESC, t, r, asMapKey);
       } else if (prefersStrings() || asMapKey) {
         String? sr = h.stringRep(o);
-        if (sr != null) {
+        if (null != sr) {
           return emitString(ESC, t, sr, asMapKey);
         } else {
           throw Exception('Cannot be encoded as a string $o');
