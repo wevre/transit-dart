@@ -82,7 +82,6 @@ class CacheDecoder extends Converter<String, dynamic> {
 
   @override
   dynamic convert(String input, {bool asMapKey = false, Parser? parser}) {
-    print('convert(input: $input, asMapKey: $asMapKey)');
     if (_prefix == input[0] && input != MAP) {
       return _cache[_cacheDecode(input)];
     }
@@ -93,8 +92,6 @@ class CacheDecoder extends Converter<String, dynamic> {
       }
       _cache.add(parsed);
     }
-    print('cache is `$_cache`');
-    print('convert: parsed is `$parsed`');
     return parsed;
   }
 }

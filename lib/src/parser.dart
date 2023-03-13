@@ -75,7 +75,6 @@ class JsonParser extends Parser {
 
   @override
   parseVal(obj, {bool asMapKey = false}) {
-    print('parseVal(obj: $obj)');
     if (obj is Map) {
       return parseMap(obj, asMapKey, null);
     } else if (obj is List) {
@@ -88,7 +87,6 @@ class JsonParser extends Parser {
   }
 
   dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
-    print('parseTag(tag: $tag, obj: $obj)');
     ReadHandler? valHandler = readHandlersMap.getHandler(tag);
     dynamic val;
     if (null != valHandler) {
@@ -107,7 +105,6 @@ class JsonParser extends Parser {
 
   @override
   parseMap(obj, bool asMapKey, MapReadHandler? handler) {
-    print('parseMap(obj: $obj, asMapKey: $asMapKey)');
     MapReader mr = handler?.mapReader() ?? mapBuilder;
     var mb = mr.init();
     for (var e in obj.entries) {
@@ -122,7 +119,6 @@ class JsonParser extends Parser {
   }
 
   parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
-    print('parseEntries(objs: $objs, asMapKey: $asMapKey');
     MapReader mr = handler?.mapReader() ?? mapBuilder;
     var mb = mr.init();
     for (var e in objs) {
@@ -134,36 +130,32 @@ class JsonParser extends Parser {
 
   @override
   parseArray(obj, bool asMapKey, ArrayReadHandler? handler) {
-    print('parseArray(obj: $obj)');
-    if (obj.isNotEmpty) {
-      var firstVal = parseVal(obj[0], asMapKey: asMapKey);
-      print('firstVal == `$firstVal`');
-      if (null != firstVal) {
-        if (MAP == firstVal) {
-          // NO! this won't work because converting it into a MAP does not
-          // preserve the order of the entries, which screws up the cache.
-          // TODO: Let's create a parseEntries method that knows it is spitting
-          // out a map, but it's input is an ordered list of map entries.
-          return parseEntries(
-              [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
-              false,
-              null);
-        } else if (firstVal is Tag) {
-          return parseTag(firstVal.value, obj[1], asMapKey);
-        } else {}
-      }
-      // Process array w/o special decoding or interpretation
-      print('process array with arrayReader or listBuilder');
+    if (obj.isEmpty) {
+      // Make an empty list with the default Array/ListBuilder
       ArrayReader ar = handler?.arrayReader() ?? listBuilder;
-      var ab = ar.init();
-      for (var e in obj) {
-        ab = ar.add(ab, parseVal(e));
-      }
-      return ar.complete(ab);
+      return ar.complete(ar.init());
     }
-    // Make an empty list with the default Array/ListBuilder
+    var firstVal = parseVal(obj[0], asMapKey: asMapKey);
+    if (MAP == firstVal) {
+      // NO! this won't work because converting it into a MAP does not
+      // preserve the order of the entries, which screws up the cache.
+      // TODO: Let's create a parseEntries method that knows it is spitting
+      // out a map, but it's input is an ordered list of map entries.
+      return parseEntries(
+          [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
+          false,
+          null);
+    } else if (firstVal is Tag) {
+      return parseTag(firstVal.value, obj[1], asMapKey);
+    }
+    // Process rest of array w/o special decoding or interpretation
     ArrayReader ar = handler?.arrayReader() ?? listBuilder;
-    return ar.complete(ar.init());
+    var ab = ar.init();
+    ab = ar.add(ar.init(), firstVal);
+    for (var e in obj.sublist(1)) {
+      ab = ar.add(ab, parseVal(e));
+    }
+    return ar.complete(ab);
   }
 }
 
