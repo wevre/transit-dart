@@ -9,25 +9,33 @@
 :section ToDo
 
    [] Support custom write handlers. -- Actually think the support already
-   exists, but there isn't an API to get them inserted into the WriteHandlersMap.
+   exists, but there isn't an API to get them inserted into the
+   WriteHandlersMap. Do some hack-it-together testing to make sure.
 
    [] Support custom read handlers. -- Same thing as above, need an API to
    register them.
 
-   [] Read-handlers.
-
    [] Double check this in Java version, but I think the emitter and parser
-   should clear the cache on each call for each top-level object.
+   should clear the cache on each call for each top-level object. UPDATE: yes,
+   but it is done in the Read- and WriteFactory's inside the Reader and Writer
+   objects they return. So my private `_reset` functions will need to be exposed
+   as `init` methods that can be called.
+
+   [] What API will be exposed/exported in the library? Probably a reader/writer
+   pair that operates on streams, and then callers of the library can deal with
+   connecting those streams back and forth into strings or whatever.
 
    [] Build some tests where we convert all the way to JSON and confirm against
    the transit samples. Figure out how to integrate the testing that is part of
    transit-format.
 
-   [] Time will need to be different for msgpack and verbose.
+   [] `Time` will need to be different for msgpack and verbose.
 
-   [] Uuid is also different for msgpack.
+   [] `Uuid` is also different for msgpack.
 
 :section Done
+
+   [✓] Read-handlers.
 
    [✓] Implement Keyword and Symbol and the rest of the scalar extension types.
    How will those eventually play with cljd?

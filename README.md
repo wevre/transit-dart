@@ -58,6 +58,22 @@ void main() {
 
 TODO: Provide table of transit semantic types mapped to Dart language objects.
 
+## Testing
+
+To run the roundtrip tests in `transit-format`:
+
+1. Clone [transit-format](https://github.com/cognitect/transit-format) to your
+   computer.
+
+2. Copy the file `get-transit-dart` from the `bin` directory of this repository
+   to the `bin` directory in `transit-format`.
+
+3. Execute the command
+
+```
+transit-format/bin/verify -impls dart -enc json
+```
+
 ## Additional information
 
 TODO: Tell users more about the package: where to find more information, how to
