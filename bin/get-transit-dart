@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
 cd `dirname $0`/../..
 
 if [ ! -d "transit-dart" ]; then
-  git clone git@github.com:wevre/transit-dart.git transit-dart
+  git clone https://github.com/wevre/transit-dart.git
 else
   echo "transit-dart exists"
 fi

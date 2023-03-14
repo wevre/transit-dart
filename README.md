@@ -70,7 +70,7 @@ To run the roundtrip verification tests in `transit-format`:
 ```sh
 mkdir transit-test
 cd transit-test
-git clone git@github.com:cognitect/transit-format
+git clone https://github.com/cognitect/transit-format.git
 ```
 
 2. Copy the shell script [`bin/get-transit-dart`](https://github.com/wevre/transit-dart/blob/master/bin/get-transit-dart) from this repository

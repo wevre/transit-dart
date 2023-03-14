@@ -2,4 +2,4 @@
 
 cd `dirname $0`/..
 
-exec test/rountrip.exe "$@"
+exec resources/emits/rountrip.exe "$@"
