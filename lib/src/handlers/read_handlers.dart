@@ -134,7 +134,7 @@ class CharacterReadHandler extends AbstractReadHandler<String> {
   fromRep(rep) => rep;
 }
 
-class QuotedReadHandler extends AbstractReadHandler<Object> {
+class QuotedReadHandler extends AbstractReadHandler<dynamic> {
   @override
   fromRep(rep) => rep;
 }
