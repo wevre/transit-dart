@@ -31,8 +31,11 @@ abstract class Parser {
   parseArray(List obj, bool asMapKey, ArrayReadHandler? handler);
 
   decode(String tag, rep) {
+    //print('decode(tag: `$tag`, rep: `$rep`)');
     var h = readHandlersMap.getHandler(tag);
+    //print('h=`$h`');
     if (null != h) {
+      //print('returning `${h.fromRep(rep)}`');
       return h.fromRep(rep);
     } else {
       return defaultHandler.fromRep(tag, rep);
@@ -43,6 +46,7 @@ abstract class Parser {
   // that is tied to the parser (other than it is a task belonging to the
   // parser) but it's not like the cacher would have
   parseString(s) {
+    //print('parseString(s: $s)');
     if (s is String) {
       if (s.length > 1) {
         switch (s[0]) {
@@ -80,6 +84,7 @@ class JsonParser extends Parser {
     } else if (obj is List) {
       return parseArray(obj, asMapKey, null);
     } else if (obj is String) {
+      //print('parseVal(obj: $obj, asMapKey: $asMapKey');
       return cache.convert(obj, asMapKey: asMapKey, parser: this);
     } else {
       return obj;

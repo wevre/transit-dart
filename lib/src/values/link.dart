@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 class Link {
   final Map m;
 
@@ -26,4 +28,12 @@ class Link {
 
   @override
   toString() => 'Link[${m.toString()}]';
+
+  @override
+  operator ==(other) {
+    return (other is Link) && DeepCollectionEquality().equals(other.m, m);
+  }
+
+  @override
+  get hashCode => 19 * m.hashCode;
 }

@@ -15,6 +15,9 @@
    [] Support custom read handlers. -- Same thing as above, need an API to
    register them.
 
+   [] Probably need to add == operator and hashCode on wrapper classes, if
+   nothing else, at least to support testing.
+
    [] Double check this in Java version, but I think the emitter and parser
    should clear the cache on each call for each top-level object. UPDATE: yes,
    but it is done in the Read- and WriteFactory's inside the Reader and Writer

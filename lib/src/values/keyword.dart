@@ -1,4 +1,5 @@
 class Keyword {
+  int _hash = 0;
   late final String ns;
   late final String name;
 
@@ -16,6 +17,16 @@ class Keyword {
   @override
   String toString() => ':${ns.isEmpty ? '' : '$ns/'}$name';
 
-  String getNamespace() => ns;
-  String getName() => name;
+  @override
+  operator ==(other) {
+    return (other is Keyword) && (other.ns == ns) && (other.name == name);
+  }
+
+  @override
+  get hashCode {
+    if (_hash == 0) {
+      _hash = 17 * toString().hashCode;
+    }
+    return _hash;
+  }
 }
