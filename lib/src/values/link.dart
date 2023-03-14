@@ -30,9 +30,8 @@ class Link {
   toString() => 'Link[${m.toString()}]';
 
   @override
-  operator ==(other) {
-    return (other is Link) && DeepCollectionEquality().equals(other.m, m);
-  }
+  operator ==(other) =>
+      (other is Link) && DeepCollectionEquality().equals(other.m, m);
 
   @override
   get hashCode => 19 * m.hashCode;

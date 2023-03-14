@@ -1,22 +1,21 @@
 import 'package:fixed/fixed.dart';
 import 'package:collection/collection.dart';
 
-import 'package:transit_dart2/src/handlers/write_handlers.dart';
-import 'package:transit_dart2/src/handlers/read_handlers.dart';
-import 'package:transit_dart2/src/emitter.dart';
-import 'package:transit_dart2/src/parser.dart';
-import 'package:transit_dart2/src/cacher.dart';
-import 'package:transit_dart2/src/values/keyword.dart';
-import 'package:transit_dart2/src/values/link.dart';
-import 'package:transit_dart2/src/values/list.dart';
-import 'package:transit_dart2/src/values/symbol.dart';
-import 'package:transit_dart2/src/values/uuid.dart';
+import 'package:transit/src/handlers/write_handlers.dart';
+import 'package:transit/src/handlers/read_handlers.dart';
+import 'package:transit/src/emitter.dart';
+import 'package:transit/src/parser.dart';
+import 'package:transit/src/cacher.dart';
+import 'package:transit/src/values/keyword.dart';
+import 'package:transit/src/values/link.dart';
+import 'package:transit/src/values/list.dart';
+import 'package:transit/src/values/symbol.dart';
+import 'package:transit/src/values/uuid.dart';
 
 var writeHandlers = WriteHandlersMap.json();
 var readHandlers = ReadHandlersMap.json();
 
 void main() {
-  // someTests();
   someOtherTests();
 }
 

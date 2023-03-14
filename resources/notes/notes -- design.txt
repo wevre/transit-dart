@@ -1,4 +1,4 @@
-:project transit-dart2
+:project transit-dart
    :author Mike Weaver
    :created 2023-02-26
 
@@ -22,14 +22,15 @@
    :link existing project
       https://github.com/cleandart/transit-dart
 
-   That project (sort of?) follows along to the java implementation, although as
-   far as I can tell without actually compiling it and running test, there
+   That project (sort of?) follows along with the java implementation, although
+   as far as I can tell without actually compiling it and running test, there
    appear to be some gaps in the implementation. It does use Dart's `Converter`s
    and `Codec`s, which I like.
 
-   To avoid any confusion, going to call this transit-dart2 which makes it clear
-   that it is not the same as the legacy one, and also hints that it works with
-   Dart 2.
+   I opened an issue on that project asking if they have plans to bring it up to
+   date with Dart 2, and barring that or any objections on their side, I'm going
+   to call this one transit-dart and basically plan on, in a manner as kindly as
+   possible, seperseding that old library.
 
 :section Architecture
 

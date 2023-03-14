@@ -1,4 +1,4 @@
-:project transit-dart2
+:project transit-dart
    :author Mike Weaver
    :created 2023-03-11
 

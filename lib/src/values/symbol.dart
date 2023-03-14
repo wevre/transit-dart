@@ -18,9 +18,8 @@ class Symbol {
   String toString() => '${ns.isEmpty ? '' : '$ns/'}$name';
 
   @override
-  operator ==(other) {
-    return (other is Symbol) && (other.ns == ns) && (other.name == name);
-  }
+  operator ==(other) =>
+      (other is Symbol) && (other.ns == ns) && (other.name == name);
 
   @override
   get hashCode {

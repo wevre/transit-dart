@@ -7,9 +7,7 @@ class Uuid {
   toString() => value;
 
   @override
-  operator ==(other) {
-    return (other is Uuid) && (other.value == value);
-  }
+  operator ==(other) => (other is Uuid) && (other.value == value);
 
   @override
   get hashCode => 29 * value.hashCode;

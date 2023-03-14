@@ -10,7 +10,7 @@ For general information about developing packages, see the Dart guide for
 and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
-# transit-dart2
+# transit-dart
 
 Transit is a data format and set of libraries for conveying values between
 applications written in different languages. This library provides support for
@@ -44,7 +44,7 @@ cobble together the pieces by hand. In future we'll have a more friendly API
 with examples showing how to convert directly to JSON or write to a stream.
 
 ```dart
-import 'package:transit_dart2/transit-dart';
+import 'package:transit_dart/transit-dart';
 
 var handlers = WriteHandlersMap.json();
 
