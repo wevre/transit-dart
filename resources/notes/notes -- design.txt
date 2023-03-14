@@ -89,6 +89,9 @@
 
    Always forgetting to put `return`.
 
+   Have to be careful with `null`, because it can be a valid transit value, but
+   may also signify 'nothing'.
+
 :section Questions about transit
 
    Why do java and clj implementations of transit say they are version 1.0 and

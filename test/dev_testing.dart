@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fixed/fixed.dart';
 import 'package:collection/collection.dart';
 
@@ -71,11 +73,14 @@ void someOtherTests() {
     ]),
     Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
   ];
+  // obj = null;
   print('obj is `$obj`');
   var emitted = emitter.emit(obj);
   print('emitted is `$emitted`');
+  var jsonStr = json.encode(emitted);
+  print('json is `$jsonStr`');
   print('write cache is ${emitter.cache.getCache()}');
-  var parsed = parser.parse(emitted);
+  var parsed = parser.parse(json.decode(jsonStr));
   print('parsed is `$parsed`');
   print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
 }

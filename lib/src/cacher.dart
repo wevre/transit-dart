@@ -85,9 +85,9 @@ class CacheDecoder extends Converter<String, dynamic> {
     if (_prefix == input[0] && input != MAP) {
       return _cache[_cacheDecode(input)];
     }
-    var parsed = parser?.parseString(input) ?? input;
-    if (input == '~_' && asMapKey) {
-      parsed = null;
+    dynamic parsed = input;
+    if (null != parser) {
+      parsed = parser.parseString(input);
     }
     if (_isCacheable(input, asMapKey)) {
       if (_cache.length == _maxEntries) {
