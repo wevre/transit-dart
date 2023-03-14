@@ -21,9 +21,7 @@ void main() {
 void someOtherTests() {
   var emitter = JsonEmitter(writeHandlers, CacheEncoder());
   var parser = JsonParser(readHandlers, CacheDecoder());
-  //var obj = [1, 2, 3, "hello", "there", Keyword('test')];
-  //var obj = "hello"; //{"hello": 1, "there": 2};
-  var obj = [
+  dynamic obj = [
     {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
     {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
     {null: 'hello', 4.56: '`there', true: '~you'},
@@ -49,11 +47,11 @@ void someOtherTests() {
       Fixed.fromNum(13.5)
     ],
     Uri(scheme: 'https', host: 'www.example.com'),
-    // Link(Uri(scheme: 'https', host: 'www.example.com').toString(), 'a-rel',
-    //     name: 'a-name', render: 'link', prompt: 'a-prompt'),
-    // Link(Uri(scheme: 'https', host: 'www.example.com').toString(), 'a-rel',
-    //     render: 'image'),
-    // DateTime.now(),
+    Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
+        name: 'a-name', render: 'link', prompt: 'a-prompt'),
+    Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
+        render: 'image'),
+    DateTime.now(),
     {
       'hello',
       'there',
@@ -70,7 +68,10 @@ void someOtherTests() {
     ]),
     Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
   ];
+  print('obj is `$obj`');
   var emitted = emitter.emit(obj);
+  print('emitted is `$emitted`');
   print('write cache is ${emitter.cache.getCache()}');
-  print(parser.parse(emitted));
+  var parsed = parser.parse(emitted);
+  print('parsed is `$parsed`');
 }

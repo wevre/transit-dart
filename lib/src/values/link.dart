@@ -1,7 +1,7 @@
 class Link {
-  final Map<String, String> m;
+  final Map m;
 
-  Link(String href, String rel, {String? name, String? render, String? prompt})
+  Link(Uri href, String rel, {String? name, String? render, String? prompt})
       : m = {} {
     m['href'] = href;
     m['rel'] = rel;
@@ -23,4 +23,7 @@ class Link {
   Map toMap() => m;
 
   Link.fromMap(this.m);
+
+  @override
+  toString() => 'Link[${m.toString()}]';
 }

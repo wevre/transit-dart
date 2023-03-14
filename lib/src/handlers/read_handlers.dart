@@ -96,7 +96,7 @@ class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
 
 class TimeReadHandler extends AbstractReadHandler<DateTime> {
   @override
-  fromRep(rep) => DateTime.fromMillisecondsSinceEpoch(rep);
+  fromRep(rep) => DateTime.fromMillisecondsSinceEpoch(int.parse(rep));
 }
 
 class VerboseTimeReadHander extends AbstractReadHandler<DateTime> {
