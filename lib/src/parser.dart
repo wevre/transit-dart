@@ -137,10 +137,6 @@ class JsonParser extends Parser {
     }
     var firstVal = parseVal(obj[0], asMapKey: asMapKey);
     if (MAP == firstVal) {
-      // NO! this won't work because converting it into a MAP does not
-      // preserve the order of the entries, which screws up the cache.
-      // TODO: Let's create a parseEntries method that knows it is spitting
-      // out a map, but it's input is an ordered list of map entries.
       return parseEntries(
           [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
           false,
