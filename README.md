@@ -60,15 +60,27 @@ TODO: Provide table of transit semantic types mapped to Dart language objects.
 
 ## Testing
 
-To run the roundtrip tests in `transit-format`:
+To run the roundtrip verification tests in `transit-format`:
 
-1. Clone [transit-format](https://github.com/cognitect/transit-format) to your
-   computer.
+1. Set up a testing directory where all this can take place. For example, call
+   it `transit-test`. Clone
+   [transit-format](https://github.com/cognitect/transit-format) to that
+   directory.
 
-2. Copy the file `get-transit-dart` from the `bin` directory of this repository
-   to the `bin` directory in `transit-format`.
+```sh
+mkdir transit-test
+cd transit-test
+git clone git@github.com:cognitect/transit-format
+```
 
-3. Execute the command
+2. Copy the shell script [`bin/get-transit-dart`](https://github.com/wevre/transit-dart/blob/master/bin/get-transit-dart) from this repository
+   to `transit-format/bin/get-transit-dart`.
+
+```
+curl 'https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transit-dart' > transit-format/bin/get-transit-dart
+```
+
+3. Execute the verify command.
 
 ```
 transit-format/bin/verify -impls dart -enc json

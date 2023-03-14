@@ -1,15 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
 cd `dirname $0`/../..
 
 if [ ! -d "transit-dart" ]; then
   git clone git@github.com:wevre/transit-dart.git transit-dart
-else
-  echo "transit-dart exists"
-fi
-
-if [ ! -f "transit-dart/resources/emits/roundtrip.exe"]; then
   cd transit-dart
   mkdir -p resources/emits
   dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
+else
+  echo "transit-dart exists"
 fi
