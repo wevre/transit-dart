@@ -28,11 +28,11 @@ class JsonBuilder {
     for (var i = start; i < end; i++) {
       var char = data.codeUnitAt(i);
       // Initialize if this is the first char we've seen.
-      if (0 == stackDepth) {
-        assert(_leftBrace == char || _leftBracket == char);
-        stackDepth++;
-        continue;
-      }
+      // if (0 == stackDepth) {
+      //   assert(_leftBrace == char || _leftBracket == char);
+      //   stackDepth++;
+      //   continue;
+      // }
       // If prev char was escape, then skip this one.
       if (skipEscape) {
         skipEscape = false;
@@ -49,10 +49,13 @@ class JsonBuilder {
           continue;
         case _rightBrace:
         case _rightBracket:
-          if (--stackDepth > 0) {
+          if (quoted) {
             continue;
+          } else if (--stackDepth > 0) {
+            continue;
+          } else {
+            break;
           }
-          break;
         case _backslash:
           skipEscape = true;
           continue;

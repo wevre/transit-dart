@@ -18,7 +18,6 @@ var writeHandlers = WriteHandlersMap.json();
 var readHandlers = ReadHandlersMap.json();
 
 void main() {
-  print('"[]{}\\'.codeUnits);
   someOtherTests();
 }
 
@@ -78,10 +77,12 @@ void someOtherTests() {
   print('obj is `$obj`');
   var emitted = emitter.emit(obj);
   print('emitted is `$emitted`');
-  var jsonStr = json.encode(emitted);
-  print('json is `$jsonStr`');
+  var encoded = json.encode(emitted);
+  print('encoded is `$encoded`');
   print('write cache is ${emitter.cache.getCache()}');
-  var parsed = parser.parse(json.decode(jsonStr));
+  var decoded = json.decode(encoded);
+  print('decoded is `$decoded`');
+  var parsed = parser.parse(decoded);
   print('parsed is `$parsed`');
   print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
 }

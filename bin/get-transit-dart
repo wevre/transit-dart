@@ -10,6 +10,7 @@ fi
 
 if [ ! -f "transit-dart/resources/emits/roundtrip.exe"]; then
   cd transit-dart
+  dart pub get
   mkdir -p resources/emits
   dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
 fi

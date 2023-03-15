@@ -13,6 +13,7 @@ abstract class Emitter {
   Emitter(this.writeHandlersMap, this.cache);
 
   marshalTop(obj) {
+    cache.init();
     var h = writeHandlersMap.getHandler(obj) ?? defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');

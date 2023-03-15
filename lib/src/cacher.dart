@@ -37,12 +37,12 @@ bool _isCacheable(String s, bool asMapKey) {
 class CacheEncoder extends Converter<String, String> {
   final Map<String, String> _cache = {};
 
-  void _reset() {
+  void init() {
     _cache.clear();
   }
 
   CacheEncoder() {
-    _reset();
+    init();
   }
 
   bool isCacheable(String s, bool asMapKey) {
@@ -60,7 +60,7 @@ class CacheEncoder extends Converter<String, String> {
         return _cache[input]!;
       } else {
         if (_cache.length == _maxEntries) {
-          _reset();
+          init();
         }
         _cache[input] = _cacheEncode(_cache.length);
       }
@@ -72,12 +72,12 @@ class CacheEncoder extends Converter<String, String> {
 class CacheDecoder extends Converter<String, dynamic> {
   final List<dynamic> _cache = [];
 
-  void _reset() {
+  void init() {
     _cache.clear();
   }
 
   CacheDecoder() {
-    _reset();
+    init();
   }
 
   @override
@@ -91,7 +91,7 @@ class CacheDecoder extends Converter<String, dynamic> {
     }
     if (_isCacheable(input, asMapKey)) {
       if (_cache.length == _maxEntries) {
-        _reset();
+        init();
       }
       _cache.add(parsed);
     }

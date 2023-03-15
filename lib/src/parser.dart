@@ -24,7 +24,10 @@ abstract class Parser {
     this.defaultHandler = defaultHandler ?? TaggedValueReadHandler();
   }
 
-  parse(obj) => parseVal(obj);
+  parse(obj) {
+    cache.init();
+    return parseVal(obj);
+  }
 
   parseVal(obj, {bool asMapKey = false});
   parseMap(Map obj, bool asMapKey, MapReadHandler? handler);
