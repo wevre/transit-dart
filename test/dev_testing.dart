@@ -18,6 +18,7 @@ var writeHandlers = WriteHandlersMap.json();
 var readHandlers = ReadHandlersMap.json();
 
 void main() {
+  print('"[]{}\\'.codeUnits);
   someOtherTests();
 }
 
