@@ -2,4 +2,4 @@
 
 cd `dirname $0`/..
 
-exec resources/emits/roundtrip.exe "$@"
+exec resources/emits/roundtrip.exe "$@" 2> resources/emits/errors.txt

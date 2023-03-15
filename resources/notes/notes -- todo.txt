@@ -35,6 +35,8 @@
 
 :section Done
 
+   [✓] Need to handle empty strings: "".
+
    [✓] BUG: `null` as a quoted value does not parse.
 
    [✓] Add == operator and hashCode on wrapper classes, if nothing else, at

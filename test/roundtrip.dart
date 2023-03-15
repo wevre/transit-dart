@@ -18,10 +18,11 @@ Future<void> main(args) async {
 
   try {
     stdin.transform(utf8.decoder).transform(JsonSplitter()).listen((obj) {
+      stderr.write('obj is `$obj`\n\n');
       stdout.write(jsonEncode(emitter.emit(parser.parse(jsonDecode(obj)))));
     });
   } catch (e) {
-    print(e);
+    stderr.write('Error in roundtrip: `$e`');
     rethrow;
   }
 }

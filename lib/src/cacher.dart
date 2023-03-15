@@ -82,19 +82,17 @@ class CacheDecoder extends Converter<String, dynamic> {
 
   @override
   dynamic convert(String input, {bool asMapKey = false, Parser? parser}) {
-    if (_prefix == input[0] && input != MAP) {
-      return _cache[_cacheDecode(input)];
-    }
-    dynamic parsed = input;
-    if (null != parser) {
-      parsed = parser.parseString(input);
-    }
-    if (_isCacheable(input, asMapKey)) {
-      if (_cache.length == _maxEntries) {
-        init();
+    if (input.isNotEmpty) {
+      if (_prefix == input[0] && input != MAP) {
+        return _cache[_cacheDecode(input)];
       }
-      _cache.add(parsed);
+      if (_isCacheable(input, asMapKey)) {
+        if (_cache.length == _maxEntries) {
+          init();
+        }
+        _cache.add(null != parser ? parser.parseString(input) : input);
+      }
     }
-    return parsed;
+    return null != parser ? parser.parseString(input) : input;
   }
 }

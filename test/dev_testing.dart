@@ -24,56 +24,10 @@ void main() {
 void someOtherTests() {
   var emitter = JsonEmitter(writeHandlers, CacheEncoder());
   var parser = JsonParser(readHandlers, CacheDecoder());
-  var time = DateTime.fromMillisecondsSinceEpoch(
-      DateTime.now().millisecondsSinceEpoch);
-  dynamic obj = [
-    {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
-    {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
-    {null: 'hello', 4.56: '`there', true: '~you'},
-    {Keyword('my-key'): 13},
-    {4.56: '^cutie'},
-    {Keyword('my-key'): 14},
-    {
-      [0, 'hello']: 1.1,
-      'there': 2.2,
-      'you': 3.3,
-      'cutie': 4.4
-    },
-    [
-      'keyword',
-      Keyword('test'),
-      'ns-keyword',
-      Keyword('transit/test'),
-      'symbol',
-      Symbol('db'),
-      'BigInteger',
-      BigInt.from(123456),
-      'BigDecimal',
-      Fixed.fromNum(13.5)
-    ],
-    Uri(scheme: 'https', host: 'www.example.com'),
-    Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
-        name: 'a-name', render: 'link', prompt: 'a-prompt'),
-    Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
-        render: 'image'),
-    time,
-    {
-      'hello',
-      'there',
-      'you',
-      'cutie',
-      Keyword('test'),
-    },
-    TransitList([
-      'hello',
-      'there',
-      'you',
-      'cutie',
-      Keyword('transit/test'),
-    ]),
-    Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
-  ];
-  // obj = null;
+  //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
+  // dynamic obj = bigObject;
+  //dynamic obj = {null: null};
+  dynamic obj = "";
   print('obj is `$obj`');
   var emitted = emitter.emit(obj);
   print('emitted is `$emitted`');
@@ -86,3 +40,53 @@ void someOtherTests() {
   print('parsed is `$parsed`');
   print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
 }
+
+var time =
+    DateTime.fromMillisecondsSinceEpoch(DateTime.now().millisecondsSinceEpoch);
+
+var bigObject = [
+  {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
+  {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
+  {null: 'hello', 4.56: '`there', true: '~you'},
+  {Keyword('my-key'): 13},
+  {4.56: '^cutie'},
+  {Keyword('my-key'): 14},
+  {
+    [0, 'hello']: 1.1,
+    'there': 2.2,
+    'you': 3.3,
+    'cutie': 4.4
+  },
+  [
+    'keyword',
+    Keyword('test'),
+    'ns-keyword',
+    Keyword('transit/test'),
+    'symbol',
+    Symbol('db'),
+    'BigInteger',
+    BigInt.from(123456),
+    'BigDecimal',
+    Fixed.fromNum(13.5)
+  ],
+  Uri(scheme: 'https', host: 'www.example.com'),
+  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
+      name: 'a-name', render: 'link', prompt: 'a-prompt'),
+  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel', render: 'image'),
+  time,
+  {
+    'hello',
+    'there',
+    'you',
+    'cutie',
+    Keyword('test'),
+  },
+  TransitList([
+    'hello',
+    'there',
+    'you',
+    'cutie',
+    Keyword('transit/test'),
+  ]),
+  Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
+];
