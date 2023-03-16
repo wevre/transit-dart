@@ -61,7 +61,7 @@ TODO: Provide table of transit semantic types mapped to Dart language objects.
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
-Dart>=2.19.1 and Java 8 are installed. The do the following:
+Dart>=2.19.1 and Java 8 are installed, then do the following:
 
 1. Set up a testing directory where all this can take place. The
    `transit-format` library and `transit-dart` library need to be side-by-side
