@@ -13,6 +13,6 @@ dev_dependencies:
   lints: ^2.0.0
   test: ^1.21.0
 dependencies:
+  big_decimal: ^0.5.0
   collection: ^1.17.1
-  fixed: ^2.3.3
   uuid: ^3.0.7

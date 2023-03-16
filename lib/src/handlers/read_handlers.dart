@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:fixed/fixed.dart';
 import 'array_reader.dart';
 import 'map_reader.dart';
+import '../values/big_decimal.dart';
 import '../values/keyword.dart';
 import '../values/link.dart';
 import '../values/list.dart';
 import '../values/symbol.dart';
 import '../values/uuid.dart';
+import '../values/uri.dart';
 
 abstract class ReadHandler<T, R> {
   T fromRep(R rep);
@@ -35,7 +36,7 @@ class ReadHandlersMap {
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
     'u': UuidReadHandler(),
-    'r': UriReadHandler(),
+    'r': TransitUriReadHandler(),
     'c': CharacterReadHandler(),
     "'": QuotedReadHandler(),
     'z': SpecialNumberReadHandler(),
@@ -84,9 +85,9 @@ class SymbolReadHandler extends AbstractReadHandler<Symbol> {
   fromRep(rep) => Symbol(rep);
 }
 
-class BigDecimalReadHandler extends AbstractReadHandler<Fixed> {
+class BigDecimalReadHandler extends AbstractReadHandler<BigDecimal> {
   @override
-  fromRep(rep) => Fixed.tryParse(rep)!;
+  fromRep(rep) => BigDecimal.tryParse(rep)!;
 }
 
 class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
@@ -124,9 +125,9 @@ class UuidReadHandler extends AbstractReadHandler<Uuid> {
   }
 }
 
-class UriReadHandler extends AbstractReadHandler<Uri> {
+class TransitUriReadHandler extends AbstractReadHandler<TransitUri> {
   @override
-  fromRep(rep) => Uri.parse(rep);
+  fromRep(rep) => TransitUri(rep);
 }
 
 class CharacterReadHandler extends AbstractReadHandler<String> {

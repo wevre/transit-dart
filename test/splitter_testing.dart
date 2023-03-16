@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-// import 'package:fixed/fixed.dart';
 // import 'package:collection/collection.dart';
 
 // import 'package:transit_dart/src/handlers/write_handlers.dart';

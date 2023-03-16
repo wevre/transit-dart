@@ -43,8 +43,12 @@ abstract class Parser {
   }
 
   // This method used by the cache decoder. Interesting, there is nothing here
-  // that is tied to the parser (other than it is a task belonging to the
-  // parser) but it's not like the cacher would have
+  // that is tied to the parser other than the `decode` method. Maybe could
+  // re-architect and have this method live in the cacher, and pass the decode
+  // method as a param when we call convert on the cacher. On the other hand,
+  // the cacher is not really supposed to be worrying about unescaping and
+  // boxing things up in Tag objects. So maybe we instead pass _this_ method to
+  // the cacher, because it also doesn't need access the entire parser class.
   parseString(s) {
     if (s is String) {
       if (s.length > 1) {

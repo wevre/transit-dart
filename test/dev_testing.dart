@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:fixed/fixed.dart';
 import 'package:collection/collection.dart';
 
 import 'package:transit_dart/src/handlers/write_handlers.dart';
@@ -8,26 +7,30 @@ import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/emitter.dart';
 import 'package:transit_dart/src/parser.dart';
 import 'package:transit_dart/src/cacher.dart';
+import 'package:transit_dart/src/values/big_decimal.dart';
 import 'package:transit_dart/src/values/keyword.dart';
 import 'package:transit_dart/src/values/link.dart';
 import 'package:transit_dart/src/values/list.dart';
 import 'package:transit_dart/src/values/symbol.dart';
 import 'package:transit_dart/src/values/uuid.dart';
+import 'package:transit_dart/src/values/uri.dart';
 
 var writeHandlers = WriteHandlersMap.json();
 var readHandlers = ReadHandlersMap.json();
 
 void main() {
+  print('decimal with exp notation? ${BigDecimal.tryParse("-1.1E3")}');
   someOtherTests();
 }
 
 void someOtherTests() {
   var emitter = JsonEmitter(writeHandlers, CacheEncoder());
   var parser = JsonParser(readHandlers, CacheDecoder());
+  dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
   // dynamic obj = bigObject;
   //dynamic obj = {null: null};
-  dynamic obj = "";
+  //dynamic obj = "";
   print('obj is `$obj`');
   var emitted = emitter.emit(obj);
   print('emitted is `$emitted`');
@@ -67,12 +70,15 @@ var bigObject = [
     'BigInteger',
     BigInt.from(123456),
     'BigDecimal',
-    Fixed.fromNum(13.5)
+    BigDecimal.tryParse("-1.1E3")
   ],
-  Uri(scheme: 'https', host: 'www.example.com'),
-  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
+  TransitUri('http://www.詹姆斯.com/'),
+  Link(TransitUri(Uri(scheme: 'https', host: 'www.example.com').toString()),
+      'a-rel',
       name: 'a-name', render: 'link', prompt: 'a-prompt'),
-  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel', render: 'image'),
+  Link(TransitUri(Uri(scheme: 'https', host: 'www.example.com').toString()),
+      'a-rel',
+      render: 'image'),
   time,
   {
     'hello',

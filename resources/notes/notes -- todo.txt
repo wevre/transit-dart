@@ -8,6 +8,13 @@
 
 :section ToDo
 
+   [] Need to roundtrip verbose time '~t'. Maybe I just don't provide a reader
+   for it in json and it roundtrips as is with no changes. (And also make sure
+   the error I'm seeing with running transit-format/bin/verify is not from an
+   inconsistent java version or something.) Can also just create a wrapper value
+   for it and store timestamp as a string instead of a DateTime object
+   (otherwise, I would parse it and re-emit it as '~m' instead of '~t').
+
    [] Support custom write handlers. -- Actually think the support already
    exists, but there isn't an API to get them inserted into the
    WriteHandlersMap. Do some hack-it-together testing to make sure.
@@ -34,6 +41,22 @@
    [] `Uuid` is also different for msgpack.
 
 :section Done
+
+   [✓] Need to correctly round-trip uri's that include exotic unicode
+   characters, for example "~rhttp://www.詹姆斯.com/". Dart is escaping this to
+   "http://www.%E8%A9%B9%E5%A7%86%E6%96%AF.com/". Maybe best approach is to
+   create our own Uri value that depends only on strings, not the Dart Uri
+   class.
+
+   [✓] Need to deal with decimals that have exponential notation, for example,
+   things like "~f-1.1E-1". Dart is not picking up the 'E-1' part and treating
+   it like `1.1`. There is a `big_decimal` package that claims to be based on
+   Java's BigDecimal. We just need something that can correctly handle
+   exponential notation. Maybe whatever we choose, we still wrap it in our own
+   BigDecimal class, so that if we need to change dependencies later, we only
+   change things in our wrapper class, and the rest of transit-dart still works
+   okay. This gives us the choice of making the local rep a class, a string,
+   whatever.
 
    [✓] Need to handle empty strings: "".
 

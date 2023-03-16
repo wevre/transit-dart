@@ -1,11 +1,12 @@
 import 'dart:typed_data';
-import 'package:fixed/fixed.dart';
+import '../values/big_decimal.dart';
 import '../values/keyword.dart';
 import '../values/link.dart';
 import '../values/list.dart';
 import '../values/symbol.dart';
 import '../values/tagged_value.dart';
 import '../values/uuid.dart';
+import '../values/uri.dart';
 
 abstract class WriteHandler<T, R> {
   String tag(T obj);
@@ -51,11 +52,11 @@ class WriteHandlersMap implements TagProvider {
     Uint8List: BinaryWriteHandler(),
     Keyword: KeywordWriteHandler(),
     Symbol: ToStringWriteHandler<Symbol>('\$'),
-    Fixed: ToStringWriteHandler<Fixed>('f'),
+    BigDecimal: ToStringWriteHandler<BigDecimal>('f'),
     BigInt: ToStringWriteHandler<BigInt>('n'),
     DateTime: TimeWriteHandler(),
     Uuid: ToStringWriteHandler<Uuid>('u'),
-    Uri: ToStringWriteHandler<Uri>('r'),
+    TransitUri: ToStringWriteHandler<TransitUri>('r'),
     List: ArrayWriteHandler(),
     Set: SetWriteHandler(),
     TransitList: ListWriteHandler(),
