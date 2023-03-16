@@ -60,27 +60,54 @@ TODO: Provide table of transit semantic types mapped to Dart language objects.
 
 ## Testing
 
-To run the roundtrip verification tests in `transit-format`:
+To run the roundtrip verification tests in `transit-format`, first ensure
+Dart>=2.19.1 and Java 8 are installed. The do the following:
 
-1. Set up a testing directory where all this can take place. For example, call
-   it `transit-test`. Clone
-   [transit-format](https://github.com/cognitect/transit-format) to that
-   directory.
+1. Set up a testing directory where all this can take place. The
+   `transit-format` library and `transit-dart` library need to be side-by-side
+   under the same parent directory. For example, create `transit-test` and
+   inside clone [transit-format](https://github.com/cognitect/transit-format)
+   and `transit-dart`.
 
 ```sh
 mkdir transit-test
 cd transit-test
 git clone https://github.com/cognitect/transit-format.git
+git clone https://github.com/wevre/transit-dart.git
 ```
 
-2. Copy the shell script [`bin/get-transit-dart`](https://github.com/wevre/transit-dart/blob/master/bin/get-transit-dart) from this repository
-   to `transit-format/bin/get-transit-dart`.
+2. Tell `transit-format` that the dart version is supported. In file
+   `src/transit/verify.clj`, near line 350, make this change:
 
-```
-curl 'https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transit-dart' > transit-format/bin/get-transit-dart
+```clj
+;; in file `transit-format/src/transit/verify.clj`
+(def supported-impls #{"transit-clj"
+                       "transit-cljs"
+                       "transit-dart"   ;<-- insert this line
+                       "transit-java"
+                       "transit-jruby"
+                       "transit-js"
+                       "transit-python"
+                       "transit-ruby"})
 ```
 
-3. Execute the verify command.
+3. Copy `get-transit-dart` from `transit-dart/bin` into `transit-format/bin`.
+
+```sh
+cp transit-dart/bin/get-transit-dart transit-format/bin
+```
+
+4. Compile roundtrip.dart.
+
+```sh
+cd transit-dart
+dart pub get
+mkdir -p resources/emits
+dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
+cd ..
+```
+
+5. Execute the verify command.
 
 ```
 transit-format/bin/verify -impls dart -enc json
