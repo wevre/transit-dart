@@ -35,13 +35,10 @@ Future<void> main(args) async {
   // }
 
   try {
-    stdin
-        .transform(utf8.decoder)
-        .transform(JsonSplitter())
-        //.transform(JsonDecoder()) //<- JsonDecoder is a one shot converter
-        .forEach((obj) {
-      stdout.write(jsonEncode(emitter.emit(parser.parse(jsonDecode(obj)))));
-      //stdout.write(jsonEncode(emitter.emit(parser.parse(obj))));
+    stdin.transform(utf8.decoder).transform(JsonSplitter()).forEach((obj) {
+      //stdout.write('obj is `$obj`');
+      //stdout.write(jsonEncode(emitter.emit(parser.parse(jsonDecode(obj)))));
+      stdout.write(jsonEncode(emitter.emit(parser.parse(obj))));
     });
   } catch (e) {
     stderr.write('Error in roundtrip: `$e`');

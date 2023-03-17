@@ -1,7 +1,3 @@
-// Copyright (c) 2013, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -20,6 +16,10 @@ const int _leftBracket = 91;
 const int _rightBracket = 93;
 const int _backslash = 92;
 
+// I split this out into a separate class because I thought it would be needed
+// by different interfaces. But if I get rid of convert (which looked like an
+// override, but it wasn't really) then I'm doing the char testing in only one
+// place.
 class JsonBuilder {
   final bool _strict;
   int _stackDepth = 0;
@@ -80,66 +80,23 @@ class JsonBuilder {
   }
 }
 
-/// A [StreamTransformer] that splits a [String] into individual lines.
-///
-/// A line is terminated by either:
-/// * a CR, carriage return: U+000D ('\r')
-/// * a LF, line feed (Unix line break): U+000A ('\n') or
-/// * a CR+LF sequence (DOS/Windows line break), and
-/// * a final non-empty line can be ended by the end of the input.
-///
-/// The resulting lines do not contain the line terminators.
-///
-/// Example:
-/// ```dart
-/// const splitter = JsonSplitter();
-/// const sampleText =
-///     'Dart is: \r an object-oriented \n class-based \n garbage-collected '
-///     '\r\n language with C-style syntax \r\n';
-///
-/// final sampleTextLines = splitter.convert(sampleText);
-/// for (var i = 0; i < sampleTextLines.length; i++) {
-///   print('$i: ${sampleTextLines[i]}');
-/// }
-/// // 0: Dart is:
-/// // 1:  an object-oriented
-/// // 2:  class-based
-/// // 3:  garbage-collected
-/// // 4:  language with C-style syntax
-/// ```
-class JsonSplitter extends StreamTransformerBase<String, String> {
+class JsonSplitter extends StreamTransformerBase<String, dynamic> {
   final bool _strict;
 
   const JsonSplitter({strict = false}) : _strict = strict;
 
-  List<String> convert(String data) {
-    var objs = <String>[];
-    var builder = JsonBuilder((data) {
-      objs.add(data);
-    }, null, _strict);
-    var end = data.length;
-    var sliceStart = builder.addData(data, 0, end);
-    if (sliceStart < end && _strict) {
-      objs.add(data.substring(sliceStart, end));
-    }
-    return objs;
-  }
-
-  StringConversionSink startChunkedConversion(Sink<String> sink) {
-    return _JsonSplitterSink(
-        sink is StringConversionSink ? sink : StringConversionSink.from(sink),
-        _strict);
-  }
-
   @override
-  Stream<String> bind(Stream<String> stream) {
-    return Stream<String>.eventTransformed(stream,
-        (EventSink<String> sink) => _JsonSplitterEventSink(sink, _strict));
+  Stream<dynamic> bind(Stream<String> stream) {
+    return Stream<dynamic>.eventTransformed(stream,
+        (EventSink<dynamic> sink) => _JsonSplitterEventSink(sink, _strict));
   }
 }
 
+// why split this into two? It was to support the `startChunkedConversion`
+// method, but that wasn't even a real override. Not sure why it existed on the
+// LineSplitter class, but we don't need it for this class.
 class _JsonSplitterSink extends StringConversionSinkBase {
-  final StringConversionSink _sink;
+  final Sink<dynamic> _sink;
   final bool _strict;
   final StringBuffer _carry = StringBuffer();
 
@@ -159,7 +116,7 @@ class _JsonSplitterSink extends StringConversionSinkBase {
     // If the chunk is empty, it's probably because it's the last one.
     // Handle that here, so we know the range is non-empty below.
     if (start < end) {
-      _addData(chunk, start, end, isLast);
+      _addData(chunk, start, end);
     }
     if (isLast) close();
   }
@@ -172,16 +129,10 @@ class _JsonSplitterSink extends StringConversionSinkBase {
     _sink.close();
   }
 
-  void _addData(String data, int start, int end, bool isLast) {
+  void _addData(String data, int start, int end) {
     var sliceStart = builder.addData(data, start, end);
     if (sliceStart < end) {
       var endSlice = data.substring(sliceStart, end);
-      // if (isLast) {
-      //   // Emit last line instead of carrying it over to the
-      //   // immediately following `close` call.
-      //   _sink.add(_useCarry(endSlice));
-      //   return;
-      // }
       _addCarry(endSlice);
     }
   }
@@ -194,9 +145,9 @@ class _JsonSplitterSink extends StringConversionSinkBase {
   }
 
   /// Consumes and combines existing carry-over with continuation string.
-  String _useCarry(String continuation) {
+  dynamic _useCarry(String continuation) {
     _carry.write(continuation);
-    var result = _carry.toString();
+    var result = json.decode(_carry.toString());
     _carry.clear();
     return result;
   }
@@ -204,11 +155,11 @@ class _JsonSplitterSink extends StringConversionSinkBase {
 
 class _JsonSplitterEventSink extends _JsonSplitterSink
     implements EventSink<String> {
-  final EventSink<String> _eventSink;
+  final EventSink<dynamic> _eventSink;
 
-  _JsonSplitterEventSink(EventSink<String> eventSink, bool strict)
+  _JsonSplitterEventSink(EventSink<dynamic> eventSink, bool strict)
       : _eventSink = eventSink,
-        super(StringConversionSink.from(eventSink), strict);
+        super(eventSink, strict);
 
   @override
   void addError(Object o, [StackTrace? stackTrace]) {
