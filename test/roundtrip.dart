@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:transit/src/converters.dart';
-import 'package:transit/src/json_splitter.dart';
+import 'package:transit_dart/src/converters.dart';
+import 'package:transit_dart/src/json_splitter.dart';
 
 // NOTE: for testing purposes, might want to call this with
 //    roundtripe.exe < sample-file.txt 2>/dev/null
