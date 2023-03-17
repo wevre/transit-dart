@@ -1,6 +1,6 @@
-name: transit_dart
+name: transit
 description: A starting point for Dart libraries or applications.
-version: 0.8.0
+version: 0.8.0-alpha
 repository: https://github.com/wevre/transit-dart
 
 environment:
@@ -12,6 +12,7 @@ environment:
 dev_dependencies:
   lints: ^2.0.0
   test: ^1.21.0
+
 dependencies:
   big_decimal: ^0.5.0
   collection: ^1.17.1

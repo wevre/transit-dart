@@ -5,6 +5,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+/// This splitter isn't too clever. It assumes that the incoming data is already
+/// valid JSON, and proceeds without too much ceremony to find the boundary
+/// between valid JSON forms. For example, it will consider `["A"\]]` a valid
+/// JSON form because even though it looks for the backslash, it doesn't assert
+/// that backslash is inside a string.
+
 // Character constants.
 
 const int _doubleQuote = 34;
@@ -15,49 +21,51 @@ const int _rightBracket = 93;
 const int _backslash = 92;
 
 class JsonBuilder {
-  int stackDepth = 0;
-  bool quoted = false;
-  bool skipEscape = false;
+  final bool _strict;
+  int _stackDepth = 0;
+  bool _quoted = false;
+  bool _skipEscape = false;
 
   final void Function(String data) _sinkAdder;
 
-  JsonBuilder(this._sinkAdder);
+  final void Function()? _carryReset;
+
+  JsonBuilder(this._sinkAdder, this._carryReset, this._strict);
 
   int addData(String data, int start, int end) {
     var sliceStart = start;
     for (var i = start; i < end; i++) {
       var char = data.codeUnitAt(i);
-      // Initialize if this is the first char we've seen.
-      // if (0 == stackDepth) {
-      //   assert(_leftBrace == char || _leftBracket == char);
-      //   stackDepth++;
-      //   continue;
-      // }
       // If prev char was escape, then skip this one.
-      if (skipEscape) {
-        skipEscape = false;
+      if (_skipEscape) {
+        _skipEscape = false;
         continue;
       }
       // Check for interesting chars.
       switch (char) {
         case _doubleQuote:
-          quoted = !quoted;
+          _quoted = !_quoted;
           continue;
         case _leftBrace:
         case _leftBracket:
-          if (!quoted) stackDepth++;
+          if (!_quoted && 0 == _stackDepth++ && !_strict) {
+            sliceStart = i;
+            if (null != _carryReset) {
+              _carryReset!();
+            }
+          }
           continue;
         case _rightBrace:
         case _rightBracket:
-          if (quoted) {
+          if (_quoted) {
             continue;
-          } else if (--stackDepth > 0) {
+          } else if (--_stackDepth > 0) {
             continue;
           } else {
             break;
           }
         case _backslash:
-          skipEscape = true;
+          _skipEscape = true;
           continue;
         default:
           continue;
@@ -100,16 +108,18 @@ class JsonBuilder {
 /// // 4:  language with C-style syntax
 /// ```
 class JsonSplitter extends StreamTransformerBase<String, String> {
-  const JsonSplitter();
+  final bool _strict;
+
+  const JsonSplitter({strict = false}) : _strict = strict;
 
   List<String> convert(String data) {
     var objs = <String>[];
     var builder = JsonBuilder((data) {
       objs.add(data);
-    });
+    }, null, _strict);
     var end = data.length;
     var sliceStart = builder.addData(data, 0, end);
-    if (sliceStart < end) {
+    if (sliceStart < end && _strict) {
       objs.add(data.substring(sliceStart, end));
     }
     return objs;
@@ -117,26 +127,30 @@ class JsonSplitter extends StreamTransformerBase<String, String> {
 
   StringConversionSink startChunkedConversion(Sink<String> sink) {
     return _JsonSplitterSink(
-        sink is StringConversionSink ? sink : StringConversionSink.from(sink));
+        sink is StringConversionSink ? sink : StringConversionSink.from(sink),
+        _strict);
   }
 
   @override
   Stream<String> bind(Stream<String> stream) {
-    return Stream<String>.eventTransformed(
-        stream, (EventSink<String> sink) => _JsonSplitterEventSink(sink));
+    return Stream<String>.eventTransformed(stream,
+        (EventSink<String> sink) => _JsonSplitterEventSink(sink, _strict));
   }
 }
 
 class _JsonSplitterSink extends StringConversionSinkBase {
   final StringConversionSink _sink;
+  final bool _strict;
   final StringBuffer _carry = StringBuffer();
 
   late final JsonBuilder builder;
 
-  _JsonSplitterSink(this._sink) {
+  _JsonSplitterSink(this._sink, this._strict) {
     builder = JsonBuilder((data) {
       _sink.add(_useCarry(data));
-    });
+    }, () {
+      _carry.clear();
+    }, _strict);
   }
 
   @override
@@ -152,7 +166,7 @@ class _JsonSplitterSink extends StringConversionSinkBase {
 
   @override
   void close() {
-    if (_carry.isNotEmpty) {
+    if (_strict && _carry.isNotEmpty) {
       _sink.add(_useCarry(""));
     }
     _sink.close();
@@ -162,12 +176,12 @@ class _JsonSplitterSink extends StringConversionSinkBase {
     var sliceStart = builder.addData(data, start, end);
     if (sliceStart < end) {
       var endSlice = data.substring(sliceStart, end);
-      if (isLast) {
-        // Emit last line instead of carrying it over to the
-        // immediately following `close` call.
-        _sink.add(_useCarry(endSlice));
-        return;
-      }
+      // if (isLast) {
+      //   // Emit last line instead of carrying it over to the
+      //   // immediately following `close` call.
+      //   _sink.add(_useCarry(endSlice));
+      //   return;
+      // }
       _addCarry(endSlice);
     }
   }
@@ -192,9 +206,9 @@ class _JsonSplitterEventSink extends _JsonSplitterSink
     implements EventSink<String> {
   final EventSink<String> _eventSink;
 
-  _JsonSplitterEventSink(EventSink<String> eventSink)
+  _JsonSplitterEventSink(EventSink<String> eventSink, bool strict)
       : _eventSink = eventSink,
-        super(StringConversionSink.from(eventSink));
+        super(StringConversionSink.from(eventSink), strict);
 
   @override
   void addError(Object o, [StackTrace? stackTrace]) {

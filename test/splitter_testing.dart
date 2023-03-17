@@ -2,17 +2,17 @@ import 'dart:convert';
 
 // import 'package:collection/collection.dart';
 
-// import 'package:transit_dart/src/handlers/write_handlers.dart';
-// import 'package:transit_dart/src/handlers/read_handlers.dart';
-import 'package:transit_dart/src/json_splitter.dart';
-// import 'package:transit_dart/src/emitter.dart';
-// import 'package:transit_dart/src/parser.dart';
-// import 'package:transit_dart/src/cacher.dart';
-// import 'package:transit_dart/src/values/keyword.dart';
-// import 'package:transit_dart/src/values/link.dart';
-// import 'package:transit_dart/src/values/list.dart';
-// import 'package:transit_dart/src/values/symbol.dart';
-// import 'package:transit_dart/src/values/uuid.dart';
+// import 'package:transit/src/handlers/write_handlers.dart';
+// import 'package:transit/src/handlers/read_handlers.dart';
+import 'package:transit/src/json_splitter.dart';
+// import 'package:transit/src/emitter.dart';
+// import 'package:transit/src/parser.dart';
+// import 'package:transit/src/cacher.dart';
+// import 'package:transit/src/values/keyword.dart';
+// import 'package:transit/src/values/link.dart';
+// import 'package:transit/src/values/list.dart';
+// import 'package:transit/src/values/symbol.dart';
+// import 'package:transit/src/values/uuid.dart';
 
 // var writeHandlers = WriteHandlersMap.json();
 // var readHandlers = ReadHandlersMap.json();

@@ -8,12 +8,11 @@
 
 :section ToDo
 
-   [] Need to roundtrip verbose time '~t'. Maybe I just don't provide a reader
-   for it in json and it roundtrips as is with no changes. (And also make sure
-   the error I'm seeing with running transit-format/bin/verify is not from an
-   inconsistent java version or something.) Can also just create a wrapper value
-   for it and store timestamp as a string instead of a DateTime object
-   (otherwise, I would parse it and re-emit it as '~m' instead of '~t').
+   [] How about the JsonSplitter converts from strings to JsonObjects? In other
+   words, we don't add a string to the sink, we add json.decode(str) to the
+   sink. Then we don't have to worry about the fact that JsonDecoder is a
+   one-shot converter. UPDATE: to do this, we can't use the
+   StringConversionSink, which is expecting a string, not a JSON object.
 
    [] Support custom write handlers. -- Actually think the support already
    exists, but there isn't an API to get them inserted into the
@@ -22,25 +21,43 @@
    [] Support custom read handlers. -- Same thing as above, need an API to
    register them.
 
-   [] Double check this in Java version, but I think the emitter and parser
-   should clear the cache on each call for each top-level object. UPDATE: yes,
-   but it is done in the Read- and WriteFactory's inside the Reader and Writer
-   objects they return. So my private `_reset` functions will need to be exposed
-   as `init` methods that can be called.
-
    [] What API will be exposed/exported in the library? Probably a reader/writer
    pair that operates on streams, and then callers of the library can deal with
    connecting those streams back and forth into strings or whatever.
-
-   [] Build some tests where we convert all the way to JSON and confirm against
-   the transit samples. Figure out how to integrate the testing that is part of
-   transit-format.
 
    [] `Time` will need to be different for msgpack and verbose.
 
    [] `Uuid` is also different for msgpack.
 
 :section Done
+
+   [✓] Modify the JsonSplitter to not freak out about extra characters between
+   JSON forms. Strictly speaking, we would never encounter that in production,
+   but for testing, it is handy to be able to hit returns between JSON arrays,
+   or pipe in a file that has "readable" JSON data. We could even set a
+   `strictMode` toggle if we really want to be purists and turn it off in
+   production.
+
+   [✓] Is it possible to join/transform with JsonDecoder after the JsonSplitter?
+   If not, then we have to listen for each event from the JsonSplitter and then
+   decode. UPDATE: not possible. the JsonDecoder is a one-shot converter.
+
+   [✓] Build some tests where we convert all the way to JSON and confirm against
+   the transit samples. Figure out how to integrate the testing that is part of
+   transit-format.
+
+   [✓] Double check this in Java version, but I think the emitter and parser
+   should clear the cache on each call for each top-level object. UPDATE: yes,
+   but it is done in the Read- and WriteFactory's inside the Reader and Writer
+   objects they return. So my private `_reset` functions will need to be exposed
+   as `init` methods that can be called.
+
+   [✓] Need to roundtrip verbose time '~t'. Maybe I just don't provide a reader
+   for it in json and it roundtrips as is with no changes. (And also make sure
+   the error I'm seeing with running transit-format/bin/verify is not from an
+   inconsistent java version or something.) Can also just create a wrapper value
+   for it and store timestamp as a string instead of a DateTime object
+   (otherwise, I would parse it and re-emit it as '~m' instead of '~t').
 
    [✓] Need to correctly round-trip uri's that include exotic unicode
    characters, for example "~rhttp://www.詹姆斯.com/". Dart is escaping this to

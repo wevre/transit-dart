@@ -1,0 +1,2 @@
+["^ ", "hello", true, "there", null, "you", true, "cutie", 4.56]
+["hello", "there", "you", "cutie"]

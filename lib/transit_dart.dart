@@ -1,6 +1,6 @@
 /// Support for doing something awesome.
 ///
 /// More dartdocs go here.
-library transit_dart;
+library transit;
 
-export 'src/transit_dart_base.dart';
+export 'src/transit_base.dart';
