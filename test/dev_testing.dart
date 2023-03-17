@@ -4,9 +4,7 @@ import 'package:collection/collection.dart';
 
 import 'package:transit/src/handlers/write_handlers.dart';
 import 'package:transit/src/handlers/read_handlers.dart';
-import 'package:transit/src/emitter.dart';
-import 'package:transit/src/parser.dart';
-import 'package:transit/src/cacher.dart';
+import 'package:transit/src/converters.dart';
 import 'package:transit/src/values/big_decimal.dart';
 import 'package:transit/src/values/keyword.dart';
 import 'package:transit/src/values/link.dart';
@@ -15,8 +13,8 @@ import 'package:transit/src/values/symbol.dart';
 import 'package:transit/src/values/uuid.dart';
 import 'package:transit/src/values/uri.dart';
 
-var writeHandlers = WriteHandlersMap.json();
-var readHandlers = ReadHandlersMap.json();
+var writeHandlers = WriteHandlers.json();
+var readHandlers = ReadHandlers.json();
 
 void main() {
   print('decimal with exp notation? ${BigDecimal.tryParse("-1.1E3")}');
@@ -24,22 +22,21 @@ void main() {
 }
 
 void someOtherTests() {
-  var emitter = JsonEmitter(writeHandlers, CacheEncoder());
-  var parser = JsonParser(readHandlers, CacheDecoder());
+  var emitter = TransitEncoder.json();
+  var parser = TransitDecoder.json();
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
   // dynamic obj = bigObject;
   //dynamic obj = {null: null};
   //dynamic obj = "";
   print('obj is `$obj`');
-  var emitted = emitter.emit(obj);
+  var emitted = emitter.convert(obj);
   print('emitted is `$emitted`');
   var encoded = json.encode(emitted);
   print('encoded is `$encoded`');
-  print('write cache is ${emitter.cache.getCache()}');
   var decoded = json.decode(encoded);
   print('decoded is `$decoded`');
-  var parsed = parser.parse(decoded);
+  var parsed = parser.convert(decoded);
   print('parsed is `$parsed`');
   print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
 }

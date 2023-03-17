@@ -9,19 +9,21 @@ import 'values/tag.dart';
 import 'values/tagged_value.dart';
 
 abstract class Parser {
-  final ReadHandlersMap readHandlersMap;
-  final CacheDecoder cache;
+  final ReadHandlers readHandlers;
+  late final CacheDecoder cache;
   late final DefaultReadHandler defaultHandler;
   late final MapReader mapBuilder;
   late final ArrayReader listBuilder;
 
-  Parser(this.readHandlersMap, this.cache,
-      {MapReader? mapBuilder,
-      ArrayReader? listBuilder,
-      DefaultReadHandler? defaultHandler}) {
+  Parser(this.readHandlers,
+      {CacheDecoder? cache,
+      DefaultReadHandler? defaultHandler,
+      MapReader? mapBuilder,
+      ArrayReader? listBuilder}) {
+    this.cache = cache ?? CacheDecoder();
+    this.defaultHandler = defaultHandler ?? TaggedValueReadHandler();
     this.mapBuilder = mapBuilder ?? MapBuilderImpl();
     this.listBuilder = listBuilder ?? ListBuilderImpl();
-    this.defaultHandler = defaultHandler ?? TaggedValueReadHandler();
   }
 
   parse(obj) {
@@ -34,7 +36,7 @@ abstract class Parser {
   parseArray(List obj, bool asMapKey, ArrayReadHandler? handler);
 
   decode(String tag, rep) {
-    var h = readHandlersMap.getHandler(tag);
+    var h = readHandlers.getHandler(tag);
     if (null != h) {
       return h.fromRep(rep);
     } else {
@@ -78,7 +80,8 @@ abstract class Parser {
 }
 
 class JsonParser extends Parser {
-  JsonParser(super.readHandlersMap, super.cache);
+  JsonParser(super.readHandlers,
+      {super.cache, super.defaultHandler, super.listBuilder, super.mapBuilder});
 
   @override
   parseVal(obj, {bool asMapKey = false}) {
@@ -87,14 +90,15 @@ class JsonParser extends Parser {
     } else if (obj is List) {
       return parseArray(obj, asMapKey, null);
     } else if (obj is String) {
-      return cache.convert(obj, asMapKey: asMapKey, parser: this);
+      return cache.convert(obj,
+          asMapKey: asMapKey, parseFn: (obj) => parseString(obj));
     } else {
       return obj;
     }
   }
 
   dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
-    ReadHandler? valHandler = readHandlersMap.getHandler(tag);
+    ReadHandler? valHandler = readHandlers.getHandler(tag);
     dynamic val;
     if (null != valHandler) {
       if (obj is Map && valHandler is MapReadHandler) {

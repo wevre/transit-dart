@@ -8,6 +8,8 @@ import '../values/tagged_value.dart';
 import '../values/uuid.dart';
 import '../values/uri.dart';
 
+typedef WriteHandlersMap = Map<Type, WriteHandler>;
+
 abstract class WriteHandler<T, R> {
   String tag(T obj);
 
@@ -20,8 +22,8 @@ abstract class WriteHandler<T, R> {
   }
 }
 
-class WriteHandlersMap implements TagProvider {
-  final Map<Type, WriteHandler> handlers;
+class WriteHandlers implements TagProvider {
+  final WriteHandlersMap handlers;
 
   WriteHandler? getHandler(o) {
     WriteHandler? h = handlers[o.runtimeType];
@@ -39,7 +41,9 @@ class WriteHandlersMap implements TagProvider {
     return null;
   }
 
-  WriteHandlersMap.json() : handlers = Map.from(defaults) {
+  WriteHandlers.json({WriteHandlersMap? customHandlers})
+      : // TODO: merge in customerHandlers to default map
+        handlers = Map.from(defaults) {
     handlers[Map] = MapWriteHandler(this);
   }
 

@@ -8,11 +8,9 @@
 
 :section ToDo
 
-   [] How about the JsonSplitter converts from strings to JsonObjects? In other
-   words, we don't add a string to the sink, we add json.decode(str) to the
-   sink. Then we don't have to worry about the fact that JsonDecoder is a
-   one-shot converter. UPDATE: to do this, we can't use the
-   StringConversionSink, which is expecting a string, not a JSON object.
+   [] Ugh. The JsonEncoder only encodes one object and then closes its stream.
+   Why? Is it worth it to create our own JsonWriter class that handles multiple
+   objects coming through?
 
    [] Support custom write handlers. -- Actually think the support already
    exists, but there isn't an API to get them inserted into the
@@ -21,15 +19,30 @@
    [] Support custom read handlers. -- Same thing as above, need an API to
    register them.
 
-   [] What API will be exposed/exported in the library? Probably a reader/writer
-   pair that operates on streams, and then callers of the library can deal with
-   connecting those streams back and forth into strings or whatever.
-
    [] `Time` will need to be different for msgpack and verbose.
 
    [] `Uuid` is also different for msgpack.
 
 :section Done
+
+   [✓] The CacheDecoder's `convert` method is passed a Parser as option arg. But
+   why? Why does it need access to a full-blown parser. Let's pass a closure
+   instead.
+
+   [✓] What API will be exposed/exported in the library? Probably a
+   reader/writer pair that operates on streams, and then callers of the library
+   can deal with connecting those streams back and forth into strings or
+   whatever.
+
+   [✓] The JsonParser constructor needs to allow for override of mapBuilder and
+   listBuilder. Then same overrides will be allowed in TransitDecoder.json. And
+   maybe we don't need to have the cache be set-able.
+
+   [✓] How about the JsonSplitter converts from strings to JsonObjects? In other
+   words, we don't add a string to the sink, we add json.decode(str) to the
+   sink. Then we don't have to worry about the fact that JsonDecoder is a
+   one-shot converter. UPDATE: to do this, we can't use the
+   StringConversionSink, which is expecting a string, not a JSON object.
 
    [✓] Modify the JsonSplitter to not freak out about extra characters between
    JSON forms. Strictly speaking, we would never encounter that in production,

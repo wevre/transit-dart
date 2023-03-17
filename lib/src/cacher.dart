@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'constants.dart';
-import 'parser.dart';
 
 const _digits = 44;
 const _base = 48;
@@ -70,18 +69,20 @@ class CacheEncoder extends Converter<String, String> {
 }
 
 class CacheDecoder extends Converter<String, dynamic> {
+  final bool active;
   final List<dynamic> _cache = [];
 
   void init() {
     _cache.clear();
   }
 
-  CacheDecoder() {
+  CacheDecoder({this.active = true}) {
     init();
   }
 
   @override
-  dynamic convert(String input, {bool asMapKey = false, Parser? parser}) {
+  dynamic convert(String input,
+      {bool asMapKey = false, Function(String)? parseFn}) {
     if (input.isNotEmpty) {
       if (_prefix == input[0] && input != MAP) {
         return _cache[_cacheDecode(input)];
@@ -90,9 +91,9 @@ class CacheDecoder extends Converter<String, dynamic> {
         if (_cache.length == _maxEntries) {
           init();
         }
-        _cache.add(null != parser ? parser.parseString(input) : input);
+        _cache.add(null != parseFn ? parseFn(input) : input);
       }
     }
-    return null != parser ? parser.parseString(input) : input;
+    return null != parseFn ? parseFn(input) : input;
   }
 }

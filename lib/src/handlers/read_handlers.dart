@@ -10,18 +10,22 @@ import '../values/symbol.dart';
 import '../values/uuid.dart';
 import '../values/uri.dart';
 
+typedef ReadHandlersMap = Map<String, ReadHandler>;
+
 abstract class ReadHandler<T, R> {
   T fromRep(R rep);
 }
 
-class ReadHandlersMap {
-  final Map<String, ReadHandler> handlers;
+class ReadHandlers {
+  final ReadHandlersMap handlers;
 
   ReadHandler? getHandler(String tag) {
     return handlers[tag];
   }
 
-  ReadHandlersMap.json() : handlers = Map.from(defaults);
+  ReadHandlers.json({ReadHandlersMap? customHandlers})
+      : // TODO: merge in the customHandlers to the default map.
+        handlers = Map.from(defaults);
 
   static final defaults = {
     '_': NullReadHandler(),

@@ -6,15 +6,17 @@ import 'constants.dart';
 import 'handlers/write_handlers.dart';
 
 abstract class Emitter {
-  final WriteHandlersMap writeHandlersMap;
-  final CacheEncoder cache;
-  WriteHandler? defaultHandler;
+  final WriteHandlers writeHandlers;
+  late final CacheEncoder cache;
+  late final WriteHandler? defaultHandler;
 
-  Emitter(this.writeHandlersMap, this.cache);
+  Emitter(this.writeHandlers, {CacheEncoder? cache, this.defaultHandler}) {
+    this.cache = cache ?? CacheEncoder();
+  }
 
   marshalTop(obj) {
     cache.init();
-    var h = writeHandlersMap.getHandler(obj) ?? defaultHandler;
+    var h = writeHandlers.getHandler(obj) ?? defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
     }
@@ -26,7 +28,7 @@ abstract class Emitter {
   }
 
   marshal(obj, {bool asMapKey = false}) {
-    var h = writeHandlersMap.getHandler(obj) ?? defaultHandler;
+    var h = writeHandlers.getHandler(obj) ?? defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
     }
@@ -117,7 +119,7 @@ class JsonEmitter extends Emitter {
   // concrete implementations for emitting strings, booleans, decimals, etc.
   // What we actually emit is formatted data, json-friendly.
 
-  JsonEmitter(super.writeHandlersMap, super.cache);
+  JsonEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
 
   @override
   prefersStrings() => true;
