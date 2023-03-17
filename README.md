@@ -72,6 +72,8 @@ Dart>=2.19.1 and Java 8 are installed, then do the following:
 mkdir transit-test
 cd transit-test
 git clone https://github.com/cognitect/transit-format.git
+# Do something similar to the following to ensure Java 8.
+jenv local 1.8
 ```
 
 2. Tell `transit-format` that the dart version is supported. In file
@@ -96,7 +98,9 @@ curl "https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transi
 chmod +x transit-format/bin/get-transit-dart
 ```
 
-4. Execute the verify command.
+4. Execute the verify command. The `verify` command will check for and, as
+   necessary, clone `transit-dart`, run `dart pub get`, and compile
+   `roundtrip.dart`.
 
 ```
 transit-format/bin/verify -impls dart -enc json
