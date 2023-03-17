@@ -1,13 +1,29 @@
 import 'dart:async';
 import 'dart:convert';
 
-/// This splitter isn't too clever. It assumes that the incoming data is already
-/// valid JSON, and proceeds without too much ceremony to find the boundary
-/// between valid JSON forms. For example, it will consider `["A"\]]` a valid
-/// JSON form because even though it looks for the backslash, it doesn't assert
-/// that backslash is inside a string.
+/// A [StringTransformer] that splits a [String] into separate JSON forms,
+/// emitting a JSON object for each form.
+///
+/// A JSON form is an object or array delimited by braces `{}` or brackets
+/// `[]`, respectively. The Dart-provided [JsonDecoder] will parse only one such
+/// form and give an error upon encountering extra characters. This Transformer
+/// overcomes that limitation, accepting multiple forms coming through on the
+/// same stream and parsing each in turn.
+class JsonSplitter extends StreamTransformerBase<String, dynamic> {
+  final bool _strict;
 
-// Character constants.
+  /// Creates a `JsonSplitter`.
+  ///
+  /// If [strict] is `false` (the default), extra characters between forms or
+  /// after the last form will be ignored.
+  const JsonSplitter({bool strict = false}) : _strict = strict;
+
+  @override
+  Stream<dynamic> bind(Stream<String> stream) {
+    return Stream<dynamic>.eventTransformed(stream,
+        (EventSink<dynamic> sink) => _JsonSplitterEventSink(sink, _strict));
+  }
+}
 
 const int _doubleQuote = 34;
 const int _leftBrace = 123;
@@ -16,26 +32,43 @@ const int _leftBracket = 91;
 const int _rightBracket = 93;
 const int _backslash = 92;
 
-// I split this out into a separate class because I thought it would be needed
-// by different interfaces. But if I get rid of convert (which looked like an
-// override, but it wasn't really) then I'm doing the char testing in only one
-// place.
-class JsonBuilder {
+/// A [StringConversionSink] for handling chunks of JSON strings.
+///
+/// Gathers string slices into a [_buffer] until reaching the end of a JSON
+/// form, whereupon it parses the form with [JSONDecoder] and adds the resulting
+/// object to the output [_sink].
+///
+/// Note this splitter isn't too clever. It assumes that the incoming data is
+/// already valid JSON, and proceeds without much ceremony to find the boundary
+/// between valid JSON forms. For example, it will consider `["A"\]]` a valid
+/// JSON form because even though it looks for a backslash, it doesn't assert
+/// that the backslash is inside a string. Likewise `[1,2}` is considered a
+/// valid form. Of course neither of those examples, nor any other malformed
+/// JSON string, will survive the call to [JSONDecoder].
+class _JsonSplitterEventSink extends StringConversionSinkBase
+    implements EventSink<String> {
+  /// Output sink for transformed strings.
+  final EventSink<dynamic> _sink;
+
   final bool _strict;
+  final StringBuffer _buffer = StringBuffer();
+
   int _stackDepth = 0;
   bool _quoted = false;
   bool _skipEscape = false;
 
-  final void Function(String data) _sinkAdder;
+  _JsonSplitterEventSink(this._sink, this._strict);
 
-  final void Function()? _carryReset;
+  @override
+  void addError(Object o, [StackTrace? stackTrace]) {
+    _sink.addError(o, stackTrace);
+  }
 
-  JsonBuilder(this._sinkAdder, this._carryReset, this._strict);
-
-  int addData(String data, int start, int end) {
+  @override
+  void addSlice(String str, int start, int end, bool isLast) {
     var sliceStart = start;
     for (var i = start; i < end; i++) {
-      var char = data.codeUnitAt(i);
+      var char = str.codeUnitAt(i);
       // If prev char was escape, then skip this one.
       if (_skipEscape) {
         _skipEscape = false;
@@ -50,9 +83,7 @@ class JsonBuilder {
         case _leftBracket:
           if (!_quoted && 0 == _stackDepth++ && !_strict) {
             sliceStart = i;
-            if (null != _carryReset) {
-              _carryReset!();
-            }
+            _buffer.clear();
           }
           continue;
         case _rightBrace:
@@ -70,99 +101,32 @@ class JsonBuilder {
         default:
           continue;
       }
-      // We completed an array or object.
-      var slice = data.substring(sliceStart, i + 1);
-      _sinkAdder(slice);
+      // Reached the end of a JSON form.
+      var slice = str.substring(sliceStart, i + 1);
+      _emit(slice);
       sliceStart = i + 1;
     }
-    // We ran through the data.
-    return sliceStart;
-  }
-}
-
-class JsonSplitter extends StreamTransformerBase<String, dynamic> {
-  final bool _strict;
-
-  const JsonSplitter({strict = false}) : _strict = strict;
-
-  @override
-  Stream<dynamic> bind(Stream<String> stream) {
-    return Stream<dynamic>.eventTransformed(stream,
-        (EventSink<dynamic> sink) => _JsonSplitterEventSink(sink, _strict));
-  }
-}
-
-// why split this into two? It was to support the `startChunkedConversion`
-// method, but that wasn't even a real override. Not sure why it existed on the
-// LineSplitter class, but we don't need it for this class.
-class _JsonSplitterSink extends StringConversionSinkBase {
-  final Sink<dynamic> _sink;
-  final bool _strict;
-  final StringBuffer _carry = StringBuffer();
-
-  late final JsonBuilder builder;
-
-  _JsonSplitterSink(this._sink, this._strict) {
-    builder = JsonBuilder((data) {
-      _sink.add(_useCarry(data));
-    }, () {
-      _carry.clear();
-    }, _strict);
-  }
-
-  @override
-  void addSlice(String chunk, int start, int end, bool isLast) {
-    end = RangeError.checkValidRange(start, end, chunk.length);
-    // If the chunk is empty, it's probably because it's the last one.
-    // Handle that here, so we know the range is non-empty below.
-    if (start < end) {
-      _addData(chunk, start, end);
+    // If `str` not exhausted, stash tail in `_buffer` to be prepended to next
+    // slice.
+    if (sliceStart < end) {
+      _buffer.write(str.substring(sliceStart, end));
     }
-    if (isLast) close();
+    if (isLast) {
+      close();
+    }
+  }
+
+  void _emit(String slice) {
+    _buffer.write(slice);
+    _sink.add(jsonDecode(_buffer.toString()));
+    _buffer.clear();
   }
 
   @override
   void close() {
-    if (_strict && _carry.isNotEmpty) {
-      _sink.add(_useCarry(""));
+    if (_strict && _buffer.isNotEmpty) {
+      _emit("");
     }
     _sink.close();
-  }
-
-  void _addData(String data, int start, int end) {
-    var sliceStart = builder.addData(data, start, end);
-    if (sliceStart < end) {
-      var endSlice = data.substring(sliceStart, end);
-      _addCarry(endSlice);
-    }
-  }
-
-  /// Adds [newCarry] to existing carry-over.
-  ///
-  /// Happens when a line is spread over more than one chunk.
-  void _addCarry(String newCarry) {
-    _carry.write(newCarry);
-  }
-
-  /// Consumes and combines existing carry-over with continuation string.
-  dynamic _useCarry(String continuation) {
-    _carry.write(continuation);
-    var result = json.decode(_carry.toString());
-    _carry.clear();
-    return result;
-  }
-}
-
-class _JsonSplitterEventSink extends _JsonSplitterSink
-    implements EventSink<String> {
-  final EventSink<dynamic> _eventSink;
-
-  _JsonSplitterEventSink(EventSink<dynamic> eventSink, bool strict)
-      : _eventSink = eventSink,
-        super(eventSink, strict);
-
-  @override
-  void addError(Object o, [StackTrace? stackTrace]) {
-    _eventSink.addError(o, stackTrace);
   }
 }
