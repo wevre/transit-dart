@@ -61,20 +61,17 @@ TODO: Provide table of transit semantic types mapped to Dart language objects.
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
-Dart>=2.19.1 and (because the transit-format test routines work only with) Java
-8 are installed, then do the following:
+Dart>=2.19.1 and Java 8 are installed, then do the following:
 
 1. Set up a testing directory where all this can take place. The
    `transit-format` library and `transit-dart` library need to be side-by-side
    under the same parent directory. For example, create `transit-test` and
-   inside clone [transit-format](https://github.com/cognitect/transit-format)
-   and `transit-dart`.
+   inside clone [transit-format](https://github.com/cognitect/transit-format).
 
 ```sh
 mkdir transit-test
 cd transit-test
 git clone https://github.com/cognitect/transit-format.git
-git clone https://github.com/wevre/transit-dart.git
 ```
 
 2. Tell `transit-format` that the dart version is supported. In file
@@ -95,20 +92,11 @@ git clone https://github.com/wevre/transit-dart.git
 3. Copy `get-transit-dart` from `transit-dart/bin` into `transit-format/bin`.
 
 ```sh
-cp transit-dart/bin/get-transit-dart transit-format/bin
+curl "https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transit-dart" > transit-format/bin/get-transit-dart
+chmod +x transit-format/bin/get-transit-dart
 ```
 
-4. Compile roundtrip.dart.
-
-```sh
-cd transit-dart
-dart pub get
-mkdir -p resources/emits
-dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
-cd ..
-```
-
-5. Execute the verify command.
+4. Execute the verify command.
 
 ```
 transit-format/bin/verify -impls dart -enc json
