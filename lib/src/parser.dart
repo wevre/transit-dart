@@ -2,32 +2,32 @@ import 'package:collection/collection.dart';
 
 import 'cacher.dart';
 import 'constants.dart';
-import 'handlers/array_reader.dart';
-import 'handlers/map_reader.dart';
+import 'handlers/array_builder.dart';
+import 'handlers/map_builder.dart';
 import 'handlers/read_handlers.dart';
 import 'values/tag.dart';
 import 'values/tagged_value.dart';
 
 abstract class Parser {
-  final ReadHandlers readHandlers;
-  late final CacheDecoder cache;
-  late final DefaultReadHandler defaultHandler;
-  late final MapReader mapBuilder;
-  late final ArrayReader listBuilder;
+  final ReadHandlers _readHandlers;
+  late final CacheDecoder _cache;
+  late final DefaultReadHandler _defaultHandler;
+  late final MapBuilder _mapBuilder;
+  late final ArrayBuilder _listBuilder;
 
-  Parser(this.readHandlers,
+  Parser(this._readHandlers,
       {CacheDecoder? cache,
       DefaultReadHandler? defaultHandler,
-      MapReader? mapBuilder,
-      ArrayReader? listBuilder}) {
-    this.cache = cache ?? CacheDecoder();
-    this.defaultHandler = defaultHandler ?? TaggedValueReadHandler();
-    this.mapBuilder = mapBuilder ?? MapBuilderImpl();
-    this.listBuilder = listBuilder ?? ListBuilderImpl();
+      MapBuilder? mapBuilder,
+      ArrayBuilder? listBuilder}) {
+    _cache = cache ?? CacheDecoder();
+    _defaultHandler = defaultHandler ?? TaggedValueReadHandler();
+    _mapBuilder = mapBuilder ?? MapBuilderImpl();
+    _listBuilder = listBuilder ?? ListBuilderImpl();
   }
 
   parse(obj) {
-    cache.init();
+    _cache.init();
     return parseVal(obj);
   }
 
@@ -36,21 +36,14 @@ abstract class Parser {
   parseArray(List obj, bool asMapKey, ArrayReadHandler? handler);
 
   decode(String tag, rep) {
-    var h = readHandlers.getHandler(tag);
+    var h = _readHandlers.getHandler(tag);
     if (null != h) {
       return h.fromRep(rep);
     } else {
-      return defaultHandler.fromRep(tag, rep);
+      return _defaultHandler.fromRep(tag, rep);
     }
   }
 
-  // This method used by the cache decoder. Interesting, there is nothing here
-  // that is tied to the parser other than the `decode` method. Maybe could
-  // re-architect and have this method live in the cacher, and pass the decode
-  // method as a param when we call convert on the cacher. On the other hand,
-  // the cacher is not really supposed to be worrying about unescaping and
-  // boxing things up in Tag objects. So maybe we instead pass _this_ method to
-  // the cacher, because it also doesn't need access the entire parser class.
   parseString(s) {
     if (s is String) {
       if (s.length > 1) {
@@ -90,7 +83,7 @@ class JsonParser extends Parser {
     } else if (obj is List) {
       return parseArray(obj, asMapKey, null);
     } else if (obj is String) {
-      return cache.convert(obj,
+      return _cache.convert(obj,
           asMapKey: asMapKey, parseFn: (obj) => parseString(obj));
     } else {
       return obj;
@@ -98,7 +91,7 @@ class JsonParser extends Parser {
   }
 
   dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
-    ReadHandler? valHandler = readHandlers.getHandler(tag);
+    ReadHandler? valHandler = _readHandlers.getHandler(tag);
     dynamic val;
     if (null != valHandler) {
       if (obj is Map && valHandler is MapReadHandler) {
@@ -116,7 +109,7 @@ class JsonParser extends Parser {
 
   @override
   parseMap(obj, bool asMapKey, MapReadHandler? handler) {
-    MapReader mr = handler?.mapReader() ?? mapBuilder;
+    MapBuilder mr = handler?.mapBuilder() ?? _mapBuilder;
     var mb = mr.init();
     for (var e in obj.entries) {
       var key = parseVal(e.key, asMapKey: true);
@@ -130,7 +123,7 @@ class JsonParser extends Parser {
   }
 
   parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
-    MapReader mr = handler?.mapReader() ?? mapBuilder;
+    MapBuilder mr = handler?.mapBuilder() ?? _mapBuilder;
     var mb = mr.init();
     for (var e in objs) {
       mb = mr.add(mb, parseVal(e.key, asMapKey: true),
@@ -143,7 +136,7 @@ class JsonParser extends Parser {
   parseArray(obj, bool asMapKey, ArrayReadHandler? handler) {
     if (obj.isEmpty) {
       // Make an empty list with the default Array/ListBuilder
-      ArrayReader ar = handler?.arrayReader() ?? listBuilder;
+      ArrayBuilder ar = handler?.arrayBuilder() ?? _listBuilder;
       return ar.complete(ar.init());
     }
     var firstVal = parseVal(obj[0], asMapKey: asMapKey);
@@ -156,7 +149,7 @@ class JsonParser extends Parser {
       return parseTag(firstVal.value, obj[1], asMapKey);
     }
     // Process rest of array w/o special decoding or interpretation
-    ArrayReader ar = handler?.arrayReader() ?? listBuilder;
+    ArrayBuilder ar = handler?.arrayBuilder() ?? _listBuilder;
     var ab = ar.init();
     ab = ar.add(ar.init(), firstVal);
     for (var e in obj.sublist(1)) {
@@ -165,6 +158,32 @@ class JsonParser extends Parser {
     return ar.complete(ab);
   }
 }
+
+class MsgpackParser extends Parser {
+  MsgpackParser(super.readHandlers, {super.cache, super.defaultHandler, super.listBuilder, super.mapBuilder})
+
+
+  @override
+  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
+    // TODO: implement parseArray
+    throw UnimplementedError();
+  }
+
+  @override
+  parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
+    // This one's tricky because we have no control over the order of the map
+    // entries if they are parsed directly by msgpack_dart. I'm sort of thinking
+    // the solution is to fork that library and provide an opportunity to
+    // specify the Map instance we want to use.
+    // TODO: implement parseMap
+    throw UnimplementedError();
+  }
+
+  @override
+  parseVal(obj, {bool asMapKey = false}) {
+    // TODO: implement parseVal
+    throw UnimplementedError();
+  }}
 
 abstract class DefaultReadHandler<T> {
   T fromRep(String tag, dynamic rep);

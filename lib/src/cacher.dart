@@ -69,14 +69,14 @@ class CacheEncoder extends Converter<String, String> {
 }
 
 class CacheDecoder extends Converter<String, dynamic> {
-  final bool active;
+  final bool _active;
   final List<dynamic> _cache = [];
 
   void init() {
     _cache.clear();
   }
 
-  CacheDecoder({this.active = true}) {
+  CacheDecoder({bool active = true}) : _active = active {
     init();
   }
 

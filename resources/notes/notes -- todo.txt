@@ -8,7 +8,11 @@
 
 :section ToDo
 
-   [] Support verboseJson and messagePack.
+   [] Support verboseJson and MessagePack.
+
+   [] With MessagePack I have to be able to ensure MapEntry order. The
+   recommended library is msgpack_dart and I've asked the maintainer if he will
+   entertain a PR that would add MapBuilder and ArrayBuilder capability
 
    [] `Time` will need to be different for msgpack and verbose.
 

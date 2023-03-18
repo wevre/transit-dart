@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'array_reader.dart';
-import 'map_reader.dart';
+import 'array_builder.dart';
+import 'map_builder.dart';
 import '../values/big_decimal.dart';
 import '../values/keyword.dart';
 import '../values/link.dart';
@@ -17,16 +17,16 @@ abstract class ReadHandler<T, R> {
 }
 
 class ReadHandlers {
-  final ReadHandlersMap handlers;
+  final ReadHandlersMap _handlers;
 
   ReadHandler? getHandler(String tag) {
-    return handlers[tag];
+    return _handlers[tag];
   }
 
   ReadHandlers.json({ReadHandlersMap? customHandlers})
-      : handlers = {...defaults, ...?customHandlers};
+      : _handlers = {..._defaults, ...?customHandlers};
 
-  static final ReadHandlersMap defaults = {
+  static final ReadHandlersMap _defaults = {
     '_': NullReadHandler(),
     '?': BooleanReadHandler(),
     'i': IntegerReadHandler(),
@@ -164,14 +164,14 @@ class LinkReadHandler extends AbstractReadHandler<Link> {
 }
 
 abstract class MapReadHandler<G, M> extends AbstractReadHandler<M> {
-  MapReader<G, M, dynamic, dynamic> mapReader();
+  MapBuilder<G, M, dynamic, dynamic> mapBuilder();
 }
 
 abstract class ArrayReadHandler<G, A> extends AbstractReadHandler<A> {
-  ArrayReader<G, A, dynamic> arrayReader();
+  ArrayBuilder<G, A, dynamic> arrayBuilder();
 }
 
-class _SetArrayReader extends ArrayReader<Set, Set, dynamic> {
+class _SetArrayReader extends ArrayBuilder<Set, Set, dynamic> {
   @override
   init() => {};
 
@@ -190,10 +190,10 @@ class SetReadHandler extends ArrayReadHandler<Set, Set> {
   fromRep(rep) => throw Exception('Unsupported operation fromRep');
 
   @override
-  arrayReader() => _SetArrayReader();
+  arrayBuilder() => _SetArrayReader();
 }
 
-class _ListArrayReader extends ArrayReader<TransitList, TransitList, dynamic> {
+class _ListArrayReader extends ArrayBuilder<TransitList, TransitList, dynamic> {
   @override
   init() => TransitList([]);
 
@@ -212,29 +212,29 @@ class ListReadHandler extends ArrayReadHandler<TransitList, TransitList> {
   fromRep(rep) => throw Exception('Unsupported operation fromRep');
 
   @override
-  arrayReader() => _ListArrayReader();
+  arrayBuilder() => _ListArrayReader();
 }
 
-class _CmapArrayReader extends ArrayReader<_CmapArrayReader, Map, dynamic> {
-  Map m = {};
-  dynamic nextKey;
+class _CmapArrayReader extends ArrayBuilder<_CmapArrayReader, Map, dynamic> {
+  final Map _m = {};
+  dynamic _nextKey;
 
   @override
   init() => this;
 
   @override
   add(ar, item) {
-    if (null != nextKey) {
-      m[nextKey] = item;
-      nextKey = null;
+    if (null != _nextKey) {
+      _m[_nextKey] = item;
+      _nextKey = null;
     } else {
-      nextKey = item;
+      _nextKey = item;
     }
     return this;
   }
 
   @override
-  complete(a) => m;
+  complete(a) => _m;
 }
 
 class CmapReadHandler extends ArrayReadHandler<_CmapArrayReader, Map> {
@@ -242,5 +242,5 @@ class CmapReadHandler extends ArrayReadHandler<_CmapArrayReader, Map> {
   fromRep(rep) => throw Exception('Unsupported operation fromRep');
 
   @override
-  arrayReader() => _CmapArrayReader();
+  arrayBuilder() => _CmapArrayReader();
 }

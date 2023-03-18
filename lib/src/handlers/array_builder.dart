@@ -1,5 +1,5 @@
 /// We need some documentation here about what the heck this thing does.
-abstract class ArrayReader<G, A, T> {
+abstract class ArrayBuilder<G, A, T> {
   G init();
 
   G add(G a, T item);
@@ -7,7 +7,7 @@ abstract class ArrayReader<G, A, T> {
   A complete(G a);
 }
 
-class ListBuilderImpl extends ArrayReader<List, List, dynamic> {
+class ListBuilderImpl extends ArrayBuilder<List, List, dynamic> {
   @override
   init() => [];
 

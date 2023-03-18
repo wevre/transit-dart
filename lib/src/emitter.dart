@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -6,17 +7,19 @@ import 'constants.dart';
 import 'handlers/write_handlers.dart';
 
 abstract class Emitter {
-  final WriteHandlers writeHandlers;
-  late final CacheEncoder cache;
-  late final WriteHandler? defaultHandler;
+  final WriteHandlers _writeHandlers;
+  late final CacheEncoder _cache;
+  late final WriteHandler? _defaultHandler;
 
-  Emitter(this.writeHandlers, {CacheEncoder? cache, this.defaultHandler}) {
-    this.cache = cache ?? CacheEncoder();
+  Emitter(this._writeHandlers,
+      {CacheEncoder? cache, WriteHandler<dynamic, dynamic>? defaultHandler})
+      : _defaultHandler = defaultHandler {
+    _cache = cache ?? CacheEncoder();
   }
 
   marshalTop(obj) {
-    cache.init();
-    var h = writeHandlers.getHandler(obj) ?? defaultHandler;
+    _cache.init();
+    var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
     }
@@ -28,7 +31,7 @@ abstract class Emitter {
   }
 
   marshal(obj, {bool asMapKey = false}) {
-    var h = writeHandlers.getHandler(obj) ?? defaultHandler;
+    var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
     }
@@ -136,7 +139,7 @@ class JsonEmitter extends Emitter {
   @override
   emitString(String? prefix, String? tag, String s, bool asMapKey) {
     s = '${prefix ?? ''}${tag ?? ''}$s';
-    s = cache.convert(s, asMapKey: asMapKey);
+    s = _cache.convert(s, asMapKey: asMapKey);
     return s;
   }
 
@@ -179,5 +182,53 @@ class JsonEmitter extends Emitter {
       ...m.entries
           .expand((e) => [marshal(e.key, asMapKey: true), marshal(e.value)])
     ];
+  }
+}
+
+class MsgpackEmitter extends Emitter {
+  MsgpackEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
+
+  @override
+  bool prefersStrings() => false;
+
+  @override
+  emitNull(bool asMapKey) => null;
+
+  @override
+  emitString(String? prefix, String? tag, String s, bool asMapKey) {
+    s = '${prefix ?? ''}${tag ?? ''}$s';
+    s = _cache.convert(s, asMapKey: asMapKey);
+    return s;
+  }
+
+  @override
+  emitBoolean(bool b, bool asMapKey) => b;
+
+  @override
+  emitInteger(int i, bool asMapKey) {
+    if (i != i.toSigned(63)) {
+      return emitString(ESC, 'i', i.toString(), asMapKey);
+    } else {
+      return i;
+    }
+  }
+
+  @override
+  emitDouble(double d, bool asMapKey) => d;
+
+  @override
+  emitBinary(Uint8List b, bool asMapKey) {
+    return emitString(ESC, 'b', base64.encode(b), asMapKey);
+  }
+
+  @override
+  emitMap(Map m, bool asMapKey) {
+    var sorted = LinkedHashMap(); // ignore: prefer_collection_literals
+    for (var e in m.entries) {
+      var key = marshal(e.key, asMapKey: true);
+      var val = marshal(e.value, asMapKey: false);
+      sorted[key] = val;
+    }
+    return sorted;
   }
 }

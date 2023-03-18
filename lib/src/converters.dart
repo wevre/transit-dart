@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'cacher.dart';
 import 'emitter.dart';
-import 'handlers/array_reader.dart';
-import 'handlers/map_reader.dart';
+import 'handlers/array_builder.dart';
+import 'handlers/map_builder.dart';
 import 'handlers/read_handlers.dart';
 import 'handlers/write_handlers.dart';
 import 'parser.dart';
@@ -47,8 +47,8 @@ class TransitDecoder extends Converter {
   TransitDecoder.json(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
-      MapReader? mapBuilder,
-      ArrayReader? listBuilder})
+      MapBuilder? mapBuilder,
+      ArrayBuilder? listBuilder})
       : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
@@ -57,8 +57,8 @@ class TransitDecoder extends Converter {
   TransitDecoder.verboseJson(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
-      MapReader? mapBuilder,
-      ArrayReader? listBuilder})
+      MapBuilder? mapBuilder,
+      ArrayBuilder? listBuilder})
       : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
             cache: CacheDecoder(active: false),
             defaultHandler: defaultHandler,

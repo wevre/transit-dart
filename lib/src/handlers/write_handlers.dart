@@ -23,16 +23,16 @@ abstract class WriteHandler<T, R> {
 }
 
 class WriteHandlers implements TagProvider {
-  final WriteHandlersMap handlers;
+  final WriteHandlersMap _handlers;
 
   WriteHandler? getHandler(o) {
-    WriteHandler? h = handlers[o.runtimeType];
+    WriteHandler? h = _handlers[o.runtimeType];
 
     if (null != h) {
       return h;
     }
 
-    for (h in handlers.values) {
+    for (h in _handlers.values) {
       if (h.handles(o)) {
         return h;
       }
@@ -42,11 +42,16 @@ class WriteHandlers implements TagProvider {
   }
 
   WriteHandlers.json({WriteHandlersMap? customHandlers})
-      : handlers = {...defaults, ...?customHandlers} {
-    handlers[Map] = MapWriteHandler(this);
+      : _handlers = {..._defaults, ...?customHandlers} {
+    _handlers[Map] = MapWriteHandler(this);
   }
 
-  static final WriteHandlersMap defaults = {
+  WriteHandlers.messagePack({WriteHandlersMap? customHandlers})
+      : _handlers = {..._defaults, ...?customHandlers} {
+    _handlers[Map] = MapWriteHandler(this);
+  }
+
+  static final WriteHandlersMap _defaults = {
     Null: NullWriteHandler(),
     String: ToStringWriteHandler<String>('s'),
     bool: BooleanWriteHandler(),
