@@ -42,12 +42,11 @@ class WriteHandlers implements TagProvider {
   }
 
   WriteHandlers.json({WriteHandlersMap? customHandlers})
-      : // TODO: merge in customerHandlers to default map
-        handlers = Map.from(defaults) {
+      : handlers = {...defaults, ...?customHandlers} {
     handlers[Map] = MapWriteHandler(this);
   }
 
-  static final defaults = {
+  static final WriteHandlersMap defaults = {
     Null: NullWriteHandler(),
     String: ToStringWriteHandler<String>('s'),
     bool: BooleanWriteHandler(),

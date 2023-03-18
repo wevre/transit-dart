@@ -24,10 +24,9 @@ class ReadHandlers {
   }
 
   ReadHandlers.json({ReadHandlersMap? customHandlers})
-      : // TODO: merge in the customHandlers to the default map.
-        handlers = Map.from(defaults);
+      : handlers = {...defaults, ...?customHandlers};
 
-  static final defaults = {
+  static final ReadHandlersMap defaults = {
     '_': NullReadHandler(),
     '?': BooleanReadHandler(),
     'i': IntegerReadHandler(),

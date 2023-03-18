@@ -130,3 +130,31 @@ class _JsonSplitterEventSink extends StringConversionSinkBase
     _sink.close();
   }
 }
+
+/// A [Converter] that encodes multiple JSON objects to strings.
+///
+/// The Dart-provided [JsonEncoder] closes its underlying string after encoding
+/// JSON object, which is annoying. This converter stays open for business.
+class JsonCombiner extends Converter<dynamic, String> {
+  @override
+  String convert(input) => jsonEncode(input);
+
+  @override
+  Sink startChunkedConversion(Sink<String> sink) => _JsonCombinerSink(sink);
+}
+
+class _JsonCombinerSink extends ChunkedConversionSink<dynamic> {
+  final Sink _sink;
+
+  _JsonCombinerSink(this._sink);
+
+  @override
+  void add(chunk) {
+    _sink.add(jsonEncode(chunk));
+  }
+
+  @override
+  void close() {
+    _sink.close();
+  }
+}

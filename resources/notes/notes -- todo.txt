@@ -8,22 +8,24 @@
 
 :section ToDo
 
-   [] Ugh. The JsonEncoder only encodes one object and then closes its stream.
-   Why? Is it worth it to create our own JsonWriter class that handles multiple
-   objects coming through?
-
-   [] Support custom write handlers. -- Actually think the support already
-   exists, but there isn't an API to get them inserted into the
-   WriteHandlersMap. Do some hack-it-together testing to make sure.
-
-   [] Support custom read handlers. -- Same thing as above, need an API to
-   register them.
+   [] Support verboseJson and messagePack.
 
    [] `Time` will need to be different for msgpack and verbose.
 
    [] `Uuid` is also different for msgpack.
 
 :section Done
+
+   [✓] Support custom write handlers. -- Actually think the support already
+   exists, but there isn't an API to get them inserted into the
+   WriteHandlersMap. Do some hack-it-together testing to make sure.
+
+   [✓] Support custom read handlers. -- Same thing as above, need an API to
+   register them.
+
+   [✓] Ugh. The JsonEncoder only encodes one object and then closes its stream.
+   Why? Is it worth it to create our own JsonCombiner class that handles
+   multiple objects coming through?
 
    [✓] The CacheDecoder's `convert` method is passed a Parser as option arg. But
    why? Why does it need access to a full-blown parser. Let's pass a closure

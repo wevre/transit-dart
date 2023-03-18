@@ -17,18 +17,42 @@ var writeHandlers = WriteHandlers.json();
 var readHandlers = ReadHandlers.json();
 
 void main() {
-  print('decimal with exp notation? ${BigDecimal.tryParse("-1.1E3")}');
   someOtherTests();
 }
 
+class Point {
+  final int x;
+  final int y;
+  const Point(this.x, this.y);
+  @override
+  operator ==(other) => (other is Point) && other.x == x && other.y == y;
+  @override
+  get hashCode => x.hashCode * y.hashCode;
+}
+
+class PointWriteHandler extends WriteHandler<Point, List> {
+  @override
+  String tag(obj) => 'point';
+  @override
+  List rep(obj) => [obj.x, obj.y];
+}
+
+class PointReadHandler extends ReadHandler<Point, List> {
+  @override
+  Point fromRep(rep) => Point(rep[0], rep[1]);
+}
+
 void someOtherTests() {
-  var emitter = TransitEncoder.json();
-  var parser = TransitDecoder.json();
+  var emitter =
+      TransitEncoder.json(customHandlers: {Point: PointWriteHandler()});
+  var parser =
+      TransitDecoder.json(customHandlers: {'point': PointReadHandler()});
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
   // dynamic obj = bigObject;
   //dynamic obj = {null: null};
   //dynamic obj = "";
+  //dynamic obj = Point(10, 15);
   print('obj is `$obj`');
   var emitted = emitter.convert(obj);
   print('emitted is `$emitted`');
@@ -55,7 +79,8 @@ var bigObject = [
     [0, 'hello']: 1.1,
     'there': 2.2,
     'you': 3.3,
-    'cutie': 4.4
+    'cutie': 4.4,
+    'point': Point(5, 7)
   },
   [
     'keyword',

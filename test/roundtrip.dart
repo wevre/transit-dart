@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:transit_dart/src/converters.dart';
-import 'package:transit_dart/src/json_splitter.dart';
+import 'package:transit_dart/src/json.dart';
 
 // NOTE: for testing purposes, might want to call this with
 //    roundtripe.exe < sample-file.txt 2>/dev/null
@@ -16,10 +16,9 @@ Future<void> main(args) async {
         .transform(JsonSplitter())
         .transform(TransitDecoder.json())
         .transform(TransitEncoder.json())
-        //.transform(JsonEncoder()) // Closes stream after writing one object.
-        .forEach((obj) {
-      stdout.write(jsonEncode(obj));
-    });
+        .transform(JsonCombiner())
+        .transform(utf8.encoder)
+        .pipe(stdout);
   } catch (e) {
     stderr.write('Error in roundtrip: `$e`');
     rethrow;
