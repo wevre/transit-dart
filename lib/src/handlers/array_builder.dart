@@ -12,10 +12,7 @@ class ListBuilderImpl extends ArrayBuilder<List, List, dynamic> {
   init() => [];
 
   @override
-  add(a, item) {
-    a.add(item);
-    return a;
-  }
+  add(a, item) => a..add(item);
 
   @override
   complete(a) => a;

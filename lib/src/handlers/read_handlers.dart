@@ -176,10 +176,7 @@ class _SetArrayReader extends ArrayBuilder<Set, Set, dynamic> {
   init() => {};
 
   @override
-  add(a, item) {
-    a.add(item);
-    return a;
-  }
+  add(a, item) => a..add(item);
 
   @override
   complete(a) => a;
@@ -198,10 +195,7 @@ class _ListArrayReader extends ArrayBuilder<TransitList, TransitList, dynamic> {
   init() => TransitList([]);
 
   @override
-  add(a, item) {
-    a.value.add(item);
-    return a;
-  }
+  add(a, item) => a..value.add(item);
 
   @override
   complete(a) => a;

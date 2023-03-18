@@ -208,11 +208,6 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
       var l = [
         ...obj.entries.expand((e) => [e.key, e.value])
       ];
-      // var l = [];
-      // obj.forEach((key, value) {
-      //   l.add(key);
-      //   l.add(value);
-      // });
       return TaggedValue('array', l);
     }
   }
