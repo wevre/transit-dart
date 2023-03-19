@@ -27,7 +27,9 @@ void main() {
   // `strict: true` in the constructor call, then it will cause an error.
   buffer.write("[1,3");
   print(buffer.toString());
-  Stream.value(buffer.toString()).transform(JsonSplitter()).forEach((element) {
+  Stream.value(buffer.toString())
+      .transform(JsonRepeatDecoder())
+      .forEach((element) {
     print(element);
   });
 }

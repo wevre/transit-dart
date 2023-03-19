@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 /// A [StringTransformer] that splits a [String] into separate JSON forms,
@@ -9,28 +8,21 @@ import 'dart:convert';
 /// form and give an error upon encountering extra characters. This Transformer
 /// overcomes that limitation, accepting multiple forms coming through on the
 /// same stream and parsing each in turn.
-class JsonSplitter extends StreamTransformerBase<String, dynamic> {
+class JsonRepeatDecoder extends Converter<String, dynamic> {
   final bool _strict;
 
-  /// Creates a `JsonSplitter`.
-  ///
-  /// If [strict] is `false` (the default), extra characters between forms or
-  /// after the last form will be ignored.
-  const JsonSplitter({bool strict = false}) : _strict = strict;
+  JsonRepeatDecoder({bool strict = false}) : _strict = strict;
 
   @override
-  Stream<dynamic> bind(Stream<String> stream) {
-    return Stream<dynamic>.eventTransformed(stream,
-        (EventSink<dynamic> sink) => _JsonSplitterEventSink(sink, _strict));
+  convert(String input) {
+    json.encode(input);
+  }
+
+  @override
+  Sink<String> startChunkedConversion(Sink sink) {
+    return _JsonSplitterSink(sink, _strict);
   }
 }
-
-const int _doubleQuote = 34;
-const int _leftBrace = 123;
-const int _rightBrace = 125;
-const int _leftBracket = 91;
-const int _rightBracket = 93;
-const int _backslash = 92;
 
 /// A [StringConversionSink] for handling chunks of JSON strings.
 ///
@@ -45,10 +37,9 @@ const int _backslash = 92;
 /// that the backslash is inside a string. Likewise `[1,2}` is considered a
 /// valid form. Of course neither of those examples, nor any other malformed
 /// JSON string, will survive the call to [JSONDecoder].
-class _JsonSplitterEventSink extends StringConversionSinkBase
-    implements EventSink<String> {
+class _JsonSplitterSink extends StringConversionSinkBase {
   /// Output sink for transformed strings.
-  final EventSink<dynamic> _sink;
+  final Sink _sink;
 
   final bool _strict;
   final StringBuffer _buffer = StringBuffer();
@@ -57,12 +48,14 @@ class _JsonSplitterEventSink extends StringConversionSinkBase
   bool _quoted = false;
   bool _skipEscape = false;
 
-  _JsonSplitterEventSink(this._sink, this._strict);
+  static const int _doubleQuote = 34;
+  static const int _leftBrace = 123;
+  static const int _rightBrace = 125;
+  static const int _leftBracket = 91;
+  static const int _rightBracket = 93;
+  static const int _backslash = 92;
 
-  @override
-  void addError(Object o, [StackTrace? stackTrace]) {
-    _sink.addError(o, stackTrace);
-  }
+  _JsonSplitterSink(this._sink, this._strict);
 
   @override
   void addSlice(String str, int start, int end, bool isLast) {
@@ -135,7 +128,7 @@ class _JsonSplitterEventSink extends StringConversionSinkBase
 ///
 /// The Dart-provided [JsonEncoder] closes its underlying string after encoding
 /// JSON object, which is annoying. This converter stays open for business.
-class JsonCombiner extends Converter<dynamic, String> {
+class JsonRepeatEncoder extends Converter<dynamic, String> {
   @override
   String convert(input) => jsonEncode(input);
 

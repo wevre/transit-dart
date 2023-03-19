@@ -13,10 +13,10 @@ Future<void> main(args) async {
   try {
     stdin
         .transform(utf8.decoder)
-        .transform(JsonSplitter())
+        .transform(JsonRepeatDecoder())
         .transform(TransitDecoder.json())
         .transform(TransitEncoder.json())
-        .transform(JsonCombiner())
+        .transform(JsonRepeatEncoder())
         .transform(utf8.encoder)
         .pipe(stdout);
   } catch (e) {

@@ -14,7 +14,7 @@ Future<void> main() async {
 
   // Encode the objects to a [StringBuffer].
   var buffer = StringBuffer();
-  var writer = TransitEncoder.json().fuse(JsonCombiner());
+  var writer = TransitEncoder.json().fuse(JsonRepeatEncoder());
   for (var e in objects) {
     print('encoding object `$e`');
     buffer.write(writer.convert(e));
@@ -25,11 +25,9 @@ Future<void> main() async {
   print('encoded is `$encoded`');
 
   // Decode the objects.
+  var reader = JsonRepeatDecoder().fuse(TransitDecoder.json());
   var res = [];
-  await Stream.value(encoded)
-      .transform(JsonSplitter())
-      .transform(TransitDecoder.json())
-      .forEach((e) {
+  await Stream.value(encoded).transform(reader).forEach((e) {
     res.add(e);
     print('decoded object is `$e`');
   });
