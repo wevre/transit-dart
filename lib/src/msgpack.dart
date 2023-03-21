@@ -1,0 +1,398 @@
+// ignore_for_file: constant_identifier_names
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:async/async.dart';
+import 'package:typed_data/typed_buffers.dart';
+
+class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
+  final Utf8Codec _codec = Utf8Codec();
+
+  @override
+  Stream<dynamic> bind(Stream<List<int>> stream) async* {
+    final chunk = ChunkedStreamReader(stream);
+
+    var b = await chunk.readBytes(1);
+    while (b.isNotEmpty) {
+      final u = b[0];
+      yield await _decode(u, chunk);
+      b = await chunk.readBytes(1);
+    }
+  }
+
+  Future<dynamic> _decode(int u, ChunkedStreamReader<int> chunk) async {
+    if (u <= POS_FIXINT) {
+      return u;
+    } else if ((u & NEG_FIXINT) == NEG_FIXINT) {
+      return u - 256;
+    } else if ((u & FIXSTR) == FIXSTR) {
+      return await _readString(chunk, u & FIVE_LOW);
+    } else if ((u & FIXMAP) == FIXMAP) {
+      return await _readMap(chunk, u & FOUR_LOW);
+    } else if ((u & FIXARRAY) == FIXARRAY) {
+      return await _readArray(chunk, u & FOUR_LOW);
+    }
+    switch (u) {
+      case 0xc0:
+        return null;
+      case 0xc2:
+        return false;
+      case 0xc3:
+        return true;
+      case 0xcc:
+        return await _readInt(chunk, 1, (bd) => bd.getUint8(0));
+      case 0xcd:
+        return await _readInt(chunk, 2, (bd) => bd.getUint16(0));
+      case 0xce:
+        return await _readInt(chunk, 4, (bd) => bd.getUint32(0));
+      case 0xcf:
+        return await _readInt(chunk, 8, (bd) => bd.getUint64(0));
+      case 0xd0:
+        return await _readInt(chunk, 1, (bd) => bd.getInt8(0));
+      case 0xd1:
+        return await _readInt(chunk, 2, (bd) => bd.getInt16(0));
+      case 0xd2:
+        return await _readInt(chunk, 4, (bd) => bd.getInt32(0));
+      case 0xd3:
+        return await _readInt(chunk, 8, (bd) => bd.getInt64(0));
+      case 0xca:
+        return await _readFloat(chunk);
+      case 0xcb:
+        return await _readDouble(chunk);
+      case 0xd9:
+        return await _readString(
+            chunk, await _readInt(chunk, 1, (bd) => bd.getUint8(0)));
+      case 0xda:
+        return await _readString(
+            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+      case 0xdb:
+        return await _readString(
+            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+      case 0xc4:
+        return await _readBuffer(
+            chunk, await _readInt(chunk, 1, (bd) => bd.getUint8(0)));
+      case 0xc5:
+        return await _readBuffer(
+            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+      case 0xc6:
+        return await _readBuffer(
+            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+      case 0xdc:
+        return await _readArray(
+            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+      case 0xdd:
+        return await _readArray(
+            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+      case 0xde:
+        return await _readMap(
+            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+      case 0xdf:
+        return await _readMap(
+            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+    }
+  }
+
+  Future<int> _readInt(ChunkedStreamReader<int> chunk, int size,
+      int Function(ByteData) getter) async {
+    final b = await _expectBytes(chunk, size);
+    // Why do we need to create a sublistView if we aren't having an offset?
+    return getter(ByteData.sublistView(b));
+  }
+
+  Future<double> _readFloat(ChunkedStreamReader<int> chunk) async {
+    final b = await _expectBytes(chunk, 4);
+    return ByteData.sublistView(b).getFloat32(0);
+  }
+
+  Future<double> _readDouble(ChunkedStreamReader<int> chunk) async {
+    final b = await _expectBytes(chunk, 8);
+    return ByteData.sublistView(b).getFloat64(0);
+  }
+
+  Future<Uint8List> _readBuffer(ChunkedStreamReader<int> chunk, int len) async {
+    final b = await _expectBytes(chunk, len);
+    // Do we need to copy the bytes here?
+    return b;
+  }
+
+  Future<String> _readString(ChunkedStreamReader<int> chunk, int len) async {
+    final list = await _readBuffer(chunk, len);
+    return _codec.decode(list);
+  }
+
+  /// Parses a "map", but since the only map we should encounter is a transit
+  /// iterable map, with stringable keys, we return a transit map-as-array with
+  /// the initial '^ ' marker.
+  Future<List> _readMap(ChunkedStreamReader<int> chunk, int len) async {
+    final m = [];
+    m.add('^ ');
+    for (var i = 0; i < len; i++) {
+      final uKey = await _expectBytes(chunk, 1);
+      final key = await _decode(uKey[0], chunk);
+      m.add(key);
+      final uVal = await _expectBytes(chunk, 1);
+      final val = await _decode(uVal[0], chunk);
+      m.add(val);
+    }
+    return m;
+  }
+
+  Future<List> _readArray(ChunkedStreamReader<int> chunk, int len) async {
+    final l = List<dynamic>.filled(len, null, growable: false);
+    for (var i = 0; i < len; i++) {
+      final u = await _expectBytes(chunk, 1);
+      l[i] = await _decode(u[0], chunk);
+    }
+    return l;
+  }
+
+  Future<Uint8List> _expectBytes(
+      ChunkedStreamReader<int> chunk, int len) async {
+    final b = await chunk.readBytes(len);
+    if (b.length != len) {
+      throw Exception('Upstream closed');
+    }
+    return b;
+  }
+
+  static const POS_FIXINT = 0x7f;
+  static const NEG_FIXINT = 0xe0;
+  static const FIXSTR = 0xa0;
+  static const FIXMAP = 0x80;
+  static const FIXARRAY = 0x90;
+  static const FIVE_LOW = 0x1F;
+  static const FOUR_LOW = 0xF;
+}
+
+/// Converter from native Dart objects to MessagePack byte representation.
+///
+///
+class MsgpackEncoder extends Converter<dynamic, Uint8List> {
+  @override
+  Uint8List convert(input) {
+    final writer = Serializer();
+    writer.write(input);
+    return writer.asUint8List();
+  }
+
+  @override
+  Sink startChunkedConversion(Sink<Uint8List> sink) =>
+      _MsgpackEncoderSink(sink);
+}
+
+class _MsgpackEncoderSink extends ChunkedConversionSink<dynamic> {
+  final Sink _sink;
+
+  _MsgpackEncoderSink(this._sink);
+
+  @override
+  void add(chunk) {
+    final writer = Serializer();
+    writer.write(chunk);
+    _sink.add(writer.asUint8List());
+  }
+
+  @override
+  void close() {
+    _sink.close();
+  }
+}
+
+class Serializer {
+  final Utf8Codec _codec = Utf8Codec();
+  final Uint8Buffer _buffer = Uint8Buffer();
+
+  Uint8List asUint8List() =>
+      _buffer.buffer.asUint8List(0, _buffer.lengthInBytes);
+
+  void write(dynamic obj) {
+    if (null == obj) {
+      _writeUint8(0xc0);
+    } else if (obj is bool) {
+      _writeUint8(obj ? 0xc3 : 0xc2);
+    } else if (obj is int) {
+      obj >= 0 ? _writePositiveInt(obj) : _writeNegativeInt(obj);
+    } else if (obj is double) {
+      _writeDouble64(obj);
+    } else if (obj is String) {
+      _writeString(obj);
+    } else if (obj is Uint8List) {
+      _writeBinary(obj);
+    } else if (obj is Iterable) {
+      _writeIterable(obj);
+    } else if (obj is Map) {
+      _writeMap(obj);
+    } else {
+      throw Exception('No writer for object `$obj`');
+    }
+  }
+
+  void _writePositiveInt(int i) {
+    if (i <= 127) {
+      _writeUint8(i);
+    } else if (i <= 0xff) {
+      _writeUint8(0xcc);
+      _writeUint8(i);
+    } else if (i <= 0xffff) {
+      _writeUint8(0xcd);
+      _writeUint16(i);
+    } else if (i <= 0xffffffff) {
+      _writeUint8(0xce);
+      _writeUint32(i);
+    } else {
+      _writeUint8(0xcf);
+      _writeUint64(i);
+    }
+  }
+
+  void _writeNegativeInt(int i) {
+    if (i >= -32) {
+      _writeInt8(i);
+    } else if (i >= -128) {
+      _writeUint8(0xd0);
+      _writeInt8(i);
+    } else if (i >= -32768) {
+      _writeUint8(0xd1);
+      _writeInt16(i);
+    } else if (i >= -2147483648) {
+      _writeUint8(0xd2);
+      _writeInt32(i);
+    } else {
+      _writeUint8(0xd3);
+      _writeInt64(i);
+    }
+  }
+
+  void _writeUint8(int i) {
+    _buffer.add(i);
+  }
+
+  void _writeUint16(int i) {
+    _buffer.buffer.asUint16List().add(i);
+  }
+
+  void _writeUint32(int i) {
+    _buffer.buffer.asUint32List().add(i);
+  }
+
+  void _writeUint64(int i) {
+    _buffer.buffer.asUint64List().add(i);
+  }
+
+  void _writeInt8(int i) {
+    _buffer.buffer.asInt8List().add(i);
+  }
+
+  // TODO: probably these won't work because they might not be byte-aligned.
+  void _writeInt16(int i) {
+    _buffer.buffer.asInt16List().add(i);
+  }
+
+  void _writeInt32(int i) {
+    _buffer.buffer.asInt32List().add(i);
+  }
+
+  void _writeInt64(int i) {
+    _buffer.buffer.asInt64List().add(i);
+  }
+
+  void _writeDouble32(d) {
+    _writeUint8(0xca);
+    var u8l = Uint8List(4);
+    ByteData.view(u8l.buffer).setFloat32(0, d);
+    _buffer.addAll(u8l);
+  }
+
+  void _writeDouble64(d) {
+    _writeUint8(0xcb);
+
+    var len = _buffer.lengthInBytes;
+    _buffer.addAll(Uint8List(8));
+    print('after adding 8 zeros buffer length is ${_buffer.lengthInBytes}');
+    var buf = _buffer.buffer.asUint8List(len);
+    ByteData.sublistView(buf).setFloat64(0, d);
+    // var u8l = Uint8List(8);
+    // ByteData.view(u8l.buffer).setFloat64(0, d);
+    // _buffer.addAll(u8l);
+  }
+
+  void _writeString(String s) {
+    final encoded = _codec.encode(s);
+    final len = encoded.length;
+    if (len <= 31) {
+      _writeUint8(0xa0 | len);
+    } else if (len <= 0xff) {
+      _writeUint8(0xd9);
+      _writeUint8(len);
+    } else if (len <= 0xffff) {
+      _writeUint8(0xda);
+      _writeUint16(len);
+    } else if (len <= 0xffffffff) {
+      _writeUint8(0xdb);
+      _writeUint32(len);
+    } else {
+      throw Exception('String too long for msgpack');
+    }
+    _writeBytes(Uint8List.fromList(encoded));
+  }
+
+  void _writeBinary(Uint8List b) {
+    final len = b.length;
+    if (len <= 0xff) {
+      _writeUint8(0xc4);
+      _writeUint8(len);
+    } else if (len <= 0xffff) {
+      _writeUint8(0xc5);
+      _writeUint16(len);
+    } else if (len <= 0xffffffff) {
+      _writeUint8(0xc6);
+      _writeUint32(len);
+    } else {
+      throw Exception('String too long for msgpack');
+    }
+    _writeBytes(b);
+  }
+
+  void _writeBytes(Uint8List b) {
+    _buffer.addAll(b);
+  }
+
+  void _writeIterable(Iterable l) {
+    final len = l.length;
+    if (len <= 15) {
+      _writeUint8(0x90 | len);
+    } else if (len <= 0xffff) {
+      _writeUint8(0xdc);
+      _writeUint16(len);
+    } else if (len <= 0xffffffff) {
+      _writeUint8(0xdd);
+      _writeUint32(len);
+    } else {
+      throw Exception('Array too long for msgpack');
+    }
+    for (final i in l) {
+      write(i);
+    }
+  }
+
+  void _writeMap(Map m) {
+    final len = m.length;
+    if (len <= 15) {
+      _writeUint8(0x80 | len);
+    } else if (len <= 0xffff) {
+      _writeUint8(0xde);
+      _writeUint16(len);
+    } else if (len <= 0xffffffff) {
+      _writeUint8(0xdf);
+      _writeUint32(len);
+    } else {
+      throw Exception('Map too long for msgpack');
+    }
+    for (final i in m.entries) {
+      write(i.key);
+      write(i.value);
+    }
+  }
+}

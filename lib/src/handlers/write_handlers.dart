@@ -13,7 +13,7 @@ typedef WriteHandlersMap = Map<Type, WriteHandler>;
 abstract class WriteHandler<T, R> {
   String tag(T obj);
 
-  R rep(T obj);
+  R rep(T obj, {String? tag});
 
   String? stringRep(T obj) => obj.toString();
 
@@ -93,7 +93,7 @@ abstract class AbstractWriteHandler<T> extends WriteHandler<T, dynamic> {
   String tag(T obj) => _tag;
 
   @override
-  rep(T obj) => obj;
+  rep(T obj, {String? tag}) => obj;
 }
 
 // ignore: prefer_void_to_null
@@ -101,7 +101,7 @@ class NullWriteHandler extends AbstractWriteHandler<Null> {
   NullWriteHandler() : super('_');
 
   @override
-  rep(obj) => null;
+  rep(obj, {String? tag}) => null;
 
   @override
   stringRep(obj) => '';
@@ -111,7 +111,7 @@ class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
   ToStringWriteHandler(String tag) : super(tag);
 
   @override
-  rep(obj) => stringRep(obj);
+  rep(obj, {String? tag}) => stringRep(obj);
 }
 
 class BooleanWriteHandler extends AbstractWriteHandler<bool> {
@@ -135,7 +135,7 @@ class DoubleWriteHandler extends AbstractWriteHandler<double> {
   }
 
   @override
-  rep(obj) {
+  rep(obj, {String? tag}) {
     if (obj.isNaN) {
       return 'NaN';
     } else if (obj.isInfinite) {
@@ -157,7 +157,7 @@ class KeywordWriteHandler extends AbstractWriteHandler<Keyword> {
   KeywordWriteHandler() : super(':');
 
   @override
-  rep(obj) => stringRep(obj);
+  rep(obj, {String? tag}) => stringRep(obj);
 
   @override
   stringRep(obj) => obj.toString().substring(1);
@@ -167,7 +167,7 @@ class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
   TimeWriteHandler() : super('m');
 
   @override
-  rep(obj) => obj.millisecondsSinceEpoch;
+  rep(obj, {String? tag}) => obj.millisecondsSinceEpoch;
 
   @override
   stringRep(obj) => rep(obj).toString();
@@ -197,12 +197,9 @@ class MapWriteHandler extends AbstractWriteHandler<Map> {
   @override
   tag(obj) => _stringableKeys(obj) ? 'map' : 'cmap';
 
-  // NOTE: is there some inefficiency here? We call `tag` and it checks all the
-  // keys. And then we call `rep` and it again checks all the keys.
-
   @override
-  rep(obj) {
-    if (_stringableKeys(obj)) {
+  rep(obj, {String? tag}) {
+    if ('map' == tag || (null == tag && _stringableKeys(obj))) {
       return obj;
     } else {
       var l = [
@@ -217,21 +214,21 @@ class SetWriteHandler extends AbstractWriteHandler<Set> {
   SetWriteHandler() : super('set');
 
   @override
-  rep(obj) => TaggedValue('array', obj.toList(growable: false));
+  rep(obj, {String? tag}) => TaggedValue('array', obj.toList(growable: false));
 }
 
 class ListWriteHandler extends AbstractWriteHandler<TransitList> {
   ListWriteHandler() : super('list');
 
   @override
-  rep(obj) => TaggedValue('array', obj.value);
+  rep(obj, {String? tag}) => TaggedValue('array', obj.value);
 }
 
 class LinkWriteHandler extends AbstractWriteHandler<Link> {
   LinkWriteHandler() : super('link');
 
   @override
-  rep(obj) => obj.toMap();
+  rep(obj, {String? tag}) => obj.toMap();
 }
 
 class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
@@ -239,7 +236,7 @@ class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
   tag(obj) => obj.tag;
 
   @override
-  rep(obj) => obj.value;
+  rep(obj, {String? tag}) => obj.value;
 }
 
 abstract class TagProvider {

@@ -34,7 +34,7 @@ class PointWriteHandler extends WriteHandler<Point, List> {
   @override
   String tag(obj) => 'point';
   @override
-  List rep(obj) => [obj.x, obj.y];
+  List rep(obj, {String? tag}) => [obj.x, obj.y];
 }
 
 class PointReadHandler extends ReadHandler<Point, List> {

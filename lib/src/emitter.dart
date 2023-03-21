@@ -57,7 +57,7 @@ abstract class Emitter {
       if ('array' == tag) {
         return emitArray(h.rep(obj), asMapKey);
       } else if ('map' == tag) {
-        return emitMap(h.rep(obj), asMapKey);
+        return emitMap(h.rep(obj, tag: tag), asMapKey);
       } else {
         return emitEncoded(tag, h, obj, asMapKey);
       }

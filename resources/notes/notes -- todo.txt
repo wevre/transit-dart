@@ -8,6 +8,8 @@
 
 :section ToDo
 
+   [] Do some initial testing on msgpack.
+
    [] Support verboseJson and MessagePack.
 
    [] With MessagePack I have to be able to ensure MapEntry order. The
