@@ -20,7 +20,9 @@ Future<void> main() async {
       null,
       true,
       [0, 0],
-      3.4
+      3.4,
+      0x1FFFF,
+      -5
     ],
     {"42": "the answer"},
   ];

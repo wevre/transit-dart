@@ -265,57 +265,53 @@ class Serializer {
     }
   }
 
+  ByteData _pad(int size) {
+    final len = _buffer.lengthInBytes;
+    _buffer.addAll(Uint8List(size));
+    final view = _buffer.buffer.asUint8List(len);
+    return ByteData.sublistView(view);
+  }
+
   void _writeUint8(int i) {
-    _buffer.add(i);
+    _pad(1).setUint8(0, i);
   }
 
   void _writeUint16(int i) {
-    _buffer.buffer.asUint16List().add(i);
+    _pad(2).setUint16(0, i);
   }
 
   void _writeUint32(int i) {
-    _buffer.buffer.asUint32List().add(i);
+    _pad(4).setUint32(0, i);
   }
 
   void _writeUint64(int i) {
-    _buffer.buffer.asUint64List().add(i);
+    _pad(8).setUint64(0, i);
   }
 
   void _writeInt8(int i) {
-    _buffer.buffer.asInt8List().add(i);
+    _pad(1).setInt8(0, i);
   }
 
-  // TODO: probably these won't work because they might not be byte-aligned.
   void _writeInt16(int i) {
-    _buffer.buffer.asInt16List().add(i);
+    _pad(2).setInt16(0, i);
   }
 
   void _writeInt32(int i) {
-    _buffer.buffer.asInt32List().add(i);
+    _pad(4).setInt32(0, i);
   }
 
   void _writeInt64(int i) {
-    _buffer.buffer.asInt64List().add(i);
+    _pad(8).setInt64(0, i);
   }
 
   void _writeDouble32(d) {
     _writeUint8(0xca);
-    var u8l = Uint8List(4);
-    ByteData.view(u8l.buffer).setFloat32(0, d);
-    _buffer.addAll(u8l);
+    _pad(4).setFloat32(0, d);
   }
 
   void _writeDouble64(d) {
     _writeUint8(0xcb);
-
-    var len = _buffer.lengthInBytes;
-    _buffer.addAll(Uint8List(8));
-    print('after adding 8 zeros buffer length is ${_buffer.lengthInBytes}');
-    var buf = _buffer.buffer.asUint8List(len);
-    ByteData.sublistView(buf).setFloat64(0, d);
-    // var u8l = Uint8List(8);
-    // ByteData.view(u8l.buffer).setFloat64(0, d);
-    // _buffer.addAll(u8l);
+    _pad(8).setFloat64(0, d);
   }
 
   void _writeString(String s) {
