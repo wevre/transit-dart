@@ -13,7 +13,6 @@ class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
   @override
   Stream<dynamic> bind(Stream<List<int>> stream) async* {
     final chunk = ChunkedStreamReader(stream);
-
     var b = await chunk.readBytes(1);
     while (b.isNotEmpty) {
       final u = b[0];
@@ -23,15 +22,15 @@ class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
   }
 
   Future<dynamic> _decode(int u, ChunkedStreamReader<int> chunk) async {
-    if (u <= POS_FIXINT) {
+    if (u <= 127) {
       return u;
-    } else if ((u & NEG_FIXINT) == NEG_FIXINT) {
+    } else if ((u & 0xe0) == 0xe0) {
       return u - 256;
-    } else if ((u & FIXSTR) == FIXSTR) {
-      return await _readString(chunk, u & FIVE_LOW);
-    } else if ((u & FIXMAP) == FIXMAP) {
+    } else if ((u & 0xe0) == 0xa0) {
+      return await _readString(chunk, u & 0x1f);
+    } else if ((u & 0xf0) == 0x80) {
       return await _readMap(chunk, u & FOUR_LOW);
-    } else if ((u & FIXARRAY) == FIXARRAY) {
+    } else if ((u & 0xf0) == 0x90) {
       return await _readArray(chunk, u & FOUR_LOW);
     }
     switch (u) {
@@ -97,7 +96,6 @@ class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
   Future<int> _readInt(ChunkedStreamReader<int> chunk, int size,
       int Function(ByteData) getter) async {
     final b = await _expectBytes(chunk, size);
-    // Why do we need to create a sublistView if we aren't having an offset?
     return getter(ByteData.sublistView(b));
   }
 

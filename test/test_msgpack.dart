@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:transit_dart/src/converters.dart';
-import 'package:transit_dart/src/json.dart';
 import 'package:transit_dart/src/msgpack.dart';
 
 String bytesToHex(Uint8List bytes) {
@@ -29,9 +26,14 @@ Future<void> main() async {
 
   final encoder = MsgpackEncoder();
 
+  List<List<int>> encoded = [];
   for (final o in objects) {
     Uint8List bytes = encoder.convert(o);
-    print('object is $o');
-    print('encoded is ${bytesToHex(bytes)}');
+    encoded.add(bytes);
+    print('object is $o, encoded as ${bytesToHex(bytes)}');
   }
+
+  Stream.fromIterable(encoded).transform(MsgpackDeserializer()).forEach((e) {
+    print('deserialized obj is `$e`');
+  });
 }

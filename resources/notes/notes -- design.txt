@@ -66,6 +66,30 @@
    out of transit might be enough. But to be fully compatible with transit, add
    a final layer that reads and writes from streams.
 
+   Some more ideas about streams.
+
+   For MessagePack I found and adapted a stream implementation. It exposes a
+   StreamTransformer class and internally, in the `bind` method it manually
+   generates a stream with a bunch of async/await calls. This is actually nice
+   because it lets you reconstruct a recursive structure with yield statements.
+   The one drawback is as a StreamTransformer, I don't have a `convert` method.
+
+   I think I could just add a `convert` method which would be able to deal with
+   synchronous conversions, but turn it all over to the same mechanisms that
+   underly the asynchronous `bind` with something like this:
+
+   ```
+      Future<dynamic> convert(UInt8List input) async {
+         return await _decode(ChunkedStreamReader(Stream.value(input)));
+      }
+
+   Not sure adding Future<> to all the method signatures infects all my code.
+   Will it work?
+
+   If this works out, I might go back and change the JsonRepeatDecoder back into
+   a StreamTransformer, and then just also give it a convert method for cases
+   when a single value needs to be converted.
+
 :section Following java
 
    Maybe more closely follow the java implementation, basing around Read- and
