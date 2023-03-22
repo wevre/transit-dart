@@ -9,7 +9,7 @@ import 'package:transit_dart/src/json.dart';
 //    roundtripe.exe < sample-file.txt 2>/dev/null
 // to not mix the stderr writes with stdout writes.
 
-Future<void> main(args) async {
+Future<void> main(List<String> args) async {
   try {
     stdin
         .transform(utf8.decoder)

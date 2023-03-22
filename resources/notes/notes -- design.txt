@@ -90,6 +90,20 @@
    a StreamTransformer, and then just also give it a convert method for cases
    when a single value needs to be converted.
 
+   New thoughts: `Converter` extends `StreamTransformerBase` and adds methods
+   `convert` and `startChunkedConversion`. I had a hunch that `Converter` must
+   override the `bind` method from STBase and somewhere in there it kicked off
+   the chunked conversion, which turns out to be true.
+
+   If I create a MsgpackDecoder class that extends `Converter`, but I provide my
+   own `bind` implementation which uses async functions to decode the incoming
+   byte stream, I won't have to worry about chunked conversion because it will
+   never be called.
+
+   The only thing I have to worry about is providing a synchronous convert call
+   to fulfil the `Converter` API, even though for the most part, I assume the
+   Decoder would be used as a stream transformer, not a Converter.
+
 :section Following java
 
    Maybe more closely follow the java implementation, basing around Read- and

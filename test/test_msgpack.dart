@@ -10,6 +10,7 @@ String bytesToHex(Uint8List bytes) {
 Future<void> main() async {
   // Some objects to work with.
   var objects = [
+    null,
     "hello",
     [
       "A",
@@ -24,16 +25,24 @@ Future<void> main() async {
     {"42": "the answer"},
   ];
 
-  final encoder = MsgpackEncoder();
-
-  List<List<int>> encoded = [];
-  for (final o in objects) {
-    Uint8List bytes = encoder.convert(o);
-    encoded.add(bytes);
-    print('object is $o, encoded as ${bytesToHex(bytes)}');
-  }
-
-  Stream.fromIterable(encoded).transform(MsgpackDeserializer()).forEach((e) {
+  Stream.fromIterable(objects)
+      .transform(MsgpackEncoder())
+      .cast<List<int>>()
+      .transform(MsgpackDeserializer())
+      .forEach((e) {
     print('deserialized obj is `$e`');
   });
+
+  // final encoder = MsgpackEncoder();
+
+  // List<List<int>> encoded = [];
+  // for (final o in objects) {
+  //   Uint8List bytes = encoder.convert(o);
+  //   encoded.add(bytes);
+  //   print('object is $o, encoded as ${bytesToHex(bytes)}');
+  // }
+
+  // Stream.fromIterable(encoded).transform(MsgpackDeserializer()).forEach((e) {
+  //   print('deserialized obj is `$e`');
+  // });
 }

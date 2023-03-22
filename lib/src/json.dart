@@ -15,21 +15,12 @@ class JsonRepeatDecoder extends Converter<String, dynamic> {
 
   @override
   convert(String input) {
-    print('convert called on JsonRepeatDecoder');
     json.encode(input);
   }
 
   @override
   Sink<String> startChunkedConversion(Sink sink) {
-    print(
-        'startChunkedConversion called on JsonRepeatDecoder with sink `$sink`');
     return _JsonSplitterSink(sink, _strict);
-  }
-
-  @override
-  Stream bind(Stream<String> stream) {
-    print('bind called on JsonRepeatDecoder with stream `$stream`');
-    return super.bind(stream);
   }
 }
 
