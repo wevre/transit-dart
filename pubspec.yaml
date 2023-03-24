@@ -5,7 +5,7 @@ description: >-
   applications written in different languages. This library provides support for
   marshalling Transit data to/from Dart.
 
-version: 0.8.0-alpha
+version: 0.8.50
 
 repository: https://github.com/wevre/transit-dart
 
@@ -21,4 +21,3 @@ dependencies:
   big_decimal: ^0.5.0
   collection: ^1.17.1
   typed_data: ^1.3.1
-  uuid: ^3.0.7

@@ -103,7 +103,7 @@ chmod +x transit-format/bin/get-transit-dart
    `roundtrip.dart`.
 
 ```
-transit-format/bin/verify -impls dart -enc json
+transit-format/bin/verify -impls dart
 ```
 
 ## Additional information

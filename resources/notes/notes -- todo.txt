@@ -8,11 +8,17 @@
 
 :section ToDo
 
+   [] Set up some build automation scripts. To get commit counts: `git rev-list
+   HEAD --count`
+
    [] Finish support for verboseJson.
 
    [] Clean up API for MessagePack.
 
-   [] `Time` will need to be different for verbose.
+   [] Clean up my tests and use Dart's idiomatic testing features.
+
+   [] `Time` will need to be different for verbose. UPDATE: and yet it passed
+   roundtrip. Maybe need to investigate that because I didn't expect it to work.
 
 :section Done
 
