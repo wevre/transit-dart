@@ -35,11 +35,11 @@ changes._
 
 ## Getting started
 
-TODO: Any Dart-specific installation things to mention here?
+Coming soon: Any Dart-specific installation things to mention here?
 
 ## Usage
 
-TODO: This is a terrible example, even though it works, because you have to
+WARNING: This is a terrible example, even though it works, because you have to
 cobble together the pieces by hand. In future we'll have a more friendly API
 with examples showing how to convert directly to JSON or write to a stream.
 
@@ -56,7 +56,8 @@ void main() {
 
 ## Default Type Mapping
 
-TODO: Provide table of transit semantic types mapped to Dart language objects.
+Coming soon: Provide table of transit semantic types mapped to Dart language
+objects.
 
 ## Testing
 
@@ -108,7 +109,7 @@ transit-format/bin/verify -impls dart
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
+Coming soon, more info about the package: where to find more information, how to
 contribute to the package, how to file issues, what response they can expect
 from the package authors, and more.
 
