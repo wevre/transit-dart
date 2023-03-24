@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.53
+
+- MessagePack testing.
+
 ### 0.8.51
 
 - MessagePack encoding/decoding implemented and passes roundtrip test.
