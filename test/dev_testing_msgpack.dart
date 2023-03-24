@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/converters.dart';
+import 'package:transit_dart/src/msgpack.dart';
 import 'package:transit_dart/src/values/big_decimal.dart';
 import 'package:transit_dart/src/values/keyword.dart';
 import 'package:transit_dart/src/values/link.dart';
@@ -38,11 +40,13 @@ class PointReadHandler extends ReadHandler<Point, List> {
   Point fromRep(rep) => Point(rep[0], rep[1]);
 }
 
-void someOtherTests() {
+Future<void> someOtherTests() async {
   var emitter =
       TransitEncoder.messagePack(customHandlers: {Point: PointWriteHandler()});
   var parser =
       TransitDecoder.messagePack(customHandlers: {'point': PointReadHandler()});
+  var encoder = MessagePackEncoder();
+  var decoder = MessagePackDecoder();
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
   // dynamic obj = bigObject;
@@ -52,13 +56,13 @@ void someOtherTests() {
   print('obj is `$obj`');
   var emitted = emitter.convert(obj);
   print('emitted is `$emitted`');
-  // var encoded = json.encode(emitted);
-  // print('encoded is `$encoded`');
-  // var decoded = json.decode(encoded);
-  // print('decoded is `$decoded`');
-  // var parsed = parser.convert(decoded);
-  // print('parsed is `$parsed`');
-  // print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
+  var encoded = encoder.convert(emitted);
+  print('encoded is `$encoded`');
+  var decoded = await decoder.convert(encoded);
+  print('decoded is `$decoded`');
+  var parsed = parser.convert(decoded);
+  print('parsed is `$parsed`');
+  print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
 }
 
 var time =

@@ -25,24 +25,23 @@ Future<void> main() async {
     {"42": "the answer"},
   ];
 
-  Stream.fromIterable(objects)
-      .transform(MessagePackEncoder())
-      .cast<List<int>>()
-      .transform(MessagePackDecoder())
-      .forEach((e) {
-    print('deserialized obj is `$e`');
-  });
-
-  // final encoder = MsgpackEncoder();
-
-  // List<List<int>> encoded = [];
-  // for (final o in objects) {
-  //   Uint8List bytes = encoder.convert(o);
-  //   encoded.add(bytes);
-  //   print('object is $o, encoded as ${bytesToHex(bytes)}');
-  // }
-
-  // Stream.fromIterable(encoded).transform(MsgpackDeserializer()).forEach((e) {
+  // Stream.fromIterable(objects)
+  //     .transform(MessagePackEncoder())
+  //     .cast<List<int>>()
+  //     .transform(MessagePackDecoder())
+  //     .forEach((e) {
   //   print('deserialized obj is `$e`');
   // });
+
+  final encoder = MessagePackEncoder();
+  final decoder = MessagePackDecoder();
+
+  List encoded = <List<int>>[];
+  for (final o in objects) {
+    var bytes = encoder.convert(o);
+    encoded.add(bytes);
+    print('object is $o, encoded as ${bytesToHex(bytes)}');
+    var obj = await decoder.convert(bytes);
+    print('decoded is $obj');
+  }
 }

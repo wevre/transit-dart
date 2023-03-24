@@ -10,7 +10,7 @@ import 'values/float.dart';
 class MessagePackDecoder extends Converter<List<int>, dynamic> {
   @override
   convert(List<int> input) {
-    Stream.value(input).transform(MessagePackStreamTransformer()).toList();
+    return Stream.value(input).transform(MessagePackStreamTransformer()).first;
   }
 
   @override
@@ -246,6 +246,9 @@ class Serializer {
       _writeString(obj);
     } else if (obj is Uint8List) {
       _writeBinary(obj);
+    } else if (obj is ByteData) {
+      _writeBinary(
+          obj.buffer.asUint8List(obj.offsetInBytes, obj.lengthInBytes));
     } else if (obj is Iterable) {
       _writeIterable(obj);
     } else if (obj is Map) {
