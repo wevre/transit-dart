@@ -31,7 +31,7 @@ changes._
 
 ## Releases and Dependency Information
 
-* Latest release: 0.8.0 -- this is alpha. The API is not fixed yet.
+* Latest release: 0.8.51 -- still in alpha, API is not fixed
 
 ## Getting started
 
