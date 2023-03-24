@@ -15,7 +15,9 @@ class JsonRepeatDecoder extends Converter<String, dynamic> {
 
   @override
   convert(String input) {
-    json.encode(input);
+    json.encode(input); // TODO: this is wrong, it should be decoding.
+    // But should it just do one object? or should it return a list of decoded
+    // things?
   }
 
   @override

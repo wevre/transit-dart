@@ -8,8 +8,8 @@
 
 :section ToDo
 
-   [] Set up some build automation scripts. To get commit counts: `git rev-list
-   HEAD --count`
+   [] Set up some build automation scripts. To get commit counts: `git describe
+   --tags --match v0.0`
 
    [] Finish support for verboseJson.
 

@@ -1,5 +1,3 @@
-// ignore_for_file: constant_identifier_names
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -9,7 +7,40 @@ import 'package:typed_data/typed_buffers.dart';
 
 import 'values/float.dart';
 
-class MessagePackDeserializer
+class MessagePackDecoder extends Converter<List<int>, dynamic> {
+  @override
+  convert(List<int> input) {
+    Stream.value(input).transform(MessagePackStreamTransformer()).toList();
+  }
+
+  @override
+  Sink<List<int>> startChunkedConversion(Sink sink) =>
+      _MessagePackDecoderSink(sink);
+}
+
+class _MessagePackDecoderSink extends Sink<List<int>> {
+  final StreamController<List<int>> _controller;
+
+  _MessagePackDecoderSink(Sink sink) : _controller = StreamController() {
+    _controller.stream
+        .transform(MessagePackStreamTransformer())
+        .listen((event) {
+      sink.add(event);
+    });
+  }
+
+  @override
+  void add(List<int> chunk) {
+    _controller.sink.add(chunk);
+  }
+
+  @override
+  void close() {
+    _controller.sink.close();
+  }
+}
+
+class MessagePackStreamTransformer
     extends StreamTransformerBase<List<int>, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
 
@@ -32,9 +63,9 @@ class MessagePackDeserializer
     } else if ((u & 0xe0) == 0xa0) {
       return await _readString(chunk, u & 0x1f);
     } else if ((u & 0xf0) == 0x80) {
-      return await _readMap(chunk, u & FOUR_LOW);
+      return await _readMap(chunk, u & 0xF);
     } else if ((u & 0xf0) == 0x90) {
-      return await _readArray(chunk, u & FOUR_LOW);
+      return await _readArray(chunk, u & 0xF);
     }
     switch (u) {
       case 0xc0:
@@ -157,14 +188,6 @@ class MessagePackDeserializer
     }
     return b;
   }
-
-  static const POS_FIXINT = 0x7f;
-  static const NEG_FIXINT = 0xe0;
-  static const FIXSTR = 0xa0;
-  static const FIXMAP = 0x80;
-  static const FIXARRAY = 0x90;
-  static const FIVE_LOW = 0x1F;
-  static const FOUR_LOW = 0xF;
 }
 
 /// Converter from native Dart objects to MessagePack byte representation.

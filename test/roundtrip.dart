@@ -55,7 +55,7 @@ void verboseRoundtrip() {
 void msgpackRoundtrip() {
   try {
     stdin
-        .transform(MessagePackDeserializer())
+        .transform(MessagePackDecoder())
         .transform(TransitDecoder.messagePack())
         .transform(TransitEncoder.messagePack())
         .transform(MessagePackEncoder())

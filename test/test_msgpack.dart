@@ -28,7 +28,7 @@ Future<void> main() async {
   Stream.fromIterable(objects)
       .transform(MessagePackEncoder())
       .cast<List<int>>()
-      .transform(MessagePackDeserializer())
+      .transform(MessagePackDecoder())
       .forEach((e) {
     print('deserialized obj is `$e`');
   });
