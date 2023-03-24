@@ -7,7 +7,10 @@ import 'dart:typed_data';
 import 'package:async/async.dart';
 import 'package:typed_data/typed_buffers.dart';
 
-class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
+import 'values/float.dart';
+
+class MessagePackDeserializer
+    extends StreamTransformerBase<List<int>, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
 
   @override
@@ -99,9 +102,9 @@ class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
     return getter(ByteData.sublistView(b));
   }
 
-  Future<double> _readFloat(ChunkedStreamReader<int> chunk) async {
+  Future<Float> _readFloat(ChunkedStreamReader<int> chunk) async {
     final b = await _expectBytes(chunk, 4);
-    return ByteData.sublistView(b).getFloat32(0);
+    return Float(ByteData.sublistView(b).getFloat32(0));
   }
 
   Future<double> _readDouble(ChunkedStreamReader<int> chunk) async {
@@ -167,7 +170,7 @@ class MsgpackDeserializer extends StreamTransformerBase<List<int>, dynamic> {
 /// Converter from native Dart objects to MessagePack byte representation.
 ///
 ///
-class MsgpackEncoder extends Converter<dynamic, Uint8List> {
+class MessagePackEncoder extends Converter<dynamic, Uint8List> {
   @override
   Uint8List convert(input) {
     final writer = Serializer();
@@ -177,13 +180,13 @@ class MsgpackEncoder extends Converter<dynamic, Uint8List> {
 
   @override
   Sink startChunkedConversion(Sink<Uint8List> sink) =>
-      _MsgpackEncoderSink(sink);
+      _MessagePackEncoderSink(sink);
 }
 
-class _MsgpackEncoderSink extends ChunkedConversionSink<dynamic> {
+class _MessagePackEncoderSink extends ChunkedConversionSink<dynamic> {
   final Sink _sink;
 
-  _MsgpackEncoderSink(this._sink);
+  _MessagePackEncoderSink(this._sink);
 
   @override
   void add(chunk) {
@@ -212,6 +215,8 @@ class Serializer {
       _writeUint8(obj ? 0xc3 : 0xc2);
     } else if (obj is int) {
       obj >= 0 ? _writePositiveInt(obj) : _writeNegativeInt(obj);
+    } else if (obj is Float) {
+      _writeDouble32(obj.value);
     } else if (obj is double) {
       _writeDouble64(obj);
     } else if (obj is String) {
@@ -223,7 +228,7 @@ class Serializer {
     } else if (obj is Map) {
       _writeMap(obj);
     } else {
-      throw Exception('No writer for object `$obj`');
+      throw Exception('No writer for object `$obj` of type ${obj.runtimeType}');
     }
   }
 

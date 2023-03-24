@@ -13,17 +13,17 @@ abstract class Parser {
   late final CacheDecoder _cache;
   late final DefaultReadHandler _defaultHandler;
   late final MapBuilder _mapBuilder;
-  late final ArrayBuilder _listBuilder;
+  late final ArrayBuilder _arrayBuilder;
 
   Parser(this._readHandlers,
       {CacheDecoder? cache,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
-      ArrayBuilder? listBuilder}) {
+      ArrayBuilder? arrayBuilder}) {
     _cache = cache ?? CacheDecoder();
     _defaultHandler = defaultHandler ?? TaggedValueReadHandler();
     _mapBuilder = mapBuilder ?? MapBuilderImpl();
-    _listBuilder = listBuilder ?? ListBuilderImpl();
+    _arrayBuilder = arrayBuilder ?? ArrayBuilderImpl();
   }
 
   parse(obj) {
@@ -74,7 +74,10 @@ abstract class Parser {
 
 class JsonParser extends Parser {
   JsonParser(super.readHandlers,
-      {super.cache, super.defaultHandler, super.listBuilder, super.mapBuilder});
+      {super.cache,
+      super.defaultHandler,
+      super.mapBuilder,
+      super.arrayBuilder});
 
   @override
   parseVal(obj, {bool asMapKey = false}) {
@@ -135,8 +138,8 @@ class JsonParser extends Parser {
   @override
   parseArray(obj, bool asMapKey, ArrayReadHandler? handler) {
     if (obj.isEmpty) {
-      // Make an empty list with the default Array/ListBuilder
-      ArrayBuilder ab = handler?.arrayBuilder() ?? _listBuilder;
+      // Make an empty list with the default ArrayBuilder
+      ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
       return ab.complete(ab.init());
     }
     var firstVal = parseVal(obj[0], asMapKey: asMapKey);
@@ -149,7 +152,7 @@ class JsonParser extends Parser {
       return parseTag(firstVal.value, obj[1], asMapKey);
     }
     // Process rest of array w/o special decoding or interpretation
-    ArrayBuilder ab = handler?.arrayBuilder() ?? _listBuilder;
+    ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
     var ar = ab.init();
     ar = ab.add(ar, firstVal);
     for (var e in obj.sublist(1)) {
@@ -159,9 +162,12 @@ class JsonParser extends Parser {
   }
 }
 
-class MsgpackParser extends Parser {
-  MsgpackParser(super.readHandlers,
-      {super.cache, super.defaultHandler, super.listBuilder, super.mapBuilder});
+class MessagePackParser extends Parser {
+  MessagePackParser(super.readHandlers,
+      {super.cache,
+      super.defaultHandler,
+      super.mapBuilder,
+      super.arrayBuilder});
 
   // TODO: so far (haven't tested anything yet) these implementations are
   // identical to their json counterparts. So maybe some combining is in order.
@@ -199,10 +205,6 @@ class MsgpackParser extends Parser {
 
   @override
   parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
-    // This one's tricky because we have no control over the order of the map
-    // entries if they are parsed directly by msgpack_dart. I'm sort of thinking
-    // the solution is to fork that library and provide an opportunity to
-    // specify the Map instance we want to use.
     MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
     var mr = mb.init();
     for (var e in obj.entries) {
@@ -229,8 +231,8 @@ class MsgpackParser extends Parser {
   @override
   parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
     if (obj.isEmpty) {
-      // Make an empty list with the default Array/ListBuilder
-      ArrayBuilder ab = handler?.arrayBuilder() ?? _listBuilder;
+      // Make an empty list with the default ArrayBuilder
+      ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
       return ab.complete(ab.init());
     }
     var firstVal = parseVal(obj[0], asMapKey: asMapKey);
@@ -243,7 +245,7 @@ class MsgpackParser extends Parser {
       return parseTag(firstVal.value, obj[1], asMapKey);
     }
     // Process rest of array w/o special decoding or interpretation
-    ArrayBuilder ab = handler?.arrayBuilder() ?? _listBuilder;
+    ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
     var ar = ab.init();
     ar = ab.add(ar, firstVal);
     for (var e in obj.sublist(1)) {

@@ -39,33 +39,43 @@ class TransitDecoder extends Converter {
   /// ```
   ///
   /// Optional parameters affect the behavior of `TransitDecoder`. Custom
-  /// [ReadHandler]s and tags can be supplied as a map in [customHandlers].
-  /// The [mapBuilder] and [listBuilder], if supplied, allow libraries layered
-  /// on top of `transit-dart` to hook into the construction of `List` and `Map`
+  /// [ReadHandler]s and tags can be supplied as a map in [customHandlers]. The
+  /// [mapBuilder] and [arrayBuilder], if supplied, allow libraries layered on
+  /// top of `transit-dart` to hook into the construction of `Array` and `Map`
   /// objects and generate objects appropriate for the target library. A
   /// [defaultHandler] is called when no [ReadHandler] is found for a given tag.
   TransitDecoder.json(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
-      ArrayBuilder? listBuilder})
+      ArrayBuilder? arrayBuilder})
       : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
-            listBuilder: listBuilder);
+            arrayBuilder: arrayBuilder);
 
   TransitDecoder.verboseJson(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
-      ArrayBuilder? listBuilder})
+      ArrayBuilder? arrayBuilder})
       : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
             cache: CacheDecoder(active: false),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
-            listBuilder: listBuilder);
+            arrayBuilder: arrayBuilder);
 
-  TransitDecoder.messagePack() : _parser = JsonParser(ReadHandlers.json());
+  TransitDecoder.messagePack(
+      {ReadHandlersMap? customHandlers,
+      DefaultReadHandler? defaultHandler,
+      MapBuilder? mapBuilder,
+      ArrayBuilder? arrayBuilder})
+      : _parser = MessagePackParser(
+            ReadHandlers.messagePack(customHandlers: customHandlers),
+            cache: CacheDecoder(active: false),
+            defaultHandler: defaultHandler,
+            mapBuilder: mapBuilder,
+            arrayBuilder: arrayBuilder);
 
   @override
   convert(input) => _parser.parse(input);
@@ -126,6 +136,10 @@ class TransitEncoder extends Converter {
   TransitEncoder.json({WriteHandlersMap? customHandlers})
       : _emitter =
             JsonEmitter(WriteHandlers.json(customHandlers: customHandlers));
+
+  TransitEncoder.messagePack({WriteHandlersMap? customHandlers})
+      : _emitter = MessagePackEmitter(
+            WriteHandlers.messagePack(customHandlers: customHandlers));
 
   @override
   convert(input) => _emitter.emit(input);

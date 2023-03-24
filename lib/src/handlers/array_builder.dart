@@ -7,7 +7,7 @@ abstract class ArrayBuilder<G, A, T> {
   A complete(G a);
 }
 
-class ListBuilderImpl extends ArrayBuilder<List, List, dynamic> {
+class ArrayBuilderImpl extends ArrayBuilder<List, List, dynamic> {
   @override
   init() => [];
 

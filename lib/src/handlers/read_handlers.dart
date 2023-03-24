@@ -26,6 +26,9 @@ class ReadHandlers {
   ReadHandlers.json({ReadHandlersMap? customHandlers})
       : _handlers = {..._defaults, ...?customHandlers};
 
+  ReadHandlers.messagePack({ReadHandlersMap? customHandlers})
+      : _handlers = {..._defaults, ...?customHandlers};
+
   static final ReadHandlersMap _defaults = {
     '_': NullReadHandler(),
     '?': BooleanReadHandler(),
@@ -100,7 +103,10 @@ class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
 
 class TimeReadHandler extends AbstractReadHandler<DateTime> {
   @override
-  fromRep(rep) => DateTime.fromMillisecondsSinceEpoch(int.parse(rep));
+  fromRep(rep) {
+    var m = (rep is int) ? rep : int.parse(rep);
+    return DateTime.fromMillisecondsSinceEpoch(m);
+  }
 }
 
 class VerboseTimeReadHander extends AbstractReadHandler<DateTime> {
@@ -115,8 +121,8 @@ class UuidReadHandler extends AbstractReadHandler<Uuid> {
       return Uuid(rep);
     } else if (rep is List) {
       List l = rep;
-      var hi = l[0].toRadixString(16);
-      var lo = l[1].toRadixString(16);
+      var hi = BigInt.from(l[0]).toUnsigned(64).toRadixString(16);
+      var lo = BigInt.from(l[1]).toUnsigned(64).toRadixString(16);
       var c = '$hi$lo';
       var u =
           '${c.substring(0, 8)}-${c.substring(8, 12)}-${c.substring(12, 16)}'

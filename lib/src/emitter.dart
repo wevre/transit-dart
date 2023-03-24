@@ -64,9 +64,7 @@ abstract class Emitter {
     }
   }
 
-  // If we turn this into a coder/codec then this `emit` method will become the
-  // `convert` method.
-  emit(obj, {bool asMapKey = false}) => marshalTop(obj);
+  emit(obj) => marshalTop(obj);
 
   emitNull(bool asMapKey);
   emitString(String? prefix, String? tag, String s, bool asMapKey);
@@ -93,7 +91,7 @@ abstract class Emitter {
           throw Exception('Cannot be encoded as a string $o');
         }
       } else {
-        emitTagged(t, r, asMapKey);
+        return emitTagged(t, r, asMapKey);
       }
     } else if (asMapKey) {
       throw Exception('Cannot be used as map key $o');
@@ -185,8 +183,8 @@ class JsonEmitter extends Emitter {
   }
 }
 
-class MsgpackEmitter extends Emitter {
-  MsgpackEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
+class MessagePackEmitter extends Emitter {
+  MessagePackEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
 
   @override
   bool prefersStrings() => false;
@@ -205,21 +203,13 @@ class MsgpackEmitter extends Emitter {
   emitBoolean(bool b, bool asMapKey) => b;
 
   @override
-  emitInteger(int i, bool asMapKey) {
-    if (i != i.toSigned(63)) {
-      return emitString(ESC, 'i', i.toString(), asMapKey);
-    } else {
-      return i;
-    }
-  }
+  emitInteger(int i, bool asMapKey) => i;
 
   @override
   emitDouble(double d, bool asMapKey) => d;
 
   @override
-  emitBinary(Uint8List b, bool asMapKey) {
-    return emitString(ESC, 'b', base64.encode(b), asMapKey);
-  }
+  emitBinary(Uint8List b, bool asMapKey) => b;
 
   @override
   emitMap(Map m, bool asMapKey) {

@@ -8,19 +8,28 @@
 
 :section ToDo
 
-   [] Do some initial testing on msgpack.
+   [] Finish support for verboseJson.
 
-   [] Support verboseJson and MessagePack.
+   [] Clean up API for MessagePack.
 
-   [] With MessagePack I have to be able to ensure MapEntry order. The
-   recommended library is msgpack_dart and I've asked the maintainer if he will
-   entertain a PR that would add MapBuilder and ArrayBuilder capability
-
-   [] `Time` will need to be different for msgpack and verbose.
-
-   [] `Uuid` is also different for msgpack.
+   [] `Time` will need to be different for verbose.
 
 :section Done
+
+   [✓] With MessagePack I have to be able to ensure MapEntry order. The
+   recommended library is msgpack_dart and I've asked the maintainer if he will
+   entertain a PR that would add MapBuilder and ArrayBuilder capability. UPDATE:
+   I decided to roll my own.
+
+   [✓] `Time` will need to be different for msgpack.
+
+   [✓] `Uuid` is also different for msgpack.
+
+   [✓] Get the readers and writers organized so we can roundtrip msgpack.
+
+   [✓] Probably need a Float class for msgpack.
+
+   [✓] Do some initial testing on msgpack.
 
    [✓] Support custom write handlers. -- Actually think the support already
    exists, but there isn't an API to get them inserted into the
@@ -43,7 +52,7 @@
    whatever.
 
    [✓] The JsonParser constructor needs to allow for override of mapBuilder and
-   listBuilder. Then same overrides will be allowed in TransitDecoder.json. And
+   arrayBuilder. Then same overrides will be allowed in TransitDecoder.json. And
    maybe we don't need to have the cache be set-able.
 
    [✓] How about the JsonSplitter converts from strings to JsonObjects? In other
