@@ -60,7 +60,6 @@ class TransitDecoder extends Converter {
       MapBuilder? mapBuilder,
       ArrayBuilder? arrayBuilder})
       : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
-            cache: CacheDecoder(active: false),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
@@ -72,7 +71,6 @@ class TransitDecoder extends Converter {
       ArrayBuilder? arrayBuilder})
       : _parser = MessagePackParser(
             ReadHandlers.messagePack(customHandlers: customHandlers),
-            cache: CacheDecoder(active: false),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
@@ -136,6 +134,11 @@ class TransitEncoder extends Converter {
   TransitEncoder.json({WriteHandlersMap? customHandlers})
       : _emitter =
             JsonEmitter(WriteHandlers.json(customHandlers: customHandlers));
+
+  TransitEncoder.verboseJson({WriteHandlersMap? customHandlers})
+      : _emitter = JsonEmitter(
+            WriteHandlers.json(customHandlers: customHandlers),
+            cache: CacheEncoder(active: false));
 
   TransitEncoder.messagePack({WriteHandlersMap? customHandlers})
       : _emitter = MessagePackEmitter(

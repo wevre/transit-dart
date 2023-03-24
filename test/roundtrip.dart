@@ -13,6 +13,8 @@ import 'package:transit_dart/src/msgpack.dart';
 Future<void> main(List<String> args) async {
   if ('json' == args[0]) {
     jsonRoundtrip();
+  } else if ('json-verbose' == args[0]) {
+    verboseRoundtrip();
   } else if ('msgpack' == args[0]) {
     msgpackRoundtrip();
   }
@@ -25,6 +27,22 @@ void jsonRoundtrip() {
         .transform(JsonRepeatDecoder())
         .transform(TransitDecoder.json())
         .transform(TransitEncoder.json())
+        .transform(JsonRepeatEncoder())
+        .transform(utf8.encoder)
+        .pipe(stdout);
+  } catch (e) {
+    stderr.write('Error in roundtrip: `$e`');
+    rethrow;
+  }
+}
+
+void verboseRoundtrip() {
+  try {
+    stdin
+        .transform(utf8.decoder)
+        .transform(JsonRepeatDecoder())
+        .transform(TransitDecoder.verboseJson())
+        .transform(TransitEncoder.verboseJson())
         .transform(JsonRepeatEncoder())
         .transform(utf8.encoder)
         .pipe(stdout);

@@ -34,13 +34,14 @@ bool _isCacheable(String s, bool asMapKey) {
 }
 
 class CacheEncoder extends Converter<String, String> {
+  final bool _active;
   final Map<String, String> _cache = {};
 
   void init() {
     _cache.clear();
   }
 
-  CacheEncoder() {
+  CacheEncoder({bool active = false}) : _active = active {
     init();
   }
 
@@ -54,7 +55,7 @@ class CacheEncoder extends Converter<String, String> {
 
   @override
   String convert(String input, {bool asMapKey = false}) {
-    if (_isCacheable(input, asMapKey)) {
+    if (_active && _isCacheable(input, asMapKey)) {
       if (_cache.containsKey(input)) {
         return _cache[input]!;
       } else {
@@ -69,14 +70,13 @@ class CacheEncoder extends Converter<String, String> {
 }
 
 class CacheDecoder extends Converter<String, dynamic> {
-  final bool _active;
   final List<dynamic> _cache = [];
 
   void init() {
     _cache.clear();
   }
 
-  CacheDecoder({bool active = true}) : _active = active {
+  CacheDecoder() {
     init();
   }
 
