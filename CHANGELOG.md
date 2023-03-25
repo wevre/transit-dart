@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.60
+
+- Work on JsonRepeat(En/De)coder API.
+
 ### 0.8.53
 
 - MessagePack testing.

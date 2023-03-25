@@ -11,6 +11,16 @@
    [] Set up some build automation scripts. To get commit counts: `git describe
    --tags --match v0.0`. For fun use clojure build tool.
 
+      ```
+         git describe --tags --match v0.0
+         git tag -a v0.8.XX -m "Release 0.8.XX"
+         git push
+
+      Then go change README.md, CHANGELOG.md, and pubspec.yaml with version.
+
+   [] Put the Json and MessagePack converters into a subdirectory and add some
+   abstractions for the StreamTransformers.
+
    [] Set up the transit-cljd package, with a local reference to this package,
    and figure out what and how to expose the public API, but no more.
 
