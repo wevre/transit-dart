@@ -67,7 +67,12 @@ abstract class Emitter {
   emit(obj) => marshalTop(obj);
 
   emitNull(bool asMapKey);
-  emitString(String? prefix, String? tag, String s, bool asMapKey);
+  emitString(String? prefix, String? tag, String s, bool asMapKey) {
+    s = '${prefix ?? ''}${tag ?? ''}$s';
+    s = _cache.convert(s, asMapKey: asMapKey);
+    return s;
+  }
+
   emitBoolean(bool b, bool asMapKey);
   emitInteger(int i, bool asMapKey);
   emitDouble(double d, bool asMapKey);
@@ -83,7 +88,7 @@ abstract class Emitter {
       var r = h.rep(o);
       if (r is String) {
         return emitString(ESC, t, r, asMapKey);
-      } else if (prefersStrings() || asMapKey) {
+      } else if (prefersStrings || asMapKey) {
         String? sr = h.stringRep(o);
         if (null != sr) {
           return emitString(ESC, t, sr, asMapKey);
@@ -113,7 +118,7 @@ abstract class Emitter {
     return s;
   }
 
-  bool prefersStrings();
+  bool get prefersStrings;
 }
 
 class JsonEmitter extends Emitter {
@@ -123,7 +128,7 @@ class JsonEmitter extends Emitter {
   JsonEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
 
   @override
-  prefersStrings() => true;
+  bool get prefersStrings => true;
 
   @override
   emitNull(bool asMapKey) {
@@ -132,13 +137,6 @@ class JsonEmitter extends Emitter {
     } else {
       return null;
     }
-  }
-
-  @override
-  emitString(String? prefix, String? tag, String s, bool asMapKey) {
-    s = '${prefix ?? ''}${tag ?? ''}$s';
-    s = _cache.convert(s, asMapKey: asMapKey);
-    return s;
   }
 
   @override
@@ -187,17 +185,10 @@ class MessagePackEmitter extends Emitter {
   MessagePackEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
 
   @override
-  bool prefersStrings() => false;
+  bool get prefersStrings => false;
 
   @override
   emitNull(bool asMapKey) => null;
-
-  @override
-  emitString(String? prefix, String? tag, String s, bool asMapKey) {
-    s = '${prefix ?? ''}${tag ?? ''}$s';
-    s = _cache.convert(s, asMapKey: asMapKey);
-    return s;
-  }
 
   @override
   emitBoolean(bool b, bool asMapKey) => b;
@@ -211,6 +202,7 @@ class MessagePackEmitter extends Emitter {
   @override
   emitBinary(Uint8List b, bool asMapKey) => b;
 
+  // Use a [LinkedHashMap] to preserve key-value pair order.
   @override
   emitMap(Map m, bool asMapKey) {
     var sorted = LinkedHashMap(); // ignore: prefer_collection_literals

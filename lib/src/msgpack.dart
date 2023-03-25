@@ -46,7 +46,7 @@ class _MessagePackDecoderSink extends Sink<List<int>> {
   }
 }
 
-/// Transforms a stream of MessagePack bytes into Dart objects.
+/// Transforms a stream of MessagePack bytes into native Dart objects.
 ///
 /// Not quite a 100% faithful implementation of the [MessagePack
 /// specification](https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family).
@@ -58,7 +58,7 @@ class MessagePackStreamTransformer
   final Utf8Codec _codec = Utf8Codec();
 
   @override
-  Stream<dynamic> bind(Stream<List<int>> stream) async* {
+  Stream bind(Stream<List<int>> stream) async* {
     final chunk = ChunkedStreamReader(stream);
     var b = await chunk.readBytes(1);
     while (b.isNotEmpty) {
