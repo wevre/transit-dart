@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:transit_dart/src/msgpack.dart';
+import 'package:transit_dart/src/codecs/msgpack.dart';
 import 'package:test/test.dart';
 import 'package:transit_dart/src/values/float.dart';
 

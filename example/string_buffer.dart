@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:transit_dart/src/converters.dart';
-import 'package:transit_dart/src/json.dart';
+import 'package:transit_dart/src/codecs/converters.dart';
+import 'package:transit_dart/src/codecs/json.dart';
 
 Future<void> main() async {
   // Some objects to work with.

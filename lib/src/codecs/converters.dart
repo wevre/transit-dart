@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'cacher.dart';
 import 'emitter.dart';
-import 'handlers/array_builder.dart';
-import 'handlers/map_builder.dart';
-import 'handlers/read_handlers.dart';
-import 'handlers/write_handlers.dart';
+import '../handlers/array_builder.dart';
+import '../handlers/map_builder.dart';
+import '../handlers/read_handlers.dart';
+import '../handlers/write_handlers.dart';
 import 'parser.dart';
 
 /// A [Converter] to decode transit-formatted JSON objects into native Dart

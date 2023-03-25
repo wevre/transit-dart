@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:transit_dart/src/converters.dart';
-import 'package:transit_dart/src/json.dart';
-import 'package:transit_dart/src/msgpack.dart';
+import 'package:transit_dart/src/codecs/converters.dart';
+import 'package:transit_dart/src/codecs/json.dart';
+import 'package:transit_dart/src/codecs/msgpack.dart';
 
 // NOTE: for testing purposes, might want to call this with
 //    roundtripe.exe < sample-file.txt 2>/dev/null

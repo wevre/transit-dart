@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:transit_dart/src/msgpack.dart';
+import 'package:transit_dart/src/codecs/msgpack.dart';
 
 String bytesToHex(Uint8List bytes) {
   return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(" ");

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'cacher.dart';
-import 'constants.dart';
-import 'handlers/write_handlers.dart';
+import '../constants.dart';
+import '../handlers/write_handlers.dart';
 
 abstract class Emitter {
   final WriteHandlers _writeHandlers;

@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'combiner.dart';
+import 'splitter.dart';
+
 /// A [Converter] that splits a [String] into separate JSON forms, emitting a
 /// parsed JSON object for each form.
 ///
@@ -9,37 +12,6 @@ import 'dart:convert';
 /// and then closes the stream, giving an error if there are extra characters.
 /// This converter overcomes that limitation, accepting multiple forms on the
 /// incoming stream and parsing each in turn.
-class JsonRepeatDecoder extends Converter<String, dynamic> {
-  @override
-  convert(String input) {
-    return Stream.value(input).transform(JsonStreamTransformer()).toList();
-  }
-
-  @override
-  Sink<String> startChunkedConversion(Sink sink) => _JsonDecoderSink(sink);
-}
-
-class _JsonDecoderSink extends Sink<String> {
-  final StreamController<String> _controller;
-
-  _JsonDecoderSink(Sink sink) : _controller = StreamController() {
-    _controller.stream.transform(JsonStreamTransformer()).listen((event) {
-      sink.add(event);
-    });
-  }
-
-  @override
-  void add(String chunk) {
-    _controller.sink.add(chunk);
-  }
-
-  @override
-  void close() {
-    _controller.sink.close();
-  }
-}
-
-/// Transforms a stream of JSON forms into native Dart objects.
 ///
 /// Note this transformer isn't fastidious. It assumes that the incoming data is
 /// already valid JSON, and proceeds with very little ceremony to find the
@@ -50,11 +22,11 @@ class _JsonDecoderSink extends Sink<String> {
 /// Likewise `[1,2}` is considered a valid form. Of course neither of those
 /// examples, nor any other malformed JSON, will survive the call to
 /// [jsonDecode()].
-class JsonStreamTransformer extends StreamTransformerBase<String, dynamic> {
+class JsonRepeatDecoder extends Splitter<String, dynamic> {
   final bool _strict;
   final StringBuffer _buffer = StringBuffer();
 
-  JsonStreamTransformer({bool strict = false}) : _strict = strict;
+  JsonRepeatDecoder({bool strict = false}) : _strict = strict;
 
   static const int _doubleQuote = 34;
   static const int _leftBrace = 123;
@@ -64,7 +36,7 @@ class JsonStreamTransformer extends StreamTransformerBase<String, dynamic> {
   static const int _backslash = 92;
 
   @override
-  Stream bind(Stream<String> stream) async* {
+  Stream split(stream) async* {
     var skipEscape = false;
     var quoted = false;
     var stackDepth = 0;
@@ -124,26 +96,7 @@ class JsonStreamTransformer extends StreamTransformerBase<String, dynamic> {
 ///
 /// The Dart-provided [JsonEncoder] closes its underlying stream after encoding
 /// JSON object, which is annoying. This converter stays open for business.
-class JsonRepeatEncoder extends Converter<dynamic, String> {
+class JsonRepeatEncoder extends Combiner<dynamic, String> {
   @override
-  String convert(input) => jsonEncode(input);
-
-  @override
-  Sink startChunkedConversion(Sink<String> sink) => _JsonCombinerSink(sink);
-}
-
-class _JsonCombinerSink extends ChunkedConversionSink<dynamic> {
-  final Sink _sink;
-
-  _JsonCombinerSink(this._sink);
-
-  @override
-  void add(chunk) {
-    _sink.add(jsonEncode(chunk));
-  }
-
-  @override
-  void close() {
-    _sink.close();
-  }
+  encode(input) => jsonEncode(input);
 }

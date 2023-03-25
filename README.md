@@ -17,7 +17,7 @@ applications written in different languages. This library provides support for
 marshalling Transit data to/from Dart.
 
 * [Rationale](https://blog.cognitect.com/blog/2014/7/22/transit)
-* API docs coming soon
+* [API docs](https://pub.dev/documentation/transit_dart/latest/)
 * [Specification](https://github.com/cognitect/transit-format)
 
 This implementation's major.minor version number corresponds to the version of

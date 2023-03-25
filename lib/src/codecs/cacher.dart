@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 
-import 'constants.dart';
+import '../constants.dart';
 
 const _digits = 44;
 const _base = 48;

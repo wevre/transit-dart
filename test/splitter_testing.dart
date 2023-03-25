@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:transit_dart/src/json.dart';
+import 'package:transit_dart/src/codecs/json.dart';
 
 void main() {
   var buffer = StringBuffer();

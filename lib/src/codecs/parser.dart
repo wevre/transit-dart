@@ -1,12 +1,12 @@
 import 'package:collection/collection.dart';
 
 import 'cacher.dart';
-import 'constants.dart';
-import 'handlers/array_builder.dart';
-import 'handlers/map_builder.dart';
-import 'handlers/read_handlers.dart';
-import 'values/tag.dart';
-import 'values/tagged_value.dart';
+import '../constants.dart';
+import '../handlers/array_builder.dart';
+import '../handlers/map_builder.dart';
+import '../handlers/read_handlers.dart';
+import '../values/tag.dart';
+import '../values/tagged_value.dart';
 
 class Parser {
   final ReadHandlers _readHandlers;

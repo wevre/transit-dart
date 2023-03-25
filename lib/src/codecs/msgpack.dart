@@ -2,63 +2,25 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:async/async.dart';
+import 'package:async/async.dart' hide StreamSplitter;
 import 'package:typed_data/typed_buffers.dart';
 
-import 'values/float.dart';
+import 'combiner.dart';
+import 'splitter.dart';
+import '../values/float.dart';
 
 /// A [Converter] that decodes MessagePack bytes into native Dart objects.
-///
-/// Transforms using a [MessagePackStreamTransformer].
-class MessagePackDecoder extends Converter<List<int>, dynamic> {
-  /// Returns a [Future<List<dynamic>>] of transformed objects.
-  @override
-  convert(List<int> input) {
-    return Stream.value(input)
-        .transform(MessagePackStreamTransformer())
-        .toList();
-  }
-
-  @override
-  Sink<List<int>> startChunkedConversion(Sink sink) =>
-      _MessagePackDecoderSink(sink);
-}
-
-class _MessagePackDecoderSink extends Sink<List<int>> {
-  final StreamController<List<int>> _controller;
-
-  _MessagePackDecoderSink(Sink sink) : _controller = StreamController() {
-    _controller.stream
-        .transform(MessagePackStreamTransformer())
-        .listen((event) {
-      sink.add(event);
-    });
-  }
-
-  @override
-  void add(List<int> chunk) {
-    _controller.sink.add(chunk);
-  }
-
-  @override
-  void close() {
-    _controller.sink.close();
-  }
-}
-
-/// Transforms a stream of MessagePack bytes into native Dart objects.
 ///
 /// Not quite a 100% faithful implementation of the [MessagePack
 /// specification](https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family).
 /// For the purposes of transit, a MessagePack `map` is parsed into a transit
 /// 'map-as-array' value with the initial "^ " marker, preserving the key-value
 /// pair order.
-class MessagePackStreamTransformer
-    extends StreamTransformerBase<List<int>, dynamic> {
+class MessagePackDecoder extends Splitter<List<int>, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
 
   @override
-  Stream bind(Stream<List<int>> stream) async* {
+  Stream split(stream) async* {
     final chunk = ChunkedStreamReader(stream);
     var b = await chunk.readBytes(1);
     while (b.isNotEmpty) {
@@ -203,46 +165,19 @@ class MessagePackStreamTransformer
   }
 }
 
-/// Converter from native Dart objects to MessagePack byte representation.
-class MessagePackEncoder extends Converter<dynamic, Uint8List> {
-  @override
-  Uint8List convert(input) {
-    final writer = Serializer();
-    writer.write(input);
-    return writer.asUint8List();
-  }
-
-  @override
-  Sink startChunkedConversion(Sink<Uint8List> sink) =>
-      _MessagePackEncoderSink(sink);
-}
-
-class _MessagePackEncoderSink extends ChunkedConversionSink<dynamic> {
-  final Sink _sink;
-
-  _MessagePackEncoderSink(this._sink);
-
-  @override
-  void add(chunk) {
-    final writer = Serializer();
-    writer.write(chunk);
-    _sink.add(writer.asUint8List());
-  }
-
-  @override
-  void close() {
-    _sink.close();
-  }
-}
-
-class Serializer {
+/// A [Converter] from native Dart objects to MessagePack byte representation.
+class MessagePackEncoder extends Combiner<dynamic, Uint8List> {
   final Utf8Codec _codec = Utf8Codec();
   final Uint8Buffer _buffer = Uint8Buffer();
 
-  Uint8List asUint8List() =>
-      _buffer.buffer.asUint8List(0, _buffer.lengthInBytes);
+  @override
+  encode(input) {
+    _buffer.clear();
+    _write(input);
+    return _buffer.buffer.asUint8List(0, _buffer.lengthInBytes);
+  }
 
-  void write(dynamic obj) {
+  void _write(dynamic obj) {
     if (null == obj) {
       _writeUint8(0xc0);
     } else if (obj is bool) {
@@ -409,7 +344,7 @@ class Serializer {
       throw Exception('Array too long for msgpack');
     }
     for (final i in l) {
-      write(i);
+      _write(i);
     }
   }
 
@@ -427,8 +362,8 @@ class Serializer {
       throw Exception('Map too long for msgpack');
     }
     for (final i in m.entries) {
-      write(i.key);
-      write(i.value);
+      _write(i.key);
+      _write(i.value);
     }
   }
 }
