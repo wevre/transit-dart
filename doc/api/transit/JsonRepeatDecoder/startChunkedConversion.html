@@ -81,9 +81,7 @@ given <code>sink</code> serves as output.</p>
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
-Sink&lt;String&gt; startChunkedConversion(Sink sink) {
-  return _JsonSplitterSink(sink, _strict);
-}</code></pre>
+Sink&lt;String&gt; startChunkedConversion(Sink sink) =&gt; _JsonDecoderSink(sink);</code></pre>
 </section>
 
 
@@ -144,7 +142,7 @@ Sink&lt;String&gt; startChunkedConversion(Sink sink) {
 <footer>
   <span class="no-break">
     transit_dart
-      0.8.53
+      0.8.60
   </span>
 
   

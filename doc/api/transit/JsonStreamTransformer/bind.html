@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the bind method from the MessagePackStreamTransformer class, for the Dart programming language.">
-  <title>bind method - MessagePackStreamTransformer class - transit library - Dart API</title>
+  <meta name="description" content="API docs for the bind method from the JsonStreamTransformer class, for the Dart programming language.">
+  <title>bind method - JsonStreamTransformer class - transit library - Dart API</title>
 
 
   
@@ -30,7 +30,7 @@
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">transit_dart</a></li>
     <li><a href="../../transit/transit-library.html">transit</a></li>
-    <li><a href="../../transit/MessagePackStreamTransformer-class.html">MessagePackStreamTransformer</a></li>
+    <li><a href="../../transit/JsonStreamTransformer-class.html">JsonStreamTransformer</a></li>
     <li class="self-crumb">bind method</li>
   </ol>
   <div class="self-name">bind</div>
@@ -63,7 +63,7 @@
   </div>
 
 <span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a></span>
-<span class="name ">bind</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="bind-param-stream"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>&gt;</span></span>&gt;</span></span> <span class="parameter-name">stream</span></span></li>
+<span class="name ">bind</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="bind-param-stream"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-async/Stream-class.html">Stream</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span></span> <span class="parameter-name">stream</span></span></li>
 </ol>)
 
       <div class="features"><span class="feature">override</span></div>
@@ -102,13 +102,58 @@ but if errors are ignored, it should be documented explicitly.</p>
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">@override
-Stream bind(Stream&lt;List&lt;int&gt;&gt; stream) async* {
-  final chunk = ChunkedStreamReader(stream);
-  var b = await chunk.readBytes(1);
-  while (b.isNotEmpty) {
-    final u = b[0];
-    yield await _decode(u, chunk);
-    b = await chunk.readBytes(1);
+Stream bind(Stream&lt;String&gt; stream) async* {
+  var skipEscape = false;
+  var quoted = false;
+  var stackDepth = 0;
+
+  await for (final s in stream) {
+    var sliceStart = 0;
+    for (var i = 0; i &lt; s.length; i++) {
+      var char = s.codeUnitAt(i);
+      &#47;&#47; If prev char was escape, then skip this one.
+      if (skipEscape) {
+        skipEscape = false;
+        continue;
+      }
+      &#47;&#47; Check for interesting chars.
+      switch (char) {
+        case _doubleQuote:
+          quoted = !quoted;
+          continue;
+        case _leftBrace:
+        case _leftBracket:
+          if (!quoted &amp;&amp; 0 == stackDepth++ &amp;&amp; !_strict) {
+            sliceStart = i;
+            _buffer.clear();
+          }
+          continue;
+        case _rightBrace:
+        case _rightBracket:
+          if (quoted) {
+            continue;
+          } else if (--stackDepth &gt; 0) {
+            continue;
+          } else {
+            break;
+          }
+        case _backslash:
+          skipEscape = true;
+          continue;
+        default:
+          continue;
+      }
+      &#47;&#47; Reached the end of a JSON form.
+      var slice = s.substring(sliceStart, i + 1);
+      _buffer.write(slice);
+      yield jsonDecode(_buffer.toString());
+      _buffer.clear();
+      sliceStart = i + 1;
+    }
+    &#47;&#47; If didn&#39;t exhaust the full string, hold the tail in the buffer.
+    if (sliceStart &lt; s.length) {
+      _buffer.write(s.substring(sliceStart));
+    }
   }
 }</code></pre>
 </section>
@@ -126,31 +171,31 @@ Stream bind(Stream&lt;List&lt;int&gt;&gt; stream) async* {
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
   <li><a href="../../index.html">transit_dart</a></li>
   <li><a href="../../transit/transit-library.html">transit</a></li>
-  <li><a href="../../transit/MessagePackStreamTransformer-class.html">MessagePackStreamTransformer</a></li>
+  <li><a href="../../transit/JsonStreamTransformer-class.html">JsonStreamTransformer</a></li>
   <li class="self-crumb">bind method</li>
 </ol>
 
 
-    <h5>MessagePackStreamTransformer class</h5>
+    <h5>JsonStreamTransformer class</h5>
     <ol>
 
-        <li class="section-title"><a href="../../transit/MessagePackStreamTransformer-class.html#constructors">Constructors</a></li>
-          <li><a href="../../transit/MessagePackStreamTransformer/MessagePackStreamTransformer.html">MessagePackStreamTransformer</a></li>
+        <li class="section-title"><a href="../../transit/JsonStreamTransformer-class.html#constructors">Constructors</a></li>
+          <li><a href="../../transit/JsonStreamTransformer/JsonStreamTransformer.html">JsonStreamTransformer</a></li>
 
 
         <li class="section-title inherited">
-          <a href="../../transit/MessagePackStreamTransformer-class.html#instance-properties">Properties</a>
+          <a href="../../transit/JsonStreamTransformer-class.html#instance-properties">Properties</a>
         </li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></li>
 
-        <li class="section-title"><a href="../../transit/MessagePackStreamTransformer-class.html#instance-methods">Methods</a></li>
-          <li><a href="../../transit/MessagePackStreamTransformer/bind.html">bind</a></li>
+        <li class="section-title"><a href="../../transit/JsonStreamTransformer-class.html#instance-methods">Methods</a></li>
+          <li><a href="../../transit/JsonStreamTransformer/bind.html">bind</a></li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-async/StreamTransformerBase/cast.html">cast</a></li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
 
-        <li class="section-title inherited"><a href="../../transit/MessagePackStreamTransformer-class.html#operators">Operators</a></li>
+        <li class="section-title inherited"><a href="../../transit/JsonStreamTransformer-class.html#operators">Operators</a></li>
           <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>
 
 
