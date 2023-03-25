@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="generator" content="made with love by dartdoc 6.1.5">
+  <meta name="description" content="transit_dart API docs, for the Dart programming language.">
+  <title>transit_dart - Dart API docs</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static-assets/github.css?v1">
+  <link rel="stylesheet" href="static-assets/styles.css?v1">
+  <link rel="icon" href="static-assets/favicon.png?v1">
+
+  
+</head>
+
+
+<body data-base-href="" data-using-base-href="false" class="light-theme">
+
+<div id="overlay-under-drawer"></div>
+
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li class="self-crumb">transit_dart package</li>
+  </ol>
+  <div class="self-name">transit_dart</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span class="material-symbols-outlined">
+        brightness_4
+      </span>
+    </label>
+  </div>
+</header>
+<main>
+
+  <div id="dartdoc-main-content" class="main-content">
+      
+<section class="desc markdown">
+  <!--
+This README describes the package. If you publish this package to pub.dev,
+this README's contents appear on the landing page for your package.
+
+For information about how to write a good package README, see the guide for
+[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+
+For general information about developing packages, see the Dart guide for
+[creating packages](https://dart.dev/guides/libraries/create-library-packages)
+and the Flutter guide for
+[developing packages and plugins](https://flutter.dev/developing-packages).
+-->
+<h1 id="transit-dart">transit-dart</h1>
+<p>Transit is a data format and set of libraries for conveying values between
+applications written in different languages. This library provides support for
+marshalling Transit data to/from Dart.</p>
+<ul>
+<li><a href="https://blog.cognitect.com/blog/2014/7/22/transit">Rationale</a></li>
+<li>API docs coming soon</li>
+<li><a href="https://github.com/cognitect/transit-format">Specification</a></li>
+</ul>
+<p>This implementation's major.minor version number corresponds to the version of
+the Transit specification it supports.</p>
+<p><em>NOTE: Transit is intended primarily as a wire protocol for transferring data
+between applications. If storing Transit data durably, readers and writers are
+expected to use the same version of Transit and you are responsible for
+migrating/transforming/re-storing that data when and if the transit format
+changes.</em></p>
+<h2 id="releases-and-dependency-information">Releases and Dependency Information</h2>
+<ul>
+<li>Latest release: 0.8.53 -- still in alpha, API is not fixed</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<p>Coming soon: Any Dart-specific installation things to mention here?</p>
+<h2 id="usage">Usage</h2>
+<p>WARNING: This is a terrible example, even though it works, because you have to
+cobble together the pieces by hand. In future we'll have a more friendly API
+with examples showing how to convert directly to JSON or write to a stream.</p>
+<pre class="language-dart"><code class="language-dart">import 'package:transit_dart/transit-dart';
+
+var handlers = WriteHandlersMap.json();
+
+void main() {
+  var emitter = JsonEmitter(handlers, CacheEncoder());
+  print(emitter.emit("hello"));
+}
+</code></pre>
+<h2 id="default-type-mapping">Default Type Mapping</h2>
+<p>Coming soon: Provide table of transit semantic types mapped to Dart language
+objects.</p>
+<h2 id="testing">Testing</h2>
+<p>To run the roundtrip verification tests in <code>transit-format</code>, first ensure
+Dart&gt;=2.19.1 and Java 8 are installed, then do the following:</p>
+<ol>
+<li>Set up a testing directory where all this can take place. The
+<code>transit-format</code> library and <code>transit-dart</code> library need to be side-by-side
+under the same parent directory. For example, create <code>transit-test</code> and
+inside clone <a href="https://github.com/cognitect/transit-format">transit-format</a>.</li>
+</ol>
+<pre class="language-sh"><code class="language-sh">mkdir transit-test
+cd transit-test
+git clone https://github.com/cognitect/transit-format.git
+# Do something similar to the following to ensure Java 8.
+jenv local 1.8
+</code></pre>
+<ol start="2">
+<li>Tell <code>transit-format</code> that the dart version is supported. In file
+<code>src/transit/verify.clj</code>, near line 350, make this change:</li>
+</ol>
+<pre class="language-clj"><code class="language-clj">;; in file `transit-format/src/transit/verify.clj`
+(def supported-impls #{"transit-clj"
+                       "transit-cljs"
+                       "transit-dart"   ;&lt;-- insert this line
+                       "transit-java"
+                       "transit-jruby"
+                       "transit-js"
+                       "transit-python"
+                       "transit-ruby"})
+</code></pre>
+<ol start="3">
+<li>Copy <code>get-transit-dart</code> from <code>transit-dart/bin</code> into <code>transit-format/bin</code>.</li>
+</ol>
+<pre class="language-sh"><code class="language-sh">curl "https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transit-dart" &gt; transit-format/bin/get-transit-dart
+chmod +x transit-format/bin/get-transit-dart
+</code></pre>
+<ol start="4">
+<li>Execute the verify command. The <code>verify</code> command will check for and, as
+necessary, clone <code>transit-dart</code>, run <code>dart pub get</code>, and compile
+<code>roundtrip.dart</code>.</li>
+</ol>
+<pre class="language-dart"><code>transit-format/bin/verify -impls dart
+</code></pre>
+<h2 id="additional-information">Additional information</h2>
+<p>Coming soon, more info about the package: where to find more information, how to
+contribute to the package, how to file issues, what response they can expect
+from the package authors, and more.</p>
+<h2 id="copyright-and-license">Copyright and License</h2>
+<p>Copyright © 2023 Michael J. Weaver</p>
+<p>This library is a Dart port of the Java version created and maintained by
+Cognitect.</p>
+<p>Copyright © 2014 Cognitect</p>
+<p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at <a href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a>. Unless required by
+applicable law or agreed to in writing, software distributed under the License
+is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.</p>
+</section>
+
+
+      <section class="summary">
+          <h2>Libraries</h2>
+        <dl>
+          <dt id="transit">
+  <span class="name"><a href="transit/transit-library.html">transit</a></span> 
+
+</dt>
+<dd>Support for doing something awesome.
+</dd>
+
+        </dl>
+      </section>
+
+  </div> <!-- /.main-content -->
+
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+  <li class="self-crumb">transit_dart package</li>
+</ol>
+
+
+    <h5 class="hidden-xs"><span class="package-name">transit_dart</span> <span class="package-kind">package</span></h5>
+    <ol>
+      <li class="section-title">Libraries</li>
+      <li><a href="transit/transit-library.html">transit</a></li>
+</ol>
+
+  </div>
+
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div>
+
+</main>
+
+<footer>
+  <span class="no-break">
+    transit_dart
+      0.8.53
+  </span>
+
+  
+</footer>
+
+
+
+<script src="static-assets/highlight.pack.js?v1"></script>
+<script src="static-assets/docs.dart.js"></script>
+
+
+
+</body>
+
+</html>
+
