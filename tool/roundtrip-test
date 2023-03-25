@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# This setup assumes a sibling folder `transit-test` with inside it two folders,
+# one for `transit-format` and another `transit-dart`. It's just for quick
+# testing while working on transit-dart locally on my machine, where I have
+# exactly the setup described above. The actual roundtrip test should be
+# conducted from `transit-format` and will pull down a clone of the latest
+# transit-dart.
+
+cd `dirname $0`/..
+
+dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
+
+cp resources/emits/roundtrip.exe ../transit-test/transit-dart/resources/emits/
+
+../transit-test/transit-format/bin/verify -impls dart
