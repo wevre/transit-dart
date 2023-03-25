@@ -1,5 +1,10 @@
 # transit-dart
 
+### 0.8.64
+
+- Abstractions for splitter and combiner used by both Json and MessagePack
+  encoders and decoders.
+
 ### 0.8.60
 
 - Work on JsonRepeat(En/De)coder API.
