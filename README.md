@@ -16,9 +16,9 @@ Transit is a data format and set of libraries for conveying values between
 applications written in different languages. This library provides support for
 marshalling Transit data to/from Dart.
 
-* [Rationale](https://blog.cognitect.com/blog/2014/7/22/transit)
-* [API docs](https://pub.dev/documentation/transit_dart/latest/)
-* [Specification](https://github.com/cognitect/transit-format)
+* [Transit Rationale](https://blog.cognitect.com/blog/2014/7/22/transit)
+* [Transit Specification](https://github.com/cognitect/transit-format)
+* [transit-dart API docs](https://pub.dev/documentation/transit_dart/latest/)
 
 This implementation's major.minor version number corresponds to the version of
 the Transit specification it supports.

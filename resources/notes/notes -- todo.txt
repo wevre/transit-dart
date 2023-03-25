@@ -4,7 +4,7 @@
 
 :section Instructions
 
-   Use this ✓ to mark completed
+   Use ✓ to mark completed
 
 :section ToDo
 
@@ -18,23 +18,27 @@
 
       Then go change README.md, CHANGELOG.md, and pubspec.yaml with version.
 
-   [] Put the Json and MessagePack converters into a subdirectory and add some
-   abstractions for the StreamTransformers.
-
    [] Set up the transit-cljd package, with a local reference to this package,
    and figure out what and how to expose the public API, but no more.
 
    [] Finish support for verboseJson.
 
-   [] Clean up API for MessagePack.
-
    [] Clean up my tests and use Dart's idiomatic testing features.
+
+   [] Clean up examples.
+
+   [] Complete documenting public API classes and methods.
 
    [] `Time` will need to be different for verbose. UPDATE: and yet it passed
    roundtrip. Maybe need to investigate that because I didn't expect it to work.
    UPDATE: I think it worked because we support reading both 't' and 'm' tags.
 
 :section Done
+
+   [✓] Put the Json and MessagePack converters into a subdirectory and add some
+   abstractions for the StreamTransformers.
+
+   [✓] Clean up API for MessagePack.
 
    [✓] With MessagePack I have to be able to ensure MapEntry order. The
    recommended library is msgpack_dart and I've asked the maintainer if he will

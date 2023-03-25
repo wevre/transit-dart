@@ -1,9 +1,7 @@
 name: transit_dart
 
 description: >-
-  Transit is a data format and set of libraries for conveying values between
-  applications written in different languages. This library provides support for
-  marshalling Transit data to/from Dart.
+  This library provides support for marshalling Transit data to/from Dart.
 
 version: 0.8.64
 
