@@ -49,7 +49,7 @@ class _JsonDecoderSink extends Sink<String> {
 /// the backslah, without asserting that the backslash is inside a string.
 /// Likewise `[1,2}` is considered a valid form. Of course neither of those
 /// examples, nor any other malformed JSON, will survive the call to
-/// [jsonDecode].
+/// [jsonDecode()].
 class JsonStreamTransformer extends StreamTransformerBase<String, dynamic> {
   final bool _strict;
   final StringBuffer _buffer = StringBuffer();
