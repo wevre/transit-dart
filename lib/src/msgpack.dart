@@ -7,10 +7,16 @@ import 'package:typed_data/typed_buffers.dart';
 
 import 'values/float.dart';
 
+/// A [Converter] that decodes MessagePack bytes into native Dart objects.
+///
+/// Transforms using a [MessagePackStreamTransformer].
 class MessagePackDecoder extends Converter<List<int>, dynamic> {
+  /// Returns a [Future<List<dynamic>>] of transformed objects.
   @override
   convert(List<int> input) {
-    return Stream.value(input).transform(MessagePackStreamTransformer()).first;
+    return Stream.value(input)
+        .transform(MessagePackStreamTransformer())
+        .toList();
   }
 
   @override
@@ -40,6 +46,13 @@ class _MessagePackDecoderSink extends Sink<List<int>> {
   }
 }
 
+/// Transforms a stream of MessagePack bytes into Dart objects.
+///
+/// Not quite a 100% faithful implementation of the [MessagePack
+/// specification](https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family).
+/// For the purposes of transit, a MessagePack `map` is parsed into a transit
+/// 'map-as-array' value with the initial "^ " marker, preserving the key-value
+/// pair order.
 class MessagePackStreamTransformer
     extends StreamTransformerBase<List<int>, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
@@ -154,9 +167,9 @@ class MessagePackStreamTransformer
     return _codec.decode(list);
   }
 
-  /// Parses a "map", but since the only map we should encounter is a transit
-  /// iterable map, with stringable keys, we return a transit map-as-array with
-  /// the initial '^ ' marker.
+  // Parses a "map", but since the only map we should encounter is a transit
+  // iterable map, with stringable keys, we return a transit map-as-array with
+  // the initial '^ ' marker.
   Future<List> _readMap(ChunkedStreamReader<int> chunk, int len) async {
     final m = [];
     m.add('^ ');
@@ -191,8 +204,6 @@ class MessagePackStreamTransformer
 }
 
 /// Converter from native Dart objects to MessagePack byte representation.
-///
-///
 class MessagePackEncoder extends Converter<dynamic, Uint8List> {
   @override
   Uint8List convert(input) {

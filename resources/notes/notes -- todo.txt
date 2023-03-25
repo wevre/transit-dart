@@ -11,6 +11,9 @@
    [] Set up some build automation scripts. To get commit counts: `git describe
    --tags --match v0.0`
 
+   [] Set up the transit-cljd package, with a local reference to this package,
+   and figure out what and how to expose the public API, but no more.
+
    [] Finish support for verboseJson.
 
    [] Clean up API for MessagePack.

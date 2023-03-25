@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-/// A [StringTransformer] that splits a [String] into separate JSON forms,
-/// emitting a JSON object for each form.
+/// A [Converter] that splits a [String] into separate JSON forms, emitting a
+/// JSON object for each form.
 ///
 /// A JSON form is an object or array delimited by braces `{}` or brackets
 /// `[]`, respectively. The Dart-provided [JsonDecoder] will parse only one such

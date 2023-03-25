@@ -1,8 +1,15 @@
-export 'cacher.dart';
-export 'handlers/write_handlers.dart';
-export 'handlers/read_handlers.dart';
+export 'converters.dart';
+export 'handlers/write_handlers.dart' show WriteHandlersMap, WriteHandler;
+export 'handlers/read_handlers.dart' show ReadHandlersMap, ReadHandler;
+export 'json.dart';
+export 'msgpack.dart';
+export 'values/big_decimal.dart';
+export 'values/float.dart';
 export 'values/keyword.dart';
 export 'values/link.dart';
 export 'values/list.dart';
 export 'values/symbol.dart';
+export 'values/tag.dart';
+export 'values/tagged_value.dart';
+export 'values/uri.dart';
 export 'values/uuid.dart';

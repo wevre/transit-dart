@@ -18,15 +18,17 @@ class TransitDecoder extends Converter {
   /// This converter is meant to be chained with a [JsonDecoder] in a pipeline
   /// that converts a JSON string to a Dart native object, as illustrated below.
   ///
+  /// ```
   /// [JSON string] ==(a)==> [formatted value] ==(b)==> [Dart native object]
+  /// ```
   ///
   /// Above, the conversion (a) from JSON string to a transit formatted value is
   /// accomplished with a [JsonDecoder] and the final conversion (b) to a native
   /// Dart object is handled by this `TransitDecoder`.
   ///
-  /// Here is an example of using a [JsonSplitter] (which processes a sequence
-  /// of JSON strings) in connection with a `TransitDecoder` to parse incoming
-  /// transit data from `stdin`.
+  /// Here is an example of using a [JsonRepeatDecoder] (which processes a
+  /// sequence of JSON strings) in connection with a `TransitDecoder` to parse
+  /// incoming transit data from `stdin`.
   ///
   /// ```dart
   /// stdin
@@ -34,7 +36,7 @@ class TransitDecoder extends Converter {
   ///     .transform(JsonSplitter())
   ///     .transform(TransitDecoder.json())
   ///     .forEach((obj) {
-  ///   print('parsed object is $obj);
+  ///   print('parsed object is $obj');
   /// });
   /// ```
   ///
@@ -110,15 +112,17 @@ class TransitEncoder extends Converter {
   /// that converts a Dart native object into a JSON string, as illustrated
   /// below.
   ///
+  /// ```
   /// [Dart native object] ==(a)==> [formatted value] ==(b)==> [JSON string]
+  /// ```
   ///
   /// Above, the initial conversion (a) from a Dart object into a transit
   /// formatted value is handled by a `TransitEncoder` and the subsequent
   /// conversion (b) to a JSON string is handled by a [JsonEncoder].
   ///
-  /// Here is an example of using a `TransitEncoder` and [JsonCombiner] (which
-  /// processes a sequence of JSON objects) to encode individual objects to
-  /// `stdout`.
+  /// Here is an example of using a `TransitEncoder` and [JsonRepeatEncoder]
+  /// (which processes a sequence of JSON objects) to encode individual objects
+  /// to `stdout`.
   ///
   /// ```dart
   ///  var objects = ['A', {null: null, 'foo': true}, 3.14];
