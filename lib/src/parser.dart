@@ -8,7 +8,7 @@ import 'handlers/read_handlers.dart';
 import 'values/tag.dart';
 import 'values/tagged_value.dart';
 
-abstract class Parser {
+class Parser {
   final ReadHandlers _readHandlers;
   late final CacheDecoder _cache;
   late final DefaultReadHandler _defaultHandler;
@@ -31,9 +31,84 @@ abstract class Parser {
     return parseVal(obj);
   }
 
-  parseVal(obj, {bool asMapKey = false});
-  parseMap(Map obj, bool asMapKey, MapReadHandler? handler);
-  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler);
+  parseVal(obj, {bool asMapKey = false}) {
+    if (obj is Map) {
+      return parseMap(obj, asMapKey, null);
+    } else if (obj is List) {
+      return parseArray(obj, asMapKey, null);
+    } else if (obj is String) {
+      return _cache.convert(obj,
+          asMapKey: asMapKey, parseFn: (obj) => parseString(obj));
+    } else {
+      return obj;
+    }
+  }
+
+  parseTag(String tag, dynamic obj, bool asMapKey) {
+    ReadHandler? valHandler = _readHandlers.getHandler(tag);
+    dynamic val;
+    if (null != valHandler) {
+      if (obj is Map && valHandler is MapReadHandler) {
+        val = parseMap(obj, asMapKey, valHandler);
+      } else if (obj is List && valHandler is ArrayReadHandler) {
+        val = parseArray(obj, asMapKey, valHandler);
+      } else {
+        val = valHandler.fromRep(parseVal(obj, asMapKey: asMapKey));
+      }
+    } else {
+      val = decode(tag, parseVal(obj, asMapKey: asMapKey));
+    }
+    return val;
+  }
+
+  parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
+    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
+    var mr = mb.init();
+    for (var e in obj.entries) {
+      var key = parseVal(e.key, asMapKey: true);
+      if (key is Tag) {
+        return parseTag(key.value, e.value, asMapKey);
+      } else {
+        mr = mb.add(mr, key, parseVal(e.value));
+      }
+    }
+    return mb.complete(mr);
+  }
+
+  parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
+    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
+    var mr = mb.init();
+    for (var e in objs) {
+      mr = mb.add(mr, parseVal(e.key, asMapKey: true),
+          parseVal(e.value, asMapKey: false));
+    }
+    return mb.complete(mr);
+  }
+
+  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
+    if (obj.isEmpty) {
+      // Make an empty list with the default ArrayBuilder
+      ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
+      return ab.complete(ab.init());
+    }
+    var firstVal = parseVal(obj[0], asMapKey: asMapKey);
+    if (MAP == firstVal) {
+      return parseEntries(
+          [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
+          false,
+          null);
+    } else if (firstVal is Tag) {
+      return parseTag(firstVal.value, obj[1], asMapKey);
+    }
+    // Process rest of array w/o special decoding or interpretation
+    ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
+    var ar = ab.init();
+    ar = ab.add(ar, firstVal);
+    for (var e in obj.sublist(1)) {
+      ar = ab.add(ar, parseVal(e));
+    }
+    return ab.complete(ar);
+  }
 
   decode(String tag, rep) {
     var h = _readHandlers.getHandler(tag);
@@ -69,189 +144,6 @@ abstract class Parser {
       }
     }
     return s;
-  }
-}
-
-class JsonParser extends Parser {
-  JsonParser(super.readHandlers,
-      {super.cache,
-      super.defaultHandler,
-      super.mapBuilder,
-      super.arrayBuilder});
-
-  @override
-  parseVal(obj, {bool asMapKey = false}) {
-    if (obj is Map) {
-      return parseMap(obj, asMapKey, null);
-    } else if (obj is List) {
-      return parseArray(obj, asMapKey, null);
-    } else if (obj is String) {
-      return _cache.convert(obj,
-          asMapKey: asMapKey, parseFn: (obj) => parseString(obj));
-    } else {
-      return obj;
-    }
-  }
-
-  dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
-    ReadHandler? valHandler = _readHandlers.getHandler(tag);
-    dynamic val;
-    if (null != valHandler) {
-      if (obj is Map && valHandler is MapReadHandler) {
-        val = parseMap(obj, asMapKey, valHandler);
-      } else if (obj is List && valHandler is ArrayReadHandler) {
-        val = parseArray(obj, asMapKey, valHandler);
-      } else {
-        val = valHandler.fromRep(parseVal(obj, asMapKey: asMapKey));
-      }
-    } else {
-      val = decode(tag, parseVal(obj, asMapKey: asMapKey));
-    }
-    return val;
-  }
-
-  @override
-  parseMap(obj, bool asMapKey, MapReadHandler? handler) {
-    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
-    var mr = mb.init();
-    for (var e in obj.entries) {
-      var key = parseVal(e.key, asMapKey: true);
-      if (key is Tag) {
-        return parseTag(key.value, e.value, asMapKey);
-      } else {
-        mr = mb.add(mr, key, parseVal(e.value));
-      }
-    }
-    return mb.complete(mr);
-  }
-
-  parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
-    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
-    var mr = mb.init();
-    for (var e in objs) {
-      mr = mb.add(mr, parseVal(e.key, asMapKey: true),
-          parseVal(e.value, asMapKey: false));
-    }
-    return mb.complete(mr);
-  }
-
-  @override
-  parseArray(obj, bool asMapKey, ArrayReadHandler? handler) {
-    if (obj.isEmpty) {
-      // Make an empty list with the default ArrayBuilder
-      ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
-      return ab.complete(ab.init());
-    }
-    var firstVal = parseVal(obj[0], asMapKey: asMapKey);
-    if (MAP == firstVal) {
-      return parseEntries(
-          [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
-          false,
-          null);
-    } else if (firstVal is Tag) {
-      return parseTag(firstVal.value, obj[1], asMapKey);
-    }
-    // Process rest of array w/o special decoding or interpretation
-    ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
-    var ar = ab.init();
-    ar = ab.add(ar, firstVal);
-    for (var e in obj.sublist(1)) {
-      ar = ab.add(ar, parseVal(e));
-    }
-    return ab.complete(ar);
-  }
-}
-
-class MessagePackParser extends Parser {
-  MessagePackParser(super.readHandlers,
-      {super.cache,
-      super.defaultHandler,
-      super.mapBuilder,
-      super.arrayBuilder});
-
-  // TODO: so far (haven't tested anything yet) these implementations are
-  // identical to their json counterparts. So maybe some combining is in order.
-
-  @override
-  parseVal(obj, {bool asMapKey = false}) {
-    if (obj is Map) {
-      return parseMap(obj, asMapKey, null);
-    } else if (obj is List) {
-      return parseArray(obj, asMapKey, null);
-    } else if (obj is String) {
-      return _cache.convert(obj,
-          asMapKey: asMapKey, parseFn: (obj) => parseString(obj));
-    } else {
-      return obj;
-    }
-  }
-
-  dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
-    ReadHandler? valHandler = _readHandlers.getHandler(tag);
-    dynamic val;
-    if (null != valHandler) {
-      if (obj is Map && valHandler is MapReadHandler) {
-        val = parseMap(obj, asMapKey, valHandler);
-      } else if (obj is List && valHandler is ArrayReadHandler) {
-        val = parseArray(obj, asMapKey, valHandler);
-      } else {
-        val = valHandler.fromRep(parseVal(obj, asMapKey: asMapKey));
-      }
-    } else {
-      val = decode(tag, parseVal(obj, asMapKey: asMapKey));
-    }
-    return val;
-  }
-
-  @override
-  parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
-    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
-    var mr = mb.init();
-    for (var e in obj.entries) {
-      var key = parseVal(e.key, asMapKey: true);
-      if (key is Tag) {
-        return parseTag(key.value, e.value, asMapKey);
-      } else {
-        mr = mb.add(mr, key, parseVal(e.value));
-      }
-    }
-    return mb.complete(mr);
-  }
-
-  parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
-    MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
-    var mr = mb.init();
-    for (var e in objs) {
-      mr = mb.add(mr, parseVal(e.key, asMapKey: true),
-          parseVal(e.value, asMapKey: false));
-    }
-    return mb.complete(mr);
-  }
-
-  @override
-  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
-    if (obj.isEmpty) {
-      // Make an empty list with the default ArrayBuilder
-      ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
-      return ab.complete(ab.init());
-    }
-    var firstVal = parseVal(obj[0], asMapKey: asMapKey);
-    if (MAP == firstVal) {
-      return parseEntries(
-          [...obj.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1]))],
-          false,
-          null);
-    } else if (firstVal is Tag) {
-      return parseTag(firstVal.value, obj[1], asMapKey);
-    }
-    // Process rest of array w/o special decoding or interpretation
-    ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
-    var ar = ab.init();
-    ar = ab.add(ar, firstVal);
-    for (var e in obj.sublist(1)) {
-      ar = ab.add(ar, parseVal(e));
-    }
-    return ab.complete(ar);
   }
 }
 

@@ -51,7 +51,7 @@ class TransitDecoder extends Converter {
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
       ArrayBuilder? arrayBuilder})
-      : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
+      : _parser = Parser(ReadHandlers.json(customHandlers: customHandlers),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
@@ -61,7 +61,7 @@ class TransitDecoder extends Converter {
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
       ArrayBuilder? arrayBuilder})
-      : _parser = JsonParser(ReadHandlers.json(customHandlers: customHandlers),
+      : _parser = Parser(ReadHandlers.json(customHandlers: customHandlers),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
@@ -71,7 +71,7 @@ class TransitDecoder extends Converter {
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
       ArrayBuilder? arrayBuilder})
-      : _parser = MessagePackParser(
+      : _parser = Parser(
             ReadHandlers.messagePack(customHandlers: customHandlers),
             defaultHandler: defaultHandler,
             mapBuilder: mapBuilder,
