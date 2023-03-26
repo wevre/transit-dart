@@ -191,7 +191,8 @@ class MessagePackEncoder extends Combiner<dynamic, Uint8List> {
   encode(input) {
     _buffer.clear();
     _write(input);
-    return _buffer.buffer.asUint8List(0, _buffer.lengthInBytes);
+    return Uint8List.fromList(
+        _buffer.buffer.asUint8List(0, _buffer.lengthInBytes));
   }
 
   void _write(dynamic obj) {
