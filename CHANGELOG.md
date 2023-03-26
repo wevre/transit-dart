@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.76
+
+- Updates to README.
+
 ### 0.8.71
 
 - Fixed two bugs: (1) closing SplitterStreamSink output sink, (2) overwriting
