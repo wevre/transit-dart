@@ -81,24 +81,7 @@ class TransitDecoder extends Converter {
   convert(input) => _parser.parse(input);
 
   @override
-  Sink startChunkedConversion(Sink sink) => _TransitDecoderSink(sink, _parser);
-}
-
-class _TransitDecoderSink extends ChunkedConversionSink<dynamic> {
-  final Sink _sink;
-  final Parser _parser;
-
-  _TransitDecoderSink(this._sink, this._parser);
-
-  @override
-  void add(chunk) {
-    _sink.add(_parser.parse(chunk));
-  }
-
-  @override
-  void close() {
-    _sink.close();
-  }
+  Sink startChunkedConversion(Sink sink) => _TransitSink(sink, _parser.parse);
 }
 
 /// A [Converter] to encode native Dart objects into transit-formatted JSON
@@ -152,18 +135,18 @@ class TransitEncoder extends Converter {
   convert(input) => _emitter.emit(input);
 
   @override
-  Sink startChunkedConversion(Sink sink) => _TransitEncoderSink(sink, _emitter);
+  Sink startChunkedConversion(Sink sink) => _TransitSink(sink, _emitter.emit);
 }
 
-class _TransitEncoderSink extends ChunkedConversionSink<dynamic> {
+class _TransitSink extends ChunkedConversionSink<dynamic> {
   final Sink _sink;
-  final Emitter _emitter;
+  final Function(dynamic) _convert;
 
-  _TransitEncoderSink(this._sink, this._emitter);
+  _TransitSink(this._sink, this._convert);
 
   @override
   void add(chunk) {
-    _sink.add(_emitter.emit(chunk));
+    _sink.add(_convert(chunk));
   }
 
   @override

@@ -35,6 +35,8 @@
 
 :section Done
 
+   [✓] Abstract the _TransitEncoderSink and _TransitDecoderSink.
+
    [✓] Put the Json and MessagePack converters into a subdirectory and add some
    abstractions for the StreamTransformers.
 
