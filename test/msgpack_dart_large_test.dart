@@ -1,13 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:transit_dart/src/codecs/msgpack.dart';
 import 'package:test/test.dart';
+import 'package:transit_dart/src/codecs/msgpack.dart';
 import 'package:transit_dart/src/values/float.dart';
 
-//
-// Tests taken from msgpack2 (https://github.com/butlermatt/msgpack2)
-//
+/// Tests taken from [msgpack2](https://github.com/butlermatt/msgpack2)
 
 var isString = predicate((e) => e is String, 'is a String');
 var isInt = predicate((e) => e is int, 'is an int');
@@ -254,8 +252,7 @@ void packString22() {
 }
 
 void packString256() {
-  List<int> encoded = encoder.convert(
-      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+  List<int> encoded = encoder.convert('A' * 256);
   expect(encoded, hasLength(259));
   expect(encoded.sublist(0, 3), orderedEquals([218, 1, 0]));
   expect(encoded.sublist(3, 259), everyElement(65));
@@ -436,8 +433,6 @@ Future<void> unpackInt16() async {
   var value = await decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-32768));
-  data = Uint8List.fromList([0xd1, 0x04, 0xd2]);
-  print(decoder.convert(data));
 }
 
 Future<void> unpackInt32() async {
@@ -471,10 +466,7 @@ Future<void> unpackString256() async {
   Uint8List data = Uint8List.fromList([218, 1, 0, ...List.filled(256, 65)]);
   var value = await decoder.convert(data);
   expect(value, isString);
-  expect(
-      value,
-      equals(
-          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+  expect(value, equals('A' * 256));
 }
 
 Future<void> unpackStringArray() async {

@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:test/test.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
 
 String bytesToHex(Uint8List bytes) {
   return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(" ");
 }
 
-Future<void> main() async {
-  // Some objects to work with.
+/// Roundtrip test of MessagePack coders.
+///
+/// Note that we override the default setting and parse maps as true maps, not
+/// as transit map-as-array values with the '^ ' marker.
+Future<void> testMessagePack() async {
   var objects = [
     null,
     "hello",
@@ -25,23 +29,16 @@ Future<void> main() async {
     {"42": "the answer"},
   ];
 
-  // Stream.fromIterable(objects)
-  //     .transform(MessagePackEncoder())
-  //     .cast<List<int>>()
-  //     .transform(MessagePackDecoder())
-  //     .forEach((e) {
-  //   print('deserialized obj is `$e`');
-  // });
-
   final encoder = MessagePackEncoder();
-  final decoder = MessagePackDecoder();
+  final decoder = MessagePackDecoder(parseTransitMap: false);
 
-  List encoded = <List<int>>[];
   for (final o in objects) {
     var bytes = encoder.convert(o);
-    encoded.add(bytes);
-    print('object is $o, encoded as ${bytesToHex(bytes)}');
     var obj = await decoder.convert(bytes);
-    print('decoded is $obj');
+    expect(obj, equals(o));
   }
+}
+
+void main() {
+  test('MessagePack coders round trip', testMessagePack);
 }

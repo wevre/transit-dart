@@ -55,6 +55,8 @@ class _SplitterStreamSink<S> extends Sink<S> {
     // each transformed object is added to the output `sink`.
     _controller.stream.transform(transformer).listen((event) {
       sink.add(event);
+    }, onDone: () {
+      sink.close();
     });
   }
 

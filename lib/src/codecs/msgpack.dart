@@ -18,6 +18,10 @@ import '../values/float.dart';
 /// pair order.
 class MessagePackDecoder extends Splitter<List<int>, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
+  final bool _parseTransitMap;
+
+  MessagePackDecoder({bool parseTransitMap = true})
+      : _parseTransitMap = parseTransitMap;
 
   @override
   Stream split(stream) async* {
@@ -132,18 +136,30 @@ class MessagePackDecoder extends Splitter<List<int>, dynamic> {
   // Parses a "map", but since the only map we should encounter is a transit
   // iterable map, with stringable keys, we return a transit map-as-array with
   // the initial '^ ' marker.
-  Future<List> _readMap(ChunkedStreamReader<int> chunk, int len) async {
-    final m = [];
-    m.add('^ ');
-    for (var i = 0; i < len; i++) {
-      final uKey = await _expectBytes(chunk, 1);
-      final key = await _decode(uKey[0], chunk);
-      m.add(key);
-      final uVal = await _expectBytes(chunk, 1);
-      final val = await _decode(uVal[0], chunk);
-      m.add(val);
+  Future<dynamic> _readMap(ChunkedStreamReader<int> chunk, int len) async {
+    if (_parseTransitMap) {
+      final m = [];
+      m.add('^ ');
+      for (var i = 0; i < len; i++) {
+        final uKey = await _expectBytes(chunk, 1);
+        final key = await _decode(uKey[0], chunk);
+        m.add(key);
+        final uVal = await _expectBytes(chunk, 1);
+        final val = await _decode(uVal[0], chunk);
+        m.add(val);
+      }
+      return m;
+    } else {
+      final m = {};
+      for (var i = 0; i < len; i++) {
+        final uKey = await _expectBytes(chunk, 1);
+        final key = await _decode(uKey[0], chunk);
+        final uVal = await _expectBytes(chunk, 1);
+        final val = await _decode(uVal[0], chunk);
+        m[key] = val;
+      }
+      return m;
     }
-    return m;
   }
 
   Future<List> _readArray(ChunkedStreamReader<int> chunk, int len) async {
