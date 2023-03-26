@@ -84,7 +84,7 @@ Future<void> main() async {
 
 ## Default Type Mapping
 
-|Transit Type   |write accepts           |read produces           |
+|Transit Type   |Write accepts           |Read produces           |
 |------         |------                  |------                  |
 |null           |null                    |null                    |
 |string         |String                  |String                  |
@@ -94,7 +94,7 @@ Future<void> main() async {
 |bytes          |Uint8List               |Uint8List               |
 |keyword        |transit_dart.Keyword    |transit_dart.Keyword    |
 |symbol         |transit_dart.Symbol     |transit_dart.Symbol     |
-|big decimal    |transit_dart.BigDecimal |transit_dart.BigDecimal |
+|big decimal    |transit_dart.BigDecimal (wraps big_decimal/BigDecimal)|transit_dart.BigDecimal (wraps big_decimal/BigDecimal)|
 |big integer    |BigInt                  |BigInt                  |
 |time           |DateTime                |DateTime                |
 |uuid           |transit_dart.Uuid       |transit_dart.Uuid       |
@@ -106,6 +106,7 @@ Future<void> main() async {
 |set            |Set                     |Set                     |
 |list           |transit_dart.TransitList|transit_dart.TransitList|
 |link           |transit_dart.Link       |transit_dart.Link       |
+
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
