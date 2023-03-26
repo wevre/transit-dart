@@ -125,6 +125,7 @@ class MessagePackDecoder extends Splitter<List<int>, dynamic> {
   Future<Uint8List> _readBuffer(ChunkedStreamReader<int> chunk, int len) async {
     final b = await _expectBytes(chunk, len);
     // Do we need to copy the bytes here?
+    //return Uint8List.fromList(b);
     return b;
   }
 
