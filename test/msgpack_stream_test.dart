@@ -8,7 +8,7 @@ String bytesToHex(Uint8List bytes) {
   return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(" ");
 }
 
-/// Roundtrip test of MessagePack coders.
+/// Roundtrip test of MessagePack coders used as stream transformers.
 ///
 /// Note that we override the default setting and parse maps as true maps, not
 /// as transit map-as-array values with the '^ ' marker.

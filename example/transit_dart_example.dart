@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:collection/collection.dart';
 import 'package:transit_dart/src/codecs/converters.dart';
 import 'package:transit_dart/src/codecs/json.dart';
