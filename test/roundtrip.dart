@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:transit_dart/src/codecs/converters.dart';
 import 'package:transit_dart/src/codecs/json.dart';
@@ -55,6 +56,7 @@ void verboseRoundtrip() {
 void msgpackRoundtrip() {
   try {
     stdin
+        .cast<Uint8List>()
         .transform(MessagePackDecoder())
         .transform(TransitDecoder.messagePack())
         .transform(TransitEncoder.messagePack())

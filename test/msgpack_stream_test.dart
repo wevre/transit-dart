@@ -31,7 +31,6 @@ Future<void> testMessagePack() async {
 
   var roundtrip = await Stream.fromIterable(objects)
       .transform(MessagePackEncoder())
-      .cast<List<int>>()
       .transform(MessagePackDecoder(parseTransitMap: false))
       .toList();
 

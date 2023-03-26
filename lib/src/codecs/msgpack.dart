@@ -16,7 +16,7 @@ import '../values/float.dart';
 /// For the purposes of transit, a MessagePack `map` is parsed into a transit
 /// 'map-as-array' value with the initial "^ " marker, preserving the key-value
 /// pair order.
-class MessagePackDecoder extends Splitter<List<int>, dynamic> {
+class MessagePackDecoder extends Splitter<Uint8List, dynamic> {
   final Utf8Codec _codec = Utf8Codec();
   final bool _parseTransitMap;
 
