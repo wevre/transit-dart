@@ -45,6 +45,8 @@ Then in your Dart code, you can use:
 import 'package:transit_dart/transit_dart.dart';
 ```
 
+See [Installing](https://pub.dev/packages/transit_dart/install).
+
 ## Usage
 
 ```dart
@@ -82,9 +84,28 @@ Future<void> main() async {
 
 ## Default Type Mapping
 
-Coming soon: Provide table of transit semantic types mapped to Dart language
-objects.
-
+|Transit Type   |write accepts           |read produces           |
+|------         |------                  |------                  |
+|null           |null                    |null                    |
+|string         |String                  |String                  |
+|boolean        |bool                    |bool                    |
+|integer        |int                     |int                     |
+|decimal        |double                  |double                  |
+|bytes          |Uint8List               |Uint8List               |
+|keyword        |transit_dart.Keyword    |transit_dart.Keyword    |
+|symbol         |transit_dart.Symbol     |transit_dart.Symbol     |
+|big decimal    |transit_dart.BigDecimal |transit_dart.BigDecimal |
+|big integer    |BigInt                  |BigInt                  |
+|time           |DateTime                |DateTime                |
+|uuid           |transit_dart.Uuid       |transit_dart.Uuid       |
+|uri            |transit_dart.TransitUri |transit_dart.TransitUri |
+|char           |String                  |String                  |
+|special numbers|double.nan, double.infinity, double.negativeInfinity|double.nan, double.infinity, double.negativeInfinity|
+|array          |List                    |List                    |
+|map            |Map                     |Map                     |
+|set            |Set                     |Set                     |
+|list           |transit_dart.TransitList|transit_dart.TransitList|
+|link           |transit_dart.Link       |transit_dart.Link       |
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
