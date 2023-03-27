@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.79
+
+- TransitCodec classes for public API.
+
 ### 0.8.76
 
 - Updates to README.

@@ -3,7 +3,7 @@ name: transit_dart
 description: >-
   This library provides support for marshalling Transit data to/from Dart.
 
-version: 0.8.76
+version: 0.8.79
 
 repository: https://github.com/wevre/transit-dart
 
