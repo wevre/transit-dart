@@ -66,9 +66,9 @@ and the Flutter guide for
 applications written in different languages. This library provides support for
 marshalling Transit data to/from Dart.</p>
 <ul>
-<li><a href="https://blog.cognitect.com/blog/2014/7/22/transit">Rationale</a></li>
-<li>API docs coming soon</li>
-<li><a href="https://github.com/cognitect/transit-format">Specification</a></li>
+<li><a href="https://blog.cognitect.com/blog/2014/7/22/transit">Transit Rationale</a></li>
+<li><a href="https://github.com/cognitect/transit-format">Transit Specification</a></li>
+<li><a href="https://pub.dev/documentation/transit_dart/latest/">transit-dart API docs</a></li>
 </ul>
 <p>This implementation's major.minor version number corresponds to the version of
 the Transit specification it supports.</p>
@@ -79,26 +79,159 @@ migrating/transforming/re-storing that data when and if the transit format
 changes.</em></p>
 <h2 id="releases-and-dependency-information">Releases and Dependency Information</h2>
 <ul>
-<li>Latest release: 0.8.60 -- still in alpha, API is not fixed</li>
+<li>Latest release: 0.8.76 -- still in alpha, API is not fixed</li>
 </ul>
 <h2 id="getting-started">Getting started</h2>
-<p>Coming soon: Any Dart-specific installation things to mention here?</p>
+<pre class="language-dart"><code>dart pub add transit_dart
+</code></pre>
+<p>Then in your Dart code, you can use:</p>
+<pre class="language-dart"><code class="language-dart">import 'package:transit_dart/transit_dart.dart';
+</code></pre>
+<p>See <a href="https://pub.dev/packages/transit_dart/install">Installing</a>.</p>
 <h2 id="usage">Usage</h2>
-<p>WARNING: This is a terrible example, even though it works, because you have to
-cobble together the pieces by hand. In future we'll have a more friendly API
-with examples showing how to convert directly to JSON or write to a stream.</p>
-<pre class="language-dart"><code class="language-dart">import 'package:transit_dart/transit-dart';
+<pre class="language-dart"><code class="language-dart">import 'package:collection/collection.dart';
+import 'package:transit_dart/transit_dart.dart';
 
-var handlers = WriteHandlersMap.json();
+/// Encodes and decodes some objects. Note that although the objects are stored
+/// in a list, they are encoded and decoded separately, each one treated as a
+/// top-level object. This is expected behavior for transit and is an example of
+/// how transit brokers in not just one, but _streams_ of JSON objects.
+Future&lt;void&gt; main() async {
+  // Some objects to work with.
+  var objects = &lt;dynamic&gt;[
+    "hello",
+    ["A", "B", null, true, 3.4],
+    {42: "the answer"}
+  ];
+  print('objects: $objects');
 
-void main() {
-  var emitter = JsonEmitter(handlers, CacheEncoder());
-  print(emitter.emit("hello"));
+  // Encode the objects to a List&lt;String&gt;;
+  var writer = TransitEncoder.json().fuse(JsonRepeatEncoder());
+  var encoded = await Stream.fromIterable(objects).transform(writer).toList();
+  print('encoded: ${encoded.join()}');
+
+  // Decode the objects to a List&lt;dynamic&gt;
+  var reader = JsonRepeatDecoder().fuse(TransitDecoder.json());
+  var decoded = await Stream.fromIterable(encoded).transform(reader).toList();
+  print('decoded: $decoded');
+
+  // Did everything come back same as we sent it?
+  var test = DeepCollectionEquality().equals(objects, decoded);
+  print('Round trip success? ${test ? 'YES' : 'NO'}');
 }
 </code></pre>
 <h2 id="default-type-mapping">Default Type Mapping</h2>
-<p>Coming soon: Provide table of transit semantic types mapped to Dart language
-objects.</p>
+<table>
+<thead>
+<tr>
+<th>Transit Type</th>
+<th>Write accepts</th>
+<th>Read produces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>null</td>
+<td>null</td>
+<td>null</td>
+</tr>
+<tr>
+<td>string</td>
+<td>String</td>
+<td>String</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>bool</td>
+<td>bool</td>
+</tr>
+<tr>
+<td>integer</td>
+<td>int</td>
+<td>int</td>
+</tr>
+<tr>
+<td>decimal</td>
+<td>double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>bytes</td>
+<td>Uint8List</td>
+<td>Uint8List</td>
+</tr>
+<tr>
+<td>keyword</td>
+<td>transit_dart.Keyword</td>
+<td>transit_dart.Keyword</td>
+</tr>
+<tr>
+<td>symbol</td>
+<td>transit_dart.Symbol</td>
+<td>transit_dart.Symbol</td>
+</tr>
+<tr>
+<td>big decimal</td>
+<td>transit_dart.BigDecimal (wraps big_decimal/BigDecimal)</td>
+<td>transit_dart.BigDecimal (wraps big_decimal/BigDecimal)</td>
+</tr>
+<tr>
+<td>big integer</td>
+<td>BigInt</td>
+<td>BigInt</td>
+</tr>
+<tr>
+<td>time</td>
+<td>DateTime</td>
+<td>DateTime</td>
+</tr>
+<tr>
+<td>uuid</td>
+<td>transit_dart.Uuid</td>
+<td>transit_dart.Uuid</td>
+</tr>
+<tr>
+<td>uri</td>
+<td>transit_dart.TransitUri</td>
+<td>transit_dart.TransitUri</td>
+</tr>
+<tr>
+<td>char</td>
+<td>String</td>
+<td>String</td>
+</tr>
+<tr>
+<td>special numbers</td>
+<td>double.nan, double.infinity, double.negativeInfinity</td>
+<td>double.nan, double.infinity, double.negativeInfinity</td>
+</tr>
+<tr>
+<td>array</td>
+<td>List</td>
+<td>List</td>
+</tr>
+<tr>
+<td>map</td>
+<td>Map</td>
+<td>Map</td>
+</tr>
+<tr>
+<td>set</td>
+<td>Set</td>
+<td>Set</td>
+</tr>
+<tr>
+<td>list</td>
+<td>transit_dart.TransitList</td>
+<td>transit_dart.TransitList</td>
+</tr>
+<tr>
+<td>link</td>
+<td>transit_dart.Link</td>
+<td>transit_dart.Link</td>
+</tr>
+</tbody>
+</table>
 <h2 id="testing">Testing</h2>
 <p>To run the roundtrip verification tests in <code>transit-format</code>, first ensure
 Dart&gt;=2.19.1 and Java 8 are installed, then do the following:</p>
@@ -163,8 +296,8 @@ governing permissions and limitations under the License.</p>
       <section class="summary">
           <h2>Libraries</h2>
         <dl>
-          <dt id="transit">
-  <span class="name"><a href="transit/transit-library.html">transit</a></span> 
+          <dt id="transit_dart">
+  <span class="name"><a href="transit_dart/transit_dart-library.html">transit_dart</a></span> 
 
 </dt>
 <dd>Support for doing something awesome.
@@ -190,7 +323,7 @@ governing permissions and limitations under the License.</p>
     <h5 class="hidden-xs"><span class="package-name">transit_dart</span> <span class="package-kind">package</span></h5>
     <ol>
       <li class="section-title">Libraries</li>
-      <li><a href="transit/transit-library.html">transit</a></li>
+      <li><a href="transit_dart/transit_dart-library.html">transit_dart</a></li>
 </ol>
 
   </div>
@@ -203,7 +336,7 @@ governing permissions and limitations under the License.</p>
 <footer>
   <span class="no-break">
     transit_dart
-      0.8.60
+      0.8.76
   </span>
 
   
