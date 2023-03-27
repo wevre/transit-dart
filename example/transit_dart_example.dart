@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:transit_dart/src/codecs/converters.dart';
-import 'package:transit_dart/src/codecs/json.dart';
+import 'package:transit_dart/transit_dart.dart';
 
 /// Encodes and decodes some objects. Note that although the objects are stored
 /// in a list, they are encoded and decoded separately, each one treated as a
@@ -15,14 +14,16 @@ Future<void> main() async {
   ];
   print('objects: $objects');
 
+  var transit = TransitJsonCodec();
+
   // Encode the objects to a List<String>;
-  var writer = TransitEncoder.json().fuse(JsonRepeatEncoder());
-  var encoded = await Stream.fromIterable(objects).transform(writer).toList();
+  var encoded =
+      await Stream.fromIterable(objects).transform(transit.encoder).toList();
   print('encoded: ${encoded.join()}');
 
   // Decode the objects to a List<dynamic>
-  var reader = JsonRepeatDecoder().fuse(TransitDecoder.json());
-  var decoded = await Stream.fromIterable(encoded).transform(reader).toList();
+  var decoded =
+      await Stream.fromIterable(encoded).transform(transit.decoder).toList();
   print('decoded: $decoded');
 
   // Did everything come back same as we sent it?

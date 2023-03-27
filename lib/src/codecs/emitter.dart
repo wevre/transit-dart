@@ -214,3 +214,7 @@ class MessagePackEmitter extends Emitter {
     return sorted;
   }
 }
+
+// abstract class DefaultWriteHandler<T> {
+//   T fromRep(String tag, dynamic rep);
+// }

@@ -30,7 +30,7 @@
    I opened an issue on that project asking if they have plans to bring it up to
    date with Dart 2, and barring that or any objections on their side, I'm going
    to call this one transit-dart and basically plan on, in a manner as kindly as
-   possible, seperseding that old library.
+   possible, superseding that old library.
 
 :section Architecture
 

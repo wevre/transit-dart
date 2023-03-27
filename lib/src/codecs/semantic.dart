@@ -8,12 +8,18 @@ import '../handlers/read_handlers.dart';
 import '../handlers/write_handlers.dart';
 import 'parser.dart';
 
-/// A [Converter] to decode transit-formatted JSON objects into native Dart
-/// objects.
-class TransitDecoder extends Converter {
+export 'parser.dart' show DefaultReadHandler;
+export '../handlers/array_builder.dart' show ArrayBuilder;
+export '../handlers/map_builder.dart' show MapBuilder;
+export '../handlers/read_handlers.dart' show ReadHandler, ReadHandlersMap;
+export '../handlers/write_handlers.dart' show WriteHandler, WriteHandlersMap;
+
+/// A [Converter] to decode transit formatted (i.e. semantic) values into
+/// native Dart objects.
+class SemanticDecoder extends Converter {
   final Parser _parser;
 
-  /// Returns a `TransitDecoder` for parsing transit-formatted JSON objects.
+  /// Returns a `SemanticDecoder` for parsing transit-formatted JSON objects.
   ///
   /// This converter is meant to be chained with a [JsonDecoder] in a pipeline
   /// that converts a JSON string to a Dart native object, as illustrated below.
@@ -24,29 +30,30 @@ class TransitDecoder extends Converter {
   ///
   /// Above, the conversion (a) from JSON string to a transit formatted value is
   /// accomplished with a [JsonDecoder] and the final conversion (b) to a native
-  /// Dart object is handled by this `TransitDecoder`.
+  /// Dart object is handled by this `SemanticDecoder`.
   ///
-  /// Here is an example of using a [JsonRepeatDecoder] (which processes a
-  /// sequence of JSON strings) in connection with a `TransitDecoder` to parse
-  /// incoming transit data from `stdin`.
+  /// Here is an example of using a [JsonSplitter] (which processes a sequence
+  /// of JSON strings) in connection with a `SemanticDecoder` to parse incoming
+  /// transit data from `stdin`.
   ///
   /// ```dart
   /// stdin
   ///     .transform(utf8.decoder)
   ///     .transform(JsonSplitter())
-  ///     .transform(TransitDecoder.json())
+  ///     .transform(SemanticDecoder.json())
   ///     .forEach((obj) {
   ///   print('parsed object is $obj');
   /// });
   /// ```
   ///
-  /// Optional parameters affect the behavior of `TransitDecoder`. Custom
-  /// [ReadHandler]s and tags can be supplied as a map in [customHandlers]. The
-  /// [mapBuilder] and [arrayBuilder], if supplied, allow libraries layered on
-  /// top of `transit-dart` to hook into the construction of `Array` and `Map`
-  /// objects and generate objects appropriate for the target library. A
-  /// [defaultHandler] is called when no [ReadHandler] is found for a given tag.
-  TransitDecoder.json(
+  /// Optional parameters affect the behavior of `SemanticDecoder`. Custom
+  /// [ReadHandler]s and tags can be bundled into a [ReadHandlersMap] and
+  /// supplied in [customHandlers]. The [mapBuilder] and [arrayBuilder], if
+  /// supplied, allow libraries layered on top of `transit-dart` to hook into
+  /// the construction of `Array` and `Map` objects and generate objects
+  /// appropriate for the target library. A [defaultHandler] is called when no
+  /// [ReadHandler] is found for a given tag.
+  SemanticDecoder.json(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
@@ -56,7 +63,7 @@ class TransitDecoder extends Converter {
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
 
-  TransitDecoder.verboseJson(
+  SemanticDecoder.jsonVerbose(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
@@ -66,7 +73,7 @@ class TransitDecoder extends Converter {
             mapBuilder: mapBuilder,
             arrayBuilder: arrayBuilder);
 
-  TransitDecoder.messagePack(
+  SemanticDecoder.messagePack(
       {ReadHandlersMap? customHandlers,
       DefaultReadHandler? defaultHandler,
       MapBuilder? mapBuilder,
@@ -81,12 +88,12 @@ class TransitDecoder extends Converter {
   convert(input) => _parser.parse(input);
 
   @override
-  Sink startChunkedConversion(Sink sink) => _TransitSink(sink, _parser.parse);
+  Sink startChunkedConversion(Sink sink) => _SemanticSink(sink, _parser.parse);
 }
 
-/// A [Converter] to encode native Dart objects into transit-formatted JSON
-/// objects.
-class TransitEncoder extends Converter {
+/// A [Converter] to encode native Dart objects into transit-formatted (i.e.
+/// semantic) objects.
+class SemanticEncoder extends Converter {
   final Emitter _emitter;
 
   /// Returns a `TransitEncoder` for emitting transit-formatted JSON objects.
@@ -118,16 +125,16 @@ class TransitEncoder extends Converter {
   /// ```
   ///
   /// Supply custom handlers as a map in [customHandlers].
-  TransitEncoder.json({WriteHandlersMap? customHandlers})
+  SemanticEncoder.json({WriteHandlersMap? customHandlers})
       : _emitter =
             JsonEmitter(WriteHandlers.json(customHandlers: customHandlers));
 
-  TransitEncoder.verboseJson({WriteHandlersMap? customHandlers})
+  SemanticEncoder.jsonVerbose({WriteHandlersMap? customHandlers})
       : _emitter = JsonEmitter(
             WriteHandlers.json(customHandlers: customHandlers),
             cache: CacheEncoder(active: false));
 
-  TransitEncoder.messagePack({WriteHandlersMap? customHandlers})
+  SemanticEncoder.messagePack({WriteHandlersMap? customHandlers})
       : _emitter = MessagePackEmitter(
             WriteHandlers.messagePack(customHandlers: customHandlers));
 
@@ -135,14 +142,14 @@ class TransitEncoder extends Converter {
   convert(input) => _emitter.emit(input);
 
   @override
-  Sink startChunkedConversion(Sink sink) => _TransitSink(sink, _emitter.emit);
+  Sink startChunkedConversion(Sink sink) => _SemanticSink(sink, _emitter.emit);
 }
 
-class _TransitSink extends ChunkedConversionSink<dynamic> {
+class _SemanticSink extends ChunkedConversionSink<dynamic> {
   final Sink _sink;
   final Function(dynamic) _convert;
 
-  _TransitSink(this._sink, this._convert);
+  _SemanticSink(this._sink, this._convert);
 
   @override
   void add(chunk) {

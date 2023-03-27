@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:transit_dart/src/codecs/converters.dart';
+import 'package:transit_dart/src/codecs/semantic.dart';
 import 'package:transit_dart/src/codecs/json.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
 
@@ -26,8 +26,8 @@ void jsonRoundtrip() {
     stdin
         .transform(utf8.decoder)
         .transform(JsonRepeatDecoder())
-        .transform(TransitDecoder.json())
-        .transform(TransitEncoder.json())
+        .transform(SemanticDecoder.json())
+        .transform(SemanticEncoder.json())
         .transform(JsonRepeatEncoder())
         .transform(utf8.encoder)
         .pipe(stdout);
@@ -42,8 +42,8 @@ void verboseRoundtrip() {
     stdin
         .transform(utf8.decoder)
         .transform(JsonRepeatDecoder())
-        .transform(TransitDecoder.verboseJson())
-        .transform(TransitEncoder.verboseJson())
+        .transform(SemanticDecoder.jsonVerbose())
+        .transform(SemanticEncoder.jsonVerbose())
         .transform(JsonRepeatEncoder())
         .transform(utf8.encoder)
         .pipe(stdout);
@@ -58,8 +58,8 @@ void msgpackRoundtrip() {
     stdin
         .cast<Uint8List>()
         .transform(MessagePackDecoder())
-        .transform(TransitDecoder.messagePack())
-        .transform(TransitEncoder.messagePack())
+        .transform(SemanticDecoder.messagePack())
+        .transform(SemanticEncoder.messagePack())
         .transform(MessagePackEncoder())
         .cast<List<int>>()
         .pipe(stdout);

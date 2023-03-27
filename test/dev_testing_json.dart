@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 
 import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
-import 'package:transit_dart/src/codecs/converters.dart';
+import 'package:transit_dart/src/codecs/semantic.dart';
 import 'package:transit_dart/src/values/big_decimal.dart';
 import 'package:transit_dart/src/values/keyword.dart';
 import 'package:transit_dart/src/values/link.dart';
@@ -44,9 +44,9 @@ class PointReadHandler extends ReadHandler<Point, List> {
 
 void someOtherTests() {
   var emitter =
-      TransitEncoder.json(customHandlers: {Point: PointWriteHandler()});
+      SemanticEncoder.json(customHandlers: {Point: PointWriteHandler()});
   var parser =
-      TransitDecoder.json(customHandlers: {'point': PointReadHandler()});
+      SemanticDecoder.json(customHandlers: {'point': PointReadHandler()});
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
   // dynamic obj = bigObject;
