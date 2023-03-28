@@ -80,6 +80,7 @@ var bigObject = [
     'there': 2.2,
     'you': 3.3,
     'cutie': 4.4,
+    null: "null test as cmap key",
     'point': Point(5, 7)
   },
   [

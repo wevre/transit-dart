@@ -11,7 +11,8 @@ import 'parser.dart';
 export 'parser.dart' show DefaultReadHandler;
 export '../handlers/array_builder.dart' show ArrayBuilder;
 export '../handlers/map_builder.dart' show MapBuilder;
-export '../handlers/read_handlers.dart' show ReadHandler, ReadHandlersMap;
+export '../handlers/read_handlers.dart'
+    show ReadHandler, ArrayReadHandler, ReadHandlersMap;
 export '../handlers/write_handlers.dart' show WriteHandler, WriteHandlersMap;
 
 /// A [Converter] to decode transit formatted (i.e. semantic) values into

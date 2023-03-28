@@ -11,6 +11,7 @@ export 'semantic.dart'
         ArrayBuilder,
         MapBuilder,
         ReadHandler,
+        ArrayReadHandler,
         ReadHandlersMap,
         WriteHandler,
         WriteHandlersMap;

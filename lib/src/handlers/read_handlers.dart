@@ -218,17 +218,22 @@ class ListReadHandler extends ArrayReadHandler<TransitList, TransitList> {
 class _CmapArrayReader extends ArrayBuilder<_CmapArrayReader, Map, dynamic> {
   final Map _m = {};
   dynamic _nextKey;
+  final _marker = Object();
+
+  _CmapArrayReader() {
+    _nextKey = _marker;
+  }
 
   @override
   init() => this;
 
   @override
-  add(ar, item) {
-    if (null != _nextKey) {
-      _m[_nextKey] = item;
-      _nextKey = null;
-    } else {
+  add(a, item) {
+    if (_nextKey == _marker) {
       _nextKey = item;
+    } else {
+      _m[_nextKey] = item;
+      _nextKey = _marker;
     }
     return this;
   }

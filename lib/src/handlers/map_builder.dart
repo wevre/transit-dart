@@ -7,7 +7,7 @@ abstract class MapBuilder<G, M, K, V> {
   M complete(G m);
 }
 
-class MapBuilderImpl implements MapBuilder<Map, Map, dynamic, dynamic> {
+class MapBuilderImpl extends MapBuilder<Map, Map, dynamic, dynamic> {
   @override
   init() => {};
 
