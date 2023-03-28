@@ -1,5 +1,10 @@
 # transit-dart
 
+### 0.8.81
+
+- Updates to support transit-cljd.
+- Fixed bug with null as key in cmap.
+
 ### 0.8.79
 
 - TransitCodec classes for public API.
