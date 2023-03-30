@@ -31,7 +31,7 @@ changes._
 
 ## Releases and Dependency Information
 
-* Latest release: 0.8.81 -- still in alpha, API is not fixed
+* Latest release: 0.8.81
 
 ## Getting started
 
@@ -81,47 +81,22 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 To run the roundtrip verification tests in `transit-format`, first ensure
 Dart>=2.19.1 and Java 8 are installed, then do the following:
 
-1. Set up a testing directory where all this can take place. The
-   `transit-format` library and `transit-dart` library need to be side-by-side
-   under the same parent directory. For example, create `transit-test` and
-   inside clone [transit-format](https://github.com/cognitect/transit-format).
+1. Set up a testing directory where `transit-format` and `transit-dart` can be
+   cloned side-by-side. We have a fork `transit-format` that has support for
+   testing `transit-dart` all ready to go. Clone this to your test folder.
 
 ```sh
 mkdir transit-test
 cd transit-test
-git clone https://github.com/cognitect/transit-format.git
+git clone https://github.com/wevre/transit-format.git
 # Do something similar to the following to ensure Java 8.
 jenv local 1.8
 ```
 
-2. Tell `transit-format` that the dart version is supported. In file
-   `src/transit/verify.clj`, near line 350, make this change:
-
-```clj
-;; in file `transit-format/src/transit/verify.clj`
-(def supported-impls #{"transit-clj"
-                       "transit-cljs"
-                       "transit-dart"   ;<-- insert this line
-                       "transit-java"
-                       "transit-jruby"
-                       "transit-js"
-                       "transit-python"
-                       "transit-ruby"})
-```
-
-3. Copy `get-transit-dart` from `transit-dart/bin` into `transit-format/bin`.
+2. From the `transit-format` folder, run the verify command.
 
 ```sh
-curl "https://raw.githubusercontent.com/wevre/transit-dart/master/bin/get-transit-dart" > transit-format/bin/get-transit-dart
-chmod +x transit-format/bin/get-transit-dart
-```
-
-4. Execute the verify command. The `verify` command will check for and, as
-   necessary, clone `transit-dart`, run `dart pub get`, and compile
-   `roundtrip.dart`.
-
-```
-transit-format/bin/verify -impls dart
+bin/verify -impls dart
 ```
 
 ## Additional information

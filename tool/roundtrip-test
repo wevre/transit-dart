@@ -9,8 +9,6 @@
 
 cd `dirname $0`/..
 
-dart compile exe -o resources/emits/roundtrip.exe test/roundtrip.dart
-
-cp resources/emits/roundtrip.exe ../transit-test/transit-dart/resources/emits/
+cp test/roundtrip.dart ../transit-test/transit-dart/test/roundtrip.dart
 
 ../transit-test/transit-format/bin/verify -impls dart
