@@ -8,3 +8,6 @@ pubspec.lock
 
 .clj-kondo/
 .lsp/
+.calva/
+.cpcache/
+.nrepl-port

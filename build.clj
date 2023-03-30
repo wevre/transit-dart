@@ -34,5 +34,4 @@
 (comment
   (update-readme "0.8.6")
   (update-pubspec "0.8.5")
-  (version)
-  (sha "0.8.6"))
+  (version))
