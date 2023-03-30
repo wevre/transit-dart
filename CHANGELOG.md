@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.86
+
+- update build program
+
 ### 0.8.84
 
 - added build script
