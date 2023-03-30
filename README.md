@@ -31,7 +31,7 @@ changes._
 
 ## Releases and Dependency Information
 
-* Latest release: 0.8.81
+* Latest release: 0.8.84
 
 ## Getting started
 
@@ -79,7 +79,7 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
-Dart>=2.19.1 and Java 8 are installed, then do the following:
+Dart>=0.8.84 and Java 8 are installed, then do the following:
 
 1. Set up a testing directory where `transit-format` and `transit-dart` can be
    cloned side-by-side. We have a fork `transit-format` that has support for

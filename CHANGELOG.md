@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.84
+
+- added build script
+
 ### 0.8.81
 
 - Updates to support transit-cljd.
