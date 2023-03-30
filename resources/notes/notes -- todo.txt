@@ -18,11 +18,6 @@
 
       Then go change README.md, CHANGELOG.md, and pubspec.yaml with version.
 
-   [] Set up the transit-cljd package, with a local reference to this package,
-   and figure out what and how to expose the public API, but no more.
-
-   [] Finish support for verboseJson.
-
    [] Clean up my tests and use Dart's idiomatic testing features.
 
    [] Clean up examples.
@@ -34,6 +29,11 @@
    UPDATE: I think it worked because we support reading both 't' and 'm' tags.
 
 :section Done
+
+   [✓] Finish support for verboseJson.
+
+   [✓] Set up the transit-cljd package, with a local reference to this package,
+   and figure out what and how to expose the public API, but no more.
 
    [✓] Abstract the _TransitEncoderSink and _TransitDecoderSink.
 

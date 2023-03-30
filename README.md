@@ -1,15 +1,3 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
 # transit-dart
 
 Transit is a data format and set of libraries for conveying values between
@@ -31,7 +19,7 @@ changes._
 
 ## Releases and Dependency Information
 
-* Latest release: 0.8.84
+* Latest release: 0.8.84 <!--TRANSIT_DART_VERSION-->
 
 ## Getting started
 
@@ -79,10 +67,10 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 ## Testing
 
 To run the roundtrip verification tests in `transit-format`, first ensure
-Dart>=0.8.84 and Java 8 are installed, then do the following:
+Dart>=2.19.1 and Java 8 are installed, then do the following:
 
 1. Set up a testing directory where `transit-format` and `transit-dart` can be
-   cloned side-by-side. We have a fork `transit-format` that has support for
+   cloned side-by-side. We have a fork of `transit-format` that has support for
    testing `transit-dart` all ready to go. Clone this to your test folder.
 
 ```sh

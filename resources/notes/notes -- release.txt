@@ -4,15 +4,13 @@
 
 :section Instructions
 
-   To update the version build execute this command:
+   To update the version build execute this command (note that build.tool
+   command-line args are EDN, with careful string quoting requirements):
 
    ```
-      clj -T:build release :notes '"- changes in this release"'
+      clj -T:build release :notes '["log note 1" "log note 2"]'
 
-   Can specify multiple notes by either separating them with `\n` or by hitting
-   return while typing at the command line
+   To publish
 
    ```
-      clj -T:build release :notes '"- the first note
-      > - the second note
-      "'
+      clj -T:build publish
