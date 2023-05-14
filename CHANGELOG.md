@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.90
+
+- fixed async bug with single item convert
+
 ### 0.8.88
 
 - drop collection package version from 1.17.1 to 1.17.0
