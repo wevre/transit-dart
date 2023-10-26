@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'combiner.dart';
-import 'splitter.dart';
 
 /// A [Converter] that splits a [String] into separate JSON forms, emitting a
 /// parsed JSON object for each form.
@@ -22,12 +21,39 @@ import 'splitter.dart';
 /// Likewise `[1,2}` is considered a valid form. Of course neither of those
 /// examples, nor any other malformed JSON, will survive the call to
 /// [jsonDecode()].
-class JsonRepeatDecoder extends Splitter<String, dynamic> {
+
+class JsonFramingDecoder extends Converter<String, String> {
   final bool _strict;
-  final StringBuffer _buffer = StringBuffer();
+  JsonFramingDecoder(this._strict);
 
-  JsonRepeatDecoder({bool strict = false}) : _strict = strict;
+  @override
+  String convert(String input) {
+    return input;
+  }
 
+  @override
+  Sink<String> startChunkedConversion(Sink<String> sink) {
+    return _JsonFramingSink(sink, _strict);
+  }
+}
+
+class JsonRepeatDecoder extends Converter<String, dynamic> {
+  final Converter<String, dynamic> _converter;
+
+  JsonRepeatDecoder({bool strict = false})
+      : _converter = JsonFramingDecoder(strict)
+            .fuse(StreamMappingConverter.from(JsonDecoder().convert));
+
+  @override
+  dynamic convert(String input) => _converter.convert(input);
+
+  @override
+  Sink<String> startChunkedConversion(Sink<dynamic> sink) {
+    return _converter.startChunkedConversion(sink);
+  }
+}
+
+class _JsonFramingSink implements Sink<String> {
   static const int _doubleQuote = 34;
   static const int _leftBrace = 123;
   static const int _rightBrace = 125;
@@ -35,60 +61,68 @@ class JsonRepeatDecoder extends Splitter<String, dynamic> {
   static const int _rightBracket = 93;
   static const int _backslash = 92;
 
-  @override
-  Stream split(stream) async* {
-    var skipEscape = false;
-    var quoted = false;
-    var stackDepth = 0;
+  final bool _strict;
+  final StringBuffer _buffer = StringBuffer();
+  var _skipEscape = false;
+  var _quoted = false;
+  var _stackDepth = 0;
+  final Sink<String> _sink;
 
-    await for (final s in stream) {
-      var sliceStart = 0;
-      for (var i = 0; i < s.length; i++) {
-        var char = s.codeUnitAt(i);
-        // If prev char was escape, then skip this one.
-        if (skipEscape) {
-          skipEscape = false;
+  _JsonFramingSink(this._sink, this._strict);
+
+  @override
+  void add(String s) {
+    var sliceStart = 0;
+    for (var i = 0; i < s.length; i++) {
+      var char = s.codeUnitAt(i);
+      // If prev char was escape, then skip this one.
+      if (_skipEscape) {
+        _skipEscape = false;
+        continue;
+      }
+      // Check for interesting chars.
+      switch (char) {
+        case _doubleQuote:
+          _quoted = !_quoted;
           continue;
-        }
-        // Check for interesting chars.
-        switch (char) {
-          case _doubleQuote:
-            quoted = !quoted;
+        case _leftBrace:
+        case _leftBracket:
+          if (!_quoted && 0 == _stackDepth++ && !_strict) {
+            // when lenient (not strict), discard all characters before the top-level dict/array
+            sliceStart = i;
+            _buffer.clear();
+          }
+          continue;
+        case _rightBrace:
+        case _rightBracket:
+          if (_quoted) {
             continue;
-          case _leftBrace:
-          case _leftBracket:
-            if (!quoted && 0 == stackDepth++ && !_strict) {
-              sliceStart = i;
-              _buffer.clear();
-            }
+          } else if (--_stackDepth > 0) {
             continue;
-          case _rightBrace:
-          case _rightBracket:
-            if (quoted) {
-              continue;
-            } else if (--stackDepth > 0) {
-              continue;
-            } else {
-              break;
-            }
-          case _backslash:
-            skipEscape = true;
-            continue;
-          default:
-            continue;
-        }
-        // Reached the end of a JSON form.
-        var slice = s.substring(sliceStart, i + 1);
-        _buffer.write(slice);
-        yield jsonDecode(_buffer.toString());
-        _buffer.clear();
-        sliceStart = i + 1;
+          } else {
+            break;
+          }
+        case _backslash:
+          _skipEscape = true;
+          continue;
+        default:
+          continue;
       }
-      // If didn't exhaust the full string, hold the tail in the buffer.
-      if (sliceStart < s.length) {
-        _buffer.write(s.substring(sliceStart));
-      }
+      // Reached the end of a JSON form.
+      var slice = s.substring(sliceStart, i + 1);
+      _buffer.write(slice);
+      sliceStart = i + 1;
+      String read = _buffer.toString();
+      _buffer.clear();
+      _sink.add(read);
     }
+    _buffer.write(s.substring(sliceStart));
+  }
+
+  @override
+  void close() {
+    _buffer.clear();
+    _sink.close();
   }
 }
 
@@ -96,7 +130,6 @@ class JsonRepeatDecoder extends Splitter<String, dynamic> {
 ///
 /// The Dart-provided [JsonEncoder] closes its underlying stream after encoding
 /// JSON object, which is annoying. This converter stays open for business.
-class JsonRepeatEncoder extends Combiner<dynamic, String> {
-  @override
-  encode(input) => jsonEncode(input);
+class JsonRepeatEncoder extends StreamFnMappingConverter<dynamic, String> {
+  JsonRepeatEncoder() : super(JsonEncoder().convert);
 }

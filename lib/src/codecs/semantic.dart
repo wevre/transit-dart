@@ -146,7 +146,7 @@ class SemanticEncoder extends Converter {
   Sink startChunkedConversion(Sink sink) => _SemanticSink(sink, _emitter.emit);
 }
 
-class _SemanticSink extends ChunkedConversionSink<dynamic> {
+class _SemanticSink implements Sink<dynamic> {
   final Sink _sink;
   final Function(dynamic) _convert;
 

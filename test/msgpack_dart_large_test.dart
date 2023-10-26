@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:test/test.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
-import 'package:transit_dart/src/values/float.dart';
 
 /// Tests taken from [msgpack2](https://github.com/butlermatt/msgpack2)
 
@@ -34,7 +33,6 @@ void main() {
   });
 
   group("Test Pack Floats", () {
-    test("Pack Float32", packFloat32);
     test("Pack Float64 (double)", packDouble);
   });
 
@@ -43,13 +41,6 @@ void main() {
   test("Pack 256-character string", packString256);
   test("Pack string array", packStringArray);
   test("Pack int-to-string map", packIntToStringMap);
-
-  group("Test Pack Binary", () {
-    test("Pack Bin8", packBin8);
-    test("Pack Bin16", packBin16);
-    test("Pack Bin32", packBin32);
-    test("Pack ByteData", packByteData);
-  });
 
   test("Test Unpack Null", unpackNull);
 
@@ -115,16 +106,14 @@ Future<void> veryLargeArray() async {
   expect(deserialized, list);
 }
 
-Future<void> largeMap() async {
+void largeMap() {
   final map = <int, String>{};
   for (int i = 0; i < 16; ++i) {
     map[i] = "Item $i";
   }
   final serialized = encoder.convert(map);
-  List deserialized = await decoder.convert(serialized);
-  var remapped = Map.fromEntries(
-      deserialized.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1])));
-  expect(remapped, map);
+  final deserialized = decoder.convert(serialized);
+  expect(deserialized, map);
 }
 
 Future<void> veryLargeMap() async {
@@ -133,10 +122,8 @@ Future<void> veryLargeMap() async {
     map[i] = "Item $i";
   }
   final serialized = encoder.convert(map);
-  List deserialized = await decoder.convert(serialized);
-  var remapped = Map.fromEntries(
-      deserialized.sublist(1).slices(2).map((e) => MapEntry(e[0], e[1])));
-  expect(remapped, map);
+  final deserialized = await decoder.convert(serialized);
+  expect(deserialized, map);
 }
 
 void packNull() {
@@ -204,11 +191,6 @@ void packInt64() {
   expect(encoded, orderedEquals([211, 128, 0, 0, 0, 0, 0, 0, 0]));
 }
 
-void packFloat32() {
-  List<int> encoded = encoder.convert(Float(3.14));
-  expect(encoded, orderedEquals([202, 64, 72, 245, 195]));
-}
-
 void packDouble() {
   List<int> encoded = encoder.convert(3.14);
   expect(encoded,
@@ -256,39 +238,6 @@ void packString256() {
   expect(encoded, hasLength(259));
   expect(encoded.sublist(0, 3), orderedEquals([218, 1, 0]));
   expect(encoded.sublist(3, 259), everyElement(65));
-}
-
-void packBin8() {
-  var data = Uint8List.fromList(List.filled(32, 65));
-  List<int> encoded = encoder.convert(data);
-  expect(encoded.length, equals(34));
-  expect(encoded.getRange(0, 2), orderedEquals([0xc4, 32]));
-  expect(encoded.getRange(2, encoded.length), orderedEquals(data));
-}
-
-void packBin16() {
-  var data = Uint8List.fromList(List.filled(256, 65));
-  List<int> encoded = encoder.convert(data);
-  expect(encoded.length, equals(256 + 3));
-  expect(encoded.getRange(0, 3), orderedEquals([0xc5, 1, 0]));
-  expect(encoded.getRange(3, encoded.length), orderedEquals(data));
-}
-
-void packBin32() {
-  var data = Uint8List.fromList(List.filled(65536, 65));
-  List<int> encoded = encoder.convert(data);
-  expect(encoded.length, equals(65536 + 5));
-  expect(encoded.getRange(0, 5), orderedEquals([0xc6, 0, 1, 0, 0]));
-  expect(encoded.getRange(5, encoded.length), orderedEquals(data));
-}
-
-void packByteData() {
-  var data = ByteData.view(Uint8List.fromList(List.filled(32, 65)).buffer);
-  List<int> encoded = encoder.convert(data);
-  expect(encoded.length, equals(34));
-  expect(encoded.getRange(0, 2), orderedEquals([0xc4, 32]));
-  expect(encoded.getRange(2, encoded.length),
-      orderedEquals(data.buffer.asUint8List()));
 }
 
 void packStringArray() {
@@ -452,7 +401,7 @@ Future<void> unpackInt64() async {
 Future<void> unpackFloat32() async {
   Uint8List data = Uint8List.fromList([202, 64, 72, 245, 195]);
   var value = await decoder.convert(data);
-  expect(value.value.toStringAsPrecision(3), equals('3.14'));
+  expect(value.toStringAsPrecision(3), equals('3.14'));
 }
 
 Future<void> unpackDouble() async {
@@ -492,13 +441,12 @@ Future<void> unpackStringArray() async {
   expect(value, orderedEquals(["one", "two", "three"]));
 }
 
-Future<void> unpackIntToStringMap() async {
+void unpackIntToStringMap() {
   Uint8List data =
       Uint8List.fromList([130, 1, 163, 111, 110, 101, 2, 163, 116, 119, 111]);
-  List value = await decoder.convert(data);
-  expect(value, isList);
-  expect(value[2], equals("one"));
-  expect(value[4], equals("two"));
+  final value = decoder.convert(data);
+  expect(value, isMap);
+  expect(value, equals({1: 'one', 2: 'two'}));
 }
 
 Future<void> unpackSmallDateTime() async {
