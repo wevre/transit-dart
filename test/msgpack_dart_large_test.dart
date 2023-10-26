@@ -84,25 +84,25 @@ void main() {
 var encoder = MessagePackEncoder();
 var decoder = MessagePackDecoder();
 
-Future<void> largeArray() async {
+void largeArray() {
   final list = <String>[];
   for (int i = 0; i < 16; ++i) {
     list.add("Item $i");
   }
 
   final serialized = encoder.convert(list);
-  List deserialized = await decoder.convert(serialized);
+  List deserialized = decoder.convert(serialized);
   expect(deserialized, list);
 }
 
-Future<void> veryLargeArray() async {
+void veryLargeArray() {
   final list = <String>[];
   for (int i = 0; i < 65536; ++i) {
     list.add("Item $i");
   }
 
   final serialized = encoder.convert(list);
-  List deserialized = await decoder.convert(serialized);
+  List deserialized = decoder.convert(serialized);
   expect(deserialized, list);
 }
 
@@ -116,13 +116,13 @@ void largeMap() {
   expect(deserialized, map);
 }
 
-Future<void> veryLargeMap() async {
+void veryLargeMap() {
   final map = <int, String>{};
   for (int i = 0; i < 65536; ++i) {
     map[i] = "Item $i";
   }
   final serialized = encoder.convert(map);
-  final deserialized = await decoder.convert(serialized);
+  final deserialized = decoder.convert(serialized);
   expect(deserialized, map);
 }
 
@@ -270,32 +270,32 @@ void packIntToStringMap() {
 }
 
 // Test unpacking
-Future<void> unpackNull() async {
+void unpackNull() {
   Uint8List data = Uint8List.fromList([0xc0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isNull);
 }
 
-Future<void> unpackFalse() async {
+void unpackFalse() {
   Uint8List data = Uint8List.fromList([0xc2]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isFalse);
 }
 
-Future<void> unpackTrue() async {
+void unpackTrue() {
   Uint8List data = Uint8List.fromList([0xc3]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isTrue);
 }
 
-Future<void> unpackString5() async {
+void unpackString5() {
   Uint8List data = Uint8List.fromList([165, 104, 101, 108, 108, 111]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isString);
   expect(value, equals("hello"));
 }
 
-Future<void> unpackString22() async {
+void unpackString22() {
   Uint8List data = Uint8List.fromList([
     182,
     104,
@@ -321,104 +321,104 @@ Future<void> unpackString22() async {
     101,
     33
   ]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isString);
   expect(value, equals("hello there, everyone!"));
 }
 
-Future<void> unpackPositiveFixInt() async {
+void unpackPositiveFixInt() {
   Uint8List data = Uint8List.fromList([1]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(1));
 }
 
-Future<void> unpackNegativeFixInt() async {
+void unpackNegativeFixInt() {
   Uint8List data = Uint8List.fromList([240]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-16));
 }
 
-Future<void> unpackUint8() async {
+void unpackUint8() {
   Uint8List data = Uint8List.fromList([204, 128]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(128));
 }
 
-Future<void> unpackUint16() async {
+void unpackUint16() {
   Uint8List data = Uint8List.fromList([205, 128, 0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(32768));
 }
 
-Future<void> unpackUint32() async {
+void unpackUint32() {
   Uint8List data = Uint8List.fromList([206, 128, 0, 0, 0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(2147483648));
 }
 
-Future<void> unpackUint64() async {
+void unpackUint64() {
   // Dart 2 doesn't support true Uint64 without using BigInt
   Uint8List data =
       Uint8List.fromList([207, 127, 255, 255, 255, 255, 255, 255, 255]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(9223372036854775807));
 }
 
-Future<void> unpackInt8() async {
+void unpackInt8() {
   Uint8List data = Uint8List.fromList([208, 128]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-128));
 }
 
-Future<void> unpackInt16() async {
+void unpackInt16() {
   Uint8List data = Uint8List.fromList([209, 128, 0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-32768));
 }
 
-Future<void> unpackInt32() async {
+void unpackInt32() {
   Uint8List data = Uint8List.fromList([210, 128, 0, 0, 0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-2147483648));
 }
 
-Future<void> unpackInt64() async {
+void unpackInt64() {
   Uint8List data = Uint8List.fromList([211, 128, 0, 0, 0, 0, 0, 0, 0]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isInt);
   expect(value, equals(-9223372036854775808));
 }
 
-Future<void> unpackFloat32() async {
+void unpackFloat32() {
   Uint8List data = Uint8List.fromList([202, 64, 72, 245, 195]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value.toStringAsPrecision(3), equals('3.14'));
 }
 
-Future<void> unpackDouble() async {
+void unpackDouble() {
   Uint8List data = Uint8List.fromList(
       [0xcb, 0x40, 0x09, 0x1e, 0xb8, 0x51, 0xeb, 0x85, 0x1f]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, equals(3.14));
 }
 
-Future<void> unpackString256() async {
+void unpackString256() {
   Uint8List data = Uint8List.fromList([218, 1, 0, ...List.filled(256, 65)]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isString);
   expect(value, equals('A' * 256));
 }
 
-Future<void> unpackStringArray() async {
+void unpackStringArray() {
   Uint8List data = Uint8List.fromList([
     147,
     163,
@@ -436,7 +436,7 @@ Future<void> unpackStringArray() async {
     101,
     101
   ]);
-  var value = await decoder.convert(data);
+  var value = decoder.convert(data);
   expect(value, isList);
   expect(value, orderedEquals(["one", "two", "three"]));
 }
@@ -449,17 +449,17 @@ void unpackIntToStringMap() {
   expect(value, equals({1: 'one', 2: 'two'}));
 }
 
-Future<void> unpackSmallDateTime() async {
+void unpackSmallDateTime() {
   var data = <int>[0xd7, 0xff, 0, 0, 0, 0, 0, 0, 0, 0];
-  var value = await decoder.convert(Uint8List.fromList(data));
+  var value = decoder.convert(Uint8List.fromList(data));
   expect(value, equals(DateTime.fromMillisecondsSinceEpoch(0)));
   data = <int>[0xd7, 0xff, 47, 175, 8, 0, 91, 124, 180, 16];
-  value = await decoder.convert(Uint8List.fromList(data));
+  value = decoder.convert(Uint8List.fromList(data));
   expect((value as DateTime).toUtc(),
       equals(DateTime.utc(2018, 8, 22, 0, 56, 56, 200)));
 }
 
-Future<void> unpackPastDate() async {
+void unpackPastDate() {
   var data = <int>[
     0xc7,
     12,
@@ -478,7 +478,7 @@ Future<void> unpackPastDate() async {
     158
   ];
 
-  var value = await decoder.convert(Uint8List.fromList(data)) as DateTime;
+  var value = decoder.convert(Uint8List.fromList(data)) as DateTime;
   expect(value.toUtc(), equals(DateTime.utc(1932, 2, 24, 1, 53, 45, 500)));
 
   data = <int>[
@@ -498,6 +498,6 @@ Future<void> unpackPastDate() async {
     248,
     248
   ];
-  value = await decoder.convert(Uint8List.fromList(data));
+  value = decoder.convert(Uint8List.fromList(data));
   expect(value.toUtc(), equals(DateTime.utc(1969, 12, 31, 23, 30)));
 }

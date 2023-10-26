@@ -86,7 +86,7 @@ class SemanticDecoder extends Converter {
             arrayBuilder: arrayBuilder);
 
   @override
-  convert(input) async => _parser.parse(await input);
+  convert(input) => _parser.parse(input);
 
   @override
   Sink startChunkedConversion(Sink sink) => _SemanticSink(sink, _parser.parse);

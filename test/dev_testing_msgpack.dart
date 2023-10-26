@@ -40,7 +40,7 @@ class PointReadHandler extends ReadHandler<Point, List> {
   Point fromRep(rep) => Point(rep[0], rep[1]);
 }
 
-Future<void> someOtherTests() async {
+void someOtherTests() {
   var emitter =
       SemanticEncoder.messagePack(customHandlers: {Point: PointWriteHandler()});
   var parser = SemanticDecoder.messagePack(
@@ -58,7 +58,7 @@ Future<void> someOtherTests() async {
   print('emitted is `$emitted`');
   var encoded = encoder.convert(emitted);
   print('encoded is `$encoded`');
-  var decoded = await decoder.convert(encoded);
+  var decoded = decoder.convert(encoded);
   print('decoded is `$decoded`');
   var parsed = parser.convert(decoded);
   print('parsed is `$parsed`');

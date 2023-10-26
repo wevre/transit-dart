@@ -5,15 +5,15 @@ import 'package:collection/collection.dart';
 import 'package:transit_dart/src/codecs/transit.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
 
-Future<void> test_convert() async {
+void test_convert() {
   var transit = TransitJsonCodec();
   var object = {"num1": 3.0, "num2": 4.0};
   // Encode object to string.
-  var encoded = await transit.encoder.convert(object);
+  var encoded = transit.encoder.convert(object);
   // Decode the object.
-  var decoded = await transit.decoder.convert(encoded);
+  var decoded = transit.decoder.convert(encoded);
   // Roundtrip succes?
-  var test = DeepCollectionEquality().equals(object, await decoded);
+  var test = DeepCollectionEquality().equals(object, decoded);
   print('Round trip success? ${test ? 'YES' : 'NO'}');
 }
 
@@ -27,7 +27,7 @@ void test_separate() {
   var parsed = parser.convert(decoded);
 }
 
-Future<void> main() async {
+void main()  {
   test_convert();
   //test_separate();
   // Set up the object.
