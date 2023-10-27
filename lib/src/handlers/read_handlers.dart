@@ -31,8 +31,6 @@ class ReadHandlers {
     'i': IntegerReadHandler(),
     'd': DoubleReadHandler(),
     'b': BinaryReadHandler(),
-    //'\$': SymbolReadHandler(),
-    'n': BigIntegerReadHandler(),
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
     'u': UuidReadHandler(),
@@ -73,11 +71,6 @@ class DoubleReadHandler extends AbstractReadHandler<double> {
 class BinaryReadHandler extends AbstractReadHandler<Uint8List> {
   @override
   fromRep(rep) => base64.decode(rep);
-}
-
-class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
-  @override
-  fromRep(rep) => BigInt.tryParse(rep)!;
 }
 
 class TimeReadHandler extends AbstractReadHandler<DateTime> {

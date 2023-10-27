@@ -82,7 +82,6 @@ var bigObject = [
     'symbol',
     //Symbol('db'),
     'BigInteger',
-    BigInt.from(123456),
     'BigDecimal',
   ],
   Uri('http://www.詹姆斯.com/'),

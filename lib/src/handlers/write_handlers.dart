@@ -54,7 +54,6 @@ class WriteHandlers implements TagProvider {
     int: IntegerWriteHandler(),
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
-    BigInt: ToStringWriteHandler<BigInt>('n'),
     DateTime: TimeWriteHandler(),
     Uuid: ToStringWriteHandler<Uuid>('u'),
     Uri: ToStringWriteHandler<Uri>('r'),
