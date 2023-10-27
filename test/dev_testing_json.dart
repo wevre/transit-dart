@@ -5,8 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
-import 'package:transit_dart/src/values/link.dart';
-import 'package:transit_dart/src/values/list.dart';
 
 var writeHandlers = WriteHandlers.json();
 var readHandlers = ReadHandlers.json();
@@ -85,9 +83,6 @@ var bigObject = [
     'BigDecimal',
   ],
   Uri('http://www.詹姆斯.com/'),
-  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
-      name: 'a-name', render: 'link', prompt: 'a-prompt'),
-  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel', render: 'image'),
   time,
   {
     'hello',
@@ -95,11 +90,5 @@ var bigObject = [
     'you',
     'cutie',
   },
-  TransitList([
-    'hello',
-    'there',
-    'you',
-    'cutie',
-  ]),
   Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
 ];

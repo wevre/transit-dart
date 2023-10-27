@@ -1,6 +1,4 @@
 import 'dart:typed_data';
-import '../values/link.dart';
-import '../values/list.dart';
 import '../values/tagged_value.dart';
 
 typedef WriteHandlersMap = Map<Type, WriteHandler>;
@@ -57,8 +55,6 @@ class WriteHandlers implements TagProvider {
     Uri: ToStringWriteHandler<Uri>('r'),
     List: ArrayWriteHandler(),
     Set: SetWriteHandler(),
-    TransitList: ListWriteHandler(),
-    Link: LinkWriteHandler(),
     TaggedValue: TaggedValueWriteHandler(),
   };
 
@@ -195,20 +191,6 @@ class SetWriteHandler extends AbstractWriteHandler<Set> {
 
   @override
   rep(obj, {String? tag}) => TaggedValue('array', obj.toList(growable: false));
-}
-
-class ListWriteHandler extends AbstractWriteHandler<TransitList> {
-  ListWriteHandler() : super('list');
-
-  @override
-  rep(obj, {String? tag}) => TaggedValue('array', obj.value);
-}
-
-class LinkWriteHandler extends AbstractWriteHandler<Link> {
-  LinkWriteHandler() : super('link');
-
-  @override
-  rep(obj, {String? tag}) => obj.toMap();
 }
 
 class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {

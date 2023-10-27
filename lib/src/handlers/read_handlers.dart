@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'array_builder.dart';
 import 'map_builder.dart';
-import '../values/link.dart';
-import '../values/list.dart';
 
 typedef ReadHandlersMap = Map<String, ReadHandler>;
 
@@ -35,9 +33,7 @@ class ReadHandlers {
     'r': UriReadHandler(),
     'z': SpecialNumberReadHandler(),
     'cmap': CmapReadHandler(),
-    'list': ListReadHandler(),
     'set': SetReadHandler(),
-    'link': LinkReadHandler(),
   };
 }
 
@@ -103,11 +99,6 @@ class SpecialNumberReadHandler extends AbstractReadHandler<double> {
   }
 }
 
-class LinkReadHandler extends AbstractReadHandler<Link> {
-  @override
-  fromRep(rep) => Link.fromMap(rep);
-}
-
 abstract class MapReadHandler<G, M> extends AbstractReadHandler<M> {
   MapBuilder<G, M, dynamic, dynamic> mapBuilder();
 }
@@ -133,25 +124,6 @@ class SetReadHandler extends ArrayReadHandler<Set, Set> {
 
   @override
   arrayBuilder() => _SetArrayReader();
-}
-
-class _ListArrayReader extends ArrayBuilder<TransitList, TransitList, dynamic> {
-  @override
-  init() => TransitList([]);
-
-  @override
-  add(a, item) => a..value.add(item);
-
-  @override
-  complete(a) => a;
-}
-
-class ListReadHandler extends ArrayReadHandler<TransitList, TransitList> {
-  @override
-  fromRep(rep) => throw Exception('Unsupported operation fromRep');
-
-  @override
-  arrayBuilder() => _ListArrayReader();
 }
 
 class _CmapArrayReader extends ArrayBuilder<_CmapArrayReader, Map, dynamic> {
