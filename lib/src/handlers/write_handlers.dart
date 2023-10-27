@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import '../values/big_decimal.dart';
 import '../values/link.dart';
 import '../values/list.dart';
 import '../values/tagged_value.dart';
@@ -55,7 +54,6 @@ class WriteHandlers implements TagProvider {
     int: IntegerWriteHandler(),
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
-    BigDecimal: ToStringWriteHandler<BigDecimal>('f'),
     BigInt: ToStringWriteHandler<BigInt>('n'),
     DateTime: TimeWriteHandler(),
     Uuid: ToStringWriteHandler<Uuid>('u'),

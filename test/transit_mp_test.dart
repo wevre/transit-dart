@@ -8,15 +8,14 @@ import 'package:transit_dart/src/codecs/transit.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/values/tagged_value.dart';
 
-
 class UuidReadHandler extends ReadHandler<String, String> {
   String fromRep(String rep) => rep;
 }
 
 var msgpackEncoder = MessagePackEncoder();
-var transitDecoder = TransitMessagePackCodec(
-        customReadHandlers: {"u": UuidReadHandler()})
-    .decoder;
+var transitDecoder =
+    TransitMessagePackCodec(customReadHandlers: {"u": UuidReadHandler()})
+        .decoder;
 
 readerOf(dynamic codedTransit) {
   return transitDecoder.convert(msgpackEncoder.convert(codedTransit));

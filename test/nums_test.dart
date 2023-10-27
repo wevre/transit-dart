@@ -27,7 +27,7 @@ void test_separate() {
   var parsed = parser.convert(decoded);
 }
 
-void main()  {
+void main() {
   test_convert();
   //test_separate();
   // Set up the object.

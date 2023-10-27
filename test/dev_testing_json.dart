@@ -5,7 +5,6 @@ import 'package:collection/collection.dart';
 import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
-import 'package:transit_dart/src/values/big_decimal.dart';
 import 'package:transit_dart/src/values/link.dart';
 import 'package:transit_dart/src/values/list.dart';
 import 'package:transit_dart/src/values/uuid.dart';
@@ -86,7 +85,6 @@ var bigObject = [
     'BigInteger',
     BigInt.from(123456),
     'BigDecimal',
-    BigDecimal.tryParse("-1.1E3")
   ],
   Uri('http://www.詹姆斯.com/'),
   Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',

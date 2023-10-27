@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:async/async.dart' hide StreamSplitter;
 import 'package:typed_data/typed_buffers.dart';
 
 import 'combiner.dart';

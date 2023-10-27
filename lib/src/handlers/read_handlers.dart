@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'array_builder.dart';
 import 'map_builder.dart';
-import '../values/big_decimal.dart';
 import '../values/link.dart';
 import '../values/list.dart';
 import '../values/uuid.dart';
@@ -33,7 +32,6 @@ class ReadHandlers {
     'd': DoubleReadHandler(),
     'b': BinaryReadHandler(),
     //'\$': SymbolReadHandler(),
-    'f': BigDecimalReadHandler(),
     'n': BigIntegerReadHandler(),
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
@@ -75,11 +73,6 @@ class DoubleReadHandler extends AbstractReadHandler<double> {
 class BinaryReadHandler extends AbstractReadHandler<Uint8List> {
   @override
   fromRep(rep) => base64.decode(rep);
-}
-
-class BigDecimalReadHandler extends AbstractReadHandler<BigDecimal> {
-  @override
-  fromRep(rep) => BigDecimal.tryParse(rep)!;
 }
 
 class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
