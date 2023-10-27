@@ -33,8 +33,6 @@ class ReadHandlers {
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
     'r': UriReadHandler(),
-    'c': CharacterReadHandler(),
-    "'": QuotedReadHandler(),
     'z': SpecialNumberReadHandler(),
     'cmap': CmapReadHandler(),
     'list': ListReadHandler(),
@@ -88,16 +86,6 @@ class UriReadHandler extends AbstractReadHandler<Uri> {
   @override
   // @TODO: tryParse or parse?
   fromRep(rep) => Uri.parse(rep);
-}
-
-class CharacterReadHandler extends AbstractReadHandler<String> {
-  @override
-  fromRep(rep) => rep;
-}
-
-class QuotedReadHandler extends AbstractReadHandler<dynamic> {
-  @override
-  fromRep(rep) => rep;
 }
 
 class SpecialNumberReadHandler extends AbstractReadHandler<double> {
