@@ -3,12 +3,9 @@ import 'dart:typed_data';
 import 'array_builder.dart';
 import 'map_builder.dart';
 import '../values/big_decimal.dart';
-import '../values/keyword.dart';
 import '../values/link.dart';
 import '../values/list.dart';
-import '../values/symbol.dart';
 import '../values/uuid.dart';
-import '../values/uri.dart';
 
 typedef ReadHandlersMap = Map<String, ReadHandler>;
 
@@ -35,14 +32,13 @@ class ReadHandlers {
     'i': IntegerReadHandler(),
     'd': DoubleReadHandler(),
     'b': BinaryReadHandler(),
-    ':': KeywordReadHandler(),
-    '\$': SymbolReadHandler(),
+    //'\$': SymbolReadHandler(),
     'f': BigDecimalReadHandler(),
     'n': BigIntegerReadHandler(),
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
     'u': UuidReadHandler(),
-    'r': TransitUriReadHandler(),
+    'r': UriReadHandler(),
     'c': CharacterReadHandler(),
     "'": QuotedReadHandler(),
     'z': SpecialNumberReadHandler(),
@@ -79,16 +75,6 @@ class DoubleReadHandler extends AbstractReadHandler<double> {
 class BinaryReadHandler extends AbstractReadHandler<Uint8List> {
   @override
   fromRep(rep) => base64.decode(rep);
-}
-
-class KeywordReadHandler extends AbstractReadHandler<Keyword> {
-  @override
-  fromRep(rep) => Keyword(rep);
-}
-
-class SymbolReadHandler extends AbstractReadHandler<Symbol> {
-  @override
-  fromRep(rep) => Symbol(rep);
 }
 
 class BigDecimalReadHandler extends AbstractReadHandler<BigDecimal> {
@@ -134,9 +120,10 @@ class UuidReadHandler extends AbstractReadHandler<Uuid> {
   }
 }
 
-class TransitUriReadHandler extends AbstractReadHandler<TransitUri> {
+class UriReadHandler extends AbstractReadHandler<Uri> {
   @override
-  fromRep(rep) => TransitUri(rep);
+  // @TODO: tryParse or parse?
+  fromRep(rep) => Uri.parse(rep);
 }
 
 class CharacterReadHandler extends AbstractReadHandler<String> {

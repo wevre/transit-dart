@@ -6,12 +6,9 @@ import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
 import 'package:transit_dart/src/values/big_decimal.dart';
-import 'package:transit_dart/src/values/keyword.dart';
 import 'package:transit_dart/src/values/link.dart';
 import 'package:transit_dart/src/values/list.dart';
-import 'package:transit_dart/src/values/symbol.dart';
 import 'package:transit_dart/src/values/uuid.dart';
-import 'package:transit_dart/src/values/uri.dart';
 
 var writeHandlers = WriteHandlers.json();
 var readHandlers = ReadHandlers.json();
@@ -72,9 +69,7 @@ var bigObject = [
   {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
   {'hello': 1, 'there': 2, 'you': 3, 'cutie': double.negativeInfinity},
   {null: 'hello', 4.56: '`there', true: '~you'},
-  {Keyword('my-key'): 13},
   {4.56: '^cutie'},
-  {Keyword('my-key'): 14},
   {
     [0, 'hello']: 1.1,
     'there': 2.2,
@@ -85,37 +80,30 @@ var bigObject = [
   },
   [
     'keyword',
-    Keyword('test'),
     'ns-keyword',
-    Keyword('transit/test'),
     'symbol',
-    Symbol('db'),
+    //Symbol('db'),
     'BigInteger',
     BigInt.from(123456),
     'BigDecimal',
     BigDecimal.tryParse("-1.1E3")
   ],
-  TransitUri('http://www.詹姆斯.com/'),
-  Link(TransitUri(Uri(scheme: 'https', host: 'www.example.com').toString()),
-      'a-rel',
+  Uri('http://www.詹姆斯.com/'),
+  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel',
       name: 'a-name', render: 'link', prompt: 'a-prompt'),
-  Link(TransitUri(Uri(scheme: 'https', host: 'www.example.com').toString()),
-      'a-rel',
-      render: 'image'),
+  Link(Uri(scheme: 'https', host: 'www.example.com'), 'a-rel', render: 'image'),
   time,
   {
     'hello',
     'there',
     'you',
     'cutie',
-    Keyword('test'),
   },
   TransitList([
     'hello',
     'there',
     'you',
     'cutie',
-    Keyword('transit/test'),
   ]),
   Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
 ];

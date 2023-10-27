@@ -5,8 +5,12 @@ class TaggedValue {
   TaggedValue(this.tag, this.value);
 
   @override
-  operator ==(other) =>
-      (other is TaggedValue) && (other.tag == tag) && (other.value == value);
+  operator ==(other) {
+    if (identical(this, other)) return true;
+    if (other is! TaggedValue) return false;
+    return ((other as TaggedValue).tag == tag) &&
+        ((other as TaggedValue).value == value);
+  }
 
   @override
   get hashCode {

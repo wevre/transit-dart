@@ -1,12 +1,9 @@
 import 'package:collection/collection.dart';
 
-import 'uri.dart';
-
 class Link {
   final Map m;
 
-  Link(TransitUri href, String rel,
-      {String? name, String? render, String? prompt})
+  Link(Uri href, String rel, {String? name, String? render, String? prompt})
       : m = {} {
     m['href'] = href;
     m['rel'] = rel;

@@ -1,12 +1,9 @@
 import 'dart:typed_data';
 import '../values/big_decimal.dart';
-import '../values/keyword.dart';
 import '../values/link.dart';
 import '../values/list.dart';
-import '../values/symbol.dart';
 import '../values/tagged_value.dart';
 import '../values/uuid.dart';
-import '../values/uri.dart';
 
 typedef WriteHandlersMap = Map<Type, WriteHandler>;
 
@@ -58,13 +55,11 @@ class WriteHandlers implements TagProvider {
     int: IntegerWriteHandler(),
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
-    Keyword: KeywordWriteHandler(),
-    Symbol: ToStringWriteHandler<Symbol>('\$'),
     BigDecimal: ToStringWriteHandler<BigDecimal>('f'),
     BigInt: ToStringWriteHandler<BigInt>('n'),
     DateTime: TimeWriteHandler(),
     Uuid: ToStringWriteHandler<Uuid>('u'),
-    TransitUri: ToStringWriteHandler<TransitUri>('r'),
+    Uri: ToStringWriteHandler<Uri>('r'),
     List: ArrayWriteHandler(),
     Set: SetWriteHandler(),
     TransitList: ListWriteHandler(),
@@ -151,16 +146,6 @@ class DoubleWriteHandler extends AbstractWriteHandler<double> {
 
 class BinaryWriteHandler extends AbstractWriteHandler<Uint8List> {
   BinaryWriteHandler() : super('b');
-}
-
-class KeywordWriteHandler extends AbstractWriteHandler<Keyword> {
-  KeywordWriteHandler() : super(':');
-
-  @override
-  rep(obj, {String? tag}) => stringRep(obj);
-
-  @override
-  stringRep(obj) => obj.toString().substring(1);
 }
 
 class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
