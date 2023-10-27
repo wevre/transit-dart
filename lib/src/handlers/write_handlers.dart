@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import '../values/link.dart';
 import '../values/list.dart';
 import '../values/tagged_value.dart';
-import '../values/uuid.dart';
 
 typedef WriteHandlersMap = Map<Type, WriteHandler>;
 
@@ -55,7 +54,6 @@ class WriteHandlers implements TagProvider {
     double: DoubleWriteHandler(),
     Uint8List: BinaryWriteHandler(),
     DateTime: TimeWriteHandler(),
-    Uuid: ToStringWriteHandler<Uuid>('u'),
     Uri: ToStringWriteHandler<Uri>('r'),
     List: ArrayWriteHandler(),
     Set: SetWriteHandler(),

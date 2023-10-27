@@ -4,7 +4,6 @@ import 'array_builder.dart';
 import 'map_builder.dart';
 import '../values/link.dart';
 import '../values/list.dart';
-import '../values/uuid.dart';
 
 typedef ReadHandlersMap = Map<String, ReadHandler>;
 
@@ -33,7 +32,6 @@ class ReadHandlers {
     'b': BinaryReadHandler(),
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
-    'u': UuidReadHandler(),
     'r': UriReadHandler(),
     'c': CharacterReadHandler(),
     "'": QuotedReadHandler(),
@@ -84,26 +82,6 @@ class TimeReadHandler extends AbstractReadHandler<DateTime> {
 class VerboseTimeReadHander extends AbstractReadHandler<DateTime> {
   @override
   fromRep(rep) => DateTime.parse(rep);
-}
-
-class UuidReadHandler extends AbstractReadHandler<Uuid> {
-  @override
-  fromRep(rep) {
-    if (rep is String) {
-      return Uuid(rep);
-    } else if (rep is List) {
-      List l = rep;
-      var hi = BigInt.from(l[0]).toUnsigned(64).toRadixString(16);
-      var lo = BigInt.from(l[1]).toUnsigned(64).toRadixString(16);
-      var c = '$hi$lo';
-      var u =
-          '${c.substring(0, 8)}-${c.substring(8, 12)}-${c.substring(12, 16)}'
-          '-${c.substring(16, 20)}-${c.substring(20)}';
-      return Uuid(u);
-    } else {
-      throw Error();
-    }
-  }
 }
 
 class UriReadHandler extends AbstractReadHandler<Uri> {

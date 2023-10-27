@@ -5,7 +5,6 @@ import 'package:transit_dart/src/codecs/semantic.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
 import 'package:transit_dart/src/values/link.dart';
 import 'package:transit_dart/src/values/list.dart';
-import 'package:transit_dart/src/values/uuid.dart';
 
 var writeHandlers = WriteHandlers.messagePack();
 var readHandlers = ReadHandlers.messagePack();
