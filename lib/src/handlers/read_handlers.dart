@@ -23,6 +23,7 @@ class ReadHandlers {
       : _handlers = {..._defaults, ...?customHandlers};
 
   static final ReadHandlersMap _defaults = {
+    "'": IdentityReadHandler(),
     '_': NullReadHandler(),
     '?': BooleanReadHandler(),
     'i': IntegerReadHandler(),
@@ -43,6 +44,11 @@ abstract class AbstractReadHandler<T> extends ReadHandler<T, dynamic> {}
 class NullReadHandler extends AbstractReadHandler<Null> {
   @override
   fromRep(rep) => null;
+}
+
+class IdentityReadHandler extends AbstractReadHandler<dynamic> {
+  @override
+  fromRep(rep) => rep;
 }
 
 class BooleanReadHandler extends AbstractReadHandler<bool> {
