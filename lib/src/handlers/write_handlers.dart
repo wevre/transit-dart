@@ -55,7 +55,7 @@ class WriteHandlers implements TagProvider {
     const Class<double>(): DoubleWriteHandler(),
     const Class<Uint8List>(): BinaryWriteHandler(),
     const Class<DateTime>(): TimeWriteHandler(),
-    const Class<Uri>(): ToStringWriteHandler<Uri>('r'),
+    const Class<Uri>(): UriWriteHandler(),
     const Class<List>(): ArrayWriteHandler(),
     const Class<Set>(): SetWriteHandler(),
     const Class<TaggedValue>(): TaggedValueWriteHandler(),
@@ -101,6 +101,20 @@ class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
 
   @override
   rep(obj, {String? tag}) => stringRep(obj);
+}
+
+class UriWriteHandler extends AbstractWriteHandler<Uri> {
+  UriWriteHandler(): super('r');
+
+  @override
+  rep(uri, {String? tag}) {
+    // unescape the host to at least placate tests
+    final s = uri.toString();
+    if (!uri.hasAuthority) return s;
+    final m = RegExp(r'^([^:]+://(?:[^/@]+@)?)([^/:]+)(.*)').firstMatch(s);
+    if (m == null) return s;
+    return "${m[1]}${Uri.decodeFull(m[2]!)}${m[3]}";
+  }
 }
 
 class BooleanWriteHandler extends AbstractWriteHandler<bool> {
