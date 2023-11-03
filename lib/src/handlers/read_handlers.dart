@@ -75,7 +75,7 @@ class TimeReadHandler extends AbstractReadHandler<DateTime> {
   @override
   fromRep(rep) {
     var m = (rep is int) ? rep : int.parse(rep);
-    return DateTime.fromMillisecondsSinceEpoch(m);
+    return DateTime.fromMillisecondsSinceEpoch(m, isUtc: true);
   }
 }
 
