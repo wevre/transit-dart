@@ -1,7 +1,17 @@
 import 'dart:typed_data';
 import '../values/tagged_value.dart';
 
-typedef WriteHandlersMap = Map<Type, WriteHandler>;
+typedef WriteHandlersMap = Map<Class, WriteHandler>;
+
+class Class<T> {
+  bool isInstance(dynamic x) => x is T;
+  Type get type => T;
+  const Class();
+  @override
+  operator == (dynamic other) => (other is Class) && (other.type == type);
+  @override
+  get hashCode => T.hashCode ^ 19870801;
+}
 
 abstract class WriteHandler<T, R> {
   String tag(T obj);
@@ -17,17 +27,10 @@ abstract class WriteHandler<T, R> {
 
 class WriteHandlers implements TagProvider {
   final WriteHandlersMap _handlers;
-
   WriteHandler? getHandler(o) {
-    WriteHandler? h = _handlers[o.runtimeType];
-
-    if (null != h) {
-      return h;
-    }
-
-    for (h in _handlers.values) {
-      if (h.handles(o)) {
-        return h;
+    for (final e in _handlers.entries) {
+      if (e.key.isInstance(o)) {
+        return e.value;
       }
     }
 
@@ -36,26 +39,26 @@ class WriteHandlers implements TagProvider {
 
   WriteHandlers.json({WriteHandlersMap? customHandlers})
       : _handlers = {..._defaults, ...?customHandlers} {
-    _handlers[Map] = MapWriteHandler(this);
+    _handlers[const Class<Map>()] = MapWriteHandler(this);
   }
 
   WriteHandlers.messagePack({WriteHandlersMap? customHandlers})
       : _handlers = {..._defaults, ...?customHandlers} {
-    _handlers[Map] = MapWriteHandler(this);
+    _handlers[const Class<Map>()] = MapWriteHandler(this);
   }
 
   static final WriteHandlersMap _defaults = {
-    Null: NullWriteHandler(),
-    String: ToStringWriteHandler<String>('s'),
-    bool: BooleanWriteHandler(),
-    int: IntegerWriteHandler(),
-    double: DoubleWriteHandler(),
-    Uint8List: BinaryWriteHandler(),
-    DateTime: TimeWriteHandler(),
-    Uri: ToStringWriteHandler<Uri>('r'),
-    List: ArrayWriteHandler(),
-    Set: SetWriteHandler(),
-    TaggedValue: TaggedValueWriteHandler(),
+    const Class<Null>(): NullWriteHandler(),
+    const Class<String>(): ToStringWriteHandler<String>('s'),
+    const Class<bool>(): BooleanWriteHandler(),
+    const Class<int>(): IntegerWriteHandler(),
+    const Class<double>(): DoubleWriteHandler(),
+    const Class<Uint8List>(): BinaryWriteHandler(),
+    const Class<DateTime>(): TimeWriteHandler(),
+    const Class<Uri>(): ToStringWriteHandler<Uri>('r'),
+    const Class<List>(): ArrayWriteHandler(),
+    const Class<Set>(): SetWriteHandler(),
+    const Class<TaggedValue>(): TaggedValueWriteHandler(),
   };
 
   @override
