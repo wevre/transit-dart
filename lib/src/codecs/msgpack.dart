@@ -207,7 +207,7 @@ class Continuation {
   Continuation(this._resume);
 }
 
-final Utf8Codec _codec = Utf8Codec();
+final Utf8Codec _codec = Utf8Codec(allowMalformed: true);
 
 class MessagePackDecodingSink implements Sink<Uint8List> {
   Sink<dynamic> _sink;
