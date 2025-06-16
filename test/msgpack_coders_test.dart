@@ -30,11 +30,11 @@ Future<void> testMessagePack() async {
   ];
 
   final encoder = MessagePackEncoder();
-  final decoder = MessagePackDecoder(parseTransitMap: false);
+  final decoder = MessagePackDecoder();
 
   for (final o in objects) {
     var bytes = encoder.convert(o);
-    var obj = await decoder.convert(bytes);
+    var obj = decoder.convert(bytes);
     expect(obj, equals(o));
   }
 }

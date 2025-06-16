@@ -1,50 +1,353 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-import 'package:async/async.dart' hide StreamSplitter;
 import 'package:typed_data/typed_buffers.dart';
 
 import 'combiner.dart';
-import 'splitter.dart';
-import '../values/float.dart';
+// import 'splitter.dart';
 
 /// A [Converter] that decodes MessagePack bytes into native Dart objects.
+///
+/// ONLY THE SUBSET OF MSGPACK REQUIRED BY TRANSIT IS SUPPORTED
 ///
 /// Not quite a 100% faithful implementation of the [MessagePack
 /// specification](https://github.com/msgpack/msgpack/blob/master/spec.md#array-format-family).
 /// For the purposes of transit, a MessagePack `map` is parsed into a transit
 /// 'map-as-array' value with the initial "^ " marker, preserving the key-value
 /// pair order.
-class MessagePackDecoder extends Splitter<Uint8List, dynamic> {
-  final Utf8Codec _codec = Utf8Codec();
-  final bool _parseTransitMap;
 
-  MessagePackDecoder({bool parseTransitMap = true})
-      : _parseTransitMap = parseTransitMap;
+class BytesReader {
+  ByteData _data;
+  int _pos = 0;
+
+  BytesReader(ByteData this._data);
+
+  int readUint8() {
+    int p = _pos + 1;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getUint8(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readUint16() {
+    int p = _pos + 2;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getUint16(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readUint32() {
+    int p = _pos + 4;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getUint32(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readUint64() {
+    int p = _pos + 8;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getUint64(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readInt8() {
+    int p = _pos + 1;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getInt8(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readInt16() {
+    int p = _pos + 2;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getInt16(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readInt32() {
+    int p = _pos + 4;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getInt32(_pos);
+    _pos = p;
+    return r;
+  }
+
+  int readInt64() {
+    int p = _pos + 8;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getInt64(_pos);
+    _pos = p;
+    return r;
+  }
+
+  double readFloat32() {
+    int p = _pos + 4;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getFloat32(_pos);
+    _pos = p;
+    return r;
+  }
+
+  double readFloat64() {
+    int p = _pos + 8;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.getFloat64(_pos);
+    _pos = p;
+    return r;
+  }
+
+  Uint8List readBytes(int length) {
+    int p = _pos + length;
+    if (_data.lengthInBytes < p) throw this;
+    final r = _data.buffer.asUint8List(_data.offsetInBytes + _pos, length);
+    _pos = p;
+    return r;
+  }
+}
+
+class BytesWriter {
+  final _buffer = BytesBuilder();
+  final _scratch = ByteData(8);
+
+  void clear() => _buffer.clear();
+  Uint8List takeBytes() => _buffer.takeBytes();
+
+  void writeUint8(int i) {
+    _buffer.addByte(i);
+  }
+
+  void writeUint16(int i) {
+    _scratch.setUint16(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+  }
+
+  void writeUint32(int i) {
+    _scratch.setUint32(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+  }
+
+  void writeUint64(int i) {
+    _scratch.setUint64(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+    _buffer.addByte(_scratch.getUint8(4));
+    _buffer.addByte(_scratch.getUint8(5));
+    _buffer.addByte(_scratch.getUint8(6));
+    _buffer.addByte(_scratch.getUint8(7));
+  }
+
+  void writeInt8(int i) {
+    _scratch.setInt8(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+  }
+
+  void writeInt16(int i) {
+    _scratch.setInt16(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+  }
+
+  void writeInt32(int i) {
+    _scratch.setInt32(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+  }
+
+  void writeInt64(int i) {
+    _scratch.setInt64(0, i);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+    _buffer.addByte(_scratch.getUint8(4));
+    _buffer.addByte(_scratch.getUint8(5));
+    _buffer.addByte(_scratch.getUint8(6));
+    _buffer.addByte(_scratch.getUint8(7));
+  }
+
+  void writeFloat32(double d) {
+    _scratch.setFloat32(0, d);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+  }
+
+  void writeFloat64(double d) {
+    _scratch.setFloat64(0, d);
+    _buffer.addByte(_scratch.getUint8(0));
+    _buffer.addByte(_scratch.getUint8(1));
+    _buffer.addByte(_scratch.getUint8(2));
+    _buffer.addByte(_scratch.getUint8(3));
+    _buffer.addByte(_scratch.getUint8(4));
+    _buffer.addByte(_scratch.getUint8(5));
+    _buffer.addByte(_scratch.getUint8(6));
+    _buffer.addByte(_scratch.getUint8(7));
+  }
+
+  void writeBytes(List<int> bytes) => _buffer.add(bytes);
+}
+
+class Continuation {
+  dynamic Function(BytesReader) _resume;
+  Continuation(this._resume);
+}
+
+final Utf8Codec _codec = Utf8Codec(allowMalformed: true);
+
+class MessagePackDecodingSink implements Sink<Uint8List> {
+  Sink<dynamic> _sink;
+  dynamic Function(BytesReader) _reader;
+  BytesBuilder _builder = BytesBuilder(copy: false);
+
+  MessagePackDecodingSink(this._sink) : _reader = read;
 
   @override
-  Stream split(stream) async* {
-    final chunk = ChunkedStreamReader(stream);
-    var b = await chunk.readBytes(1);
-    while (b.isNotEmpty) {
-      final u = b[0];
-      yield await _decode(u, chunk);
-      b = await chunk.readBytes(1);
+  void add(Uint8List chunk) {
+    _builder.add(chunk);
+    final bytesList = _builder.takeBytes();
+    final bytesReader = BytesReader(
+        bytesList.buffer.asByteData(bytesList.offsetInBytes, bytesList.length));
+    try {
+      while (bytesReader._pos < bytesList.length) {
+        // parse until input is exhausted
+        _sink.add(_reader(bytesReader));
+        _reader = read;
+      }
+    } on Continuation catch (e) {
+      _reader = e._resume;
+      _builder.add(bytesList.sublist(bytesReader._pos));
     }
   }
 
-  Future<dynamic> _decode(int u, ChunkedStreamReader<int> chunk) async {
+  @override
+  void close() {
+    // _reader is identical to _read only iff the while loop properly stopped (or never started)
+    // thus if they differ it means some message is actually being partially parsed.
+    if (!identical(_reader, read))
+      throw Exception("EOF reached while parsing message.");
+    _sink.close();
+  }
+}
+
+class MessagePackDecoder extends Converter<Uint8List, dynamic> {
+  @override
+  convert(Uint8List input) {
+    try {
+      return read(BytesReader(
+          input.buffer.asByteData(input.offsetInBytes, input.length)));
+    } on Continuation catch (e) {
+      throw Exception("EOF reached while parsing message.");
+    }
+  }
+
+  @override
+  Sink<Uint8List> startChunkedConversion(Sink<dynamic> sink) {
+    return MessagePackDecodingSink(sink);
+  }
+}
+
+_mapContinuation(dynamic resume(BytesReader bytes), Map<dynamic, dynamic> m,
+    int n, dynamic k) {
+  return Continuation((BytesReader bytes) {
+    try {
+      if (identical(k, m)) {
+        // suspended whie reading k
+        k = resume(bytes);
+        m[k] = read(bytes);
+      } else {
+        // suspended while reading v
+        m[k] = resume(bytes);
+      }
+    } on Continuation catch (e) {
+      throw _mapContinuation(e._resume, m, n, k);
+    }
+    return _readMap(bytes, n - 1, m);
+  });
+}
+
+Map _readMap(BytesReader bytes, int n, Map<dynamic, dynamic> m) {
+  dynamic k = m; // sentinel meaning k not read
+  try {
+    for (; n > 0; n--) {
+      k = read(bytes);
+      m[k] = read(bytes);
+      k = m;
+    }
+    return m;
+  } on Continuation catch (e) {
+    throw _mapContinuation(e._resume, m, n, k);
+  }
+}
+
+Map readMap(BytesReader bytes, int n) {
+  return _readMap(bytes, n, <dynamic, dynamic>{});
+}
+
+_arrayContinuation(
+    dynamic resume(BytesReader bytes), List<dynamic> a, int i, int n) {
+  return Continuation((BytesReader bytes) {
+    try {
+      a[i] = resume(bytes);
+    } on Continuation catch (e) {
+      throw _arrayContinuation(e._resume, a, i, n);
+    }
+    return _readArray(bytes, n, a, i + 1);
+  });
+}
+
+List _readArray(BytesReader bytes, int n, List<dynamic> a, int i) {
+  try {
+    for (; i < n; i++) a[i] = read(bytes);
+    return a;
+  } on Continuation catch (e) {
+    throw _arrayContinuation(e._resume, a, i, n);
+  }
+}
+
+List readArray(BytesReader bytes, int n) {
+  return _readArray(bytes, n, List<dynamic>.filled(n, null), 0);
+}
+
+String readString(BytesReader bytes, int n) {
+  late final data;
+  try {
+    data = bytes.readBytes(n);
+  } catch (e) {
+    if (!identical(e, bytes)) rethrow;
+    throw Continuation((BytesReader bytes) {
+      return readString(bytes, n);
+    });
+  }
+  return _codec.decode(data);
+}
+
+dynamic _read(BytesReader bytes, int u) {
+  try {
     if (u <= 127) {
       return u;
     } else if ((u & 0xe0) == 0xe0) {
       return u - 256;
     } else if ((u & 0xe0) == 0xa0) {
-      return await _readString(chunk, u & 0x1f);
+      return readString(bytes, u & 0x1f);
     } else if ((u & 0xf0) == 0x80) {
-      return await _readMap(chunk, u & 0xF);
+      return readMap(bytes, u & 0xf);
     } else if ((u & 0xf0) == 0x90) {
-      return await _readArray(chunk, u & 0xF);
+      return readArray(bytes, u & 0xf);
     }
     switch (u) {
       case 0xc0:
@@ -54,165 +357,85 @@ class MessagePackDecoder extends Splitter<Uint8List, dynamic> {
       case 0xc3:
         return true;
       case 0xcc:
-        return await _readInt(chunk, 1, (bd) => bd.getUint8(0));
+        return bytes.readUint8();
       case 0xcd:
-        return await _readInt(chunk, 2, (bd) => bd.getUint16(0));
+        return bytes.readUint16();
       case 0xce:
-        return await _readInt(chunk, 4, (bd) => bd.getUint32(0));
+        return bytes.readUint32();
       case 0xcf:
-        return await _readInt(chunk, 8, (bd) => bd.getUint64(0));
+        return bytes.readUint64();
       case 0xd0:
-        return await _readInt(chunk, 1, (bd) => bd.getInt8(0));
+        return bytes.readInt8();
       case 0xd1:
-        return await _readInt(chunk, 2, (bd) => bd.getInt16(0));
+        return bytes.readInt16();
       case 0xd2:
-        return await _readInt(chunk, 4, (bd) => bd.getInt32(0));
+        return bytes.readInt32();
       case 0xd3:
-        return await _readInt(chunk, 8, (bd) => bd.getInt64(0));
+        return bytes.readInt64();
       case 0xca:
-        return await _readFloat(chunk);
+        return bytes.readFloat32();
       case 0xcb:
-        return await _readDouble(chunk);
+        return bytes.readFloat64();
+    }
+    switch (u) {
       case 0xd9:
-        return await _readString(
-            chunk, await _readInt(chunk, 1, (bd) => bd.getUint8(0)));
+        return readString(bytes, bytes.readUint8());
       case 0xda:
-        return await _readString(
-            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+        return readString(bytes, bytes.readUint16());
       case 0xdb:
-        return await _readString(
-            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
-      case 0xc4:
-        return await _readBuffer(
-            chunk, await _readInt(chunk, 1, (bd) => bd.getUint8(0)));
-      case 0xc5:
-        return await _readBuffer(
-            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
-      case 0xc6:
-        return await _readBuffer(
-            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+        return readString(bytes, bytes.readUint32());
       case 0xdc:
-        return await _readArray(
-            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+        return readArray(bytes, bytes.readUint16());
       case 0xdd:
-        return await _readArray(
-            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+        return readArray(bytes, bytes.readUint32());
       case 0xde:
-        return await _readMap(
-            chunk, await _readInt(chunk, 2, (bd) => bd.getUint16(0)));
+        return readMap(bytes, bytes.readUint16());
       case 0xdf:
-        return await _readMap(
-            chunk, await _readInt(chunk, 4, (bd) => bd.getUint32(0)));
+        return readMap(bytes, bytes.readUint32());
     }
+  } on Continuation catch (e) {
+    rethrow;
+  } catch (e) {
+    if (!identical(e, bytes)) rethrow;
+    throw Continuation((bytes) => _read(bytes, u));
   }
+  throw Exception("Unexpected byte ${u} at offset ${bytes._pos}");
+}
 
-  Future<int> _readInt(ChunkedStreamReader<int> chunk, int size,
-      int Function(ByteData) getter) async {
-    final b = await _expectBytes(chunk, size);
-    return getter(ByteData.sublistView(b));
+dynamic read(BytesReader bytes) {
+  int u = 0;
+  try {
+    u = bytes.readUint8();
+  } catch (e) {
+    if (!identical(e, bytes)) rethrow;
+    throw Continuation(read);
   }
-
-  Future<Float> _readFloat(ChunkedStreamReader<int> chunk) async {
-    final b = await _expectBytes(chunk, 4);
-    return Float(ByteData.sublistView(b).getFloat32(0));
-  }
-
-  Future<double> _readDouble(ChunkedStreamReader<int> chunk) async {
-    final b = await _expectBytes(chunk, 8);
-    return ByteData.sublistView(b).getFloat64(0);
-  }
-
-  Future<Uint8List> _readBuffer(ChunkedStreamReader<int> chunk, int len) async {
-    final b = await _expectBytes(chunk, len);
-    // Do we need to copy the bytes here?
-    //return Uint8List.fromList(b);
-    return b;
-  }
-
-  Future<String> _readString(ChunkedStreamReader<int> chunk, int len) async {
-    final list = await _readBuffer(chunk, len);
-    return _codec.decode(list);
-  }
-
-  // Parses a "map", but since the only map we should encounter is a transit
-  // iterable map, with stringable keys, we return a transit map-as-array with
-  // the initial '^ ' marker.
-  Future<dynamic> _readMap(ChunkedStreamReader<int> chunk, int len) async {
-    if (_parseTransitMap) {
-      final m = [];
-      m.add('^ ');
-      for (var i = 0; i < len; i++) {
-        final uKey = await _expectBytes(chunk, 1);
-        final key = await _decode(uKey[0], chunk);
-        m.add(key);
-        final uVal = await _expectBytes(chunk, 1);
-        final val = await _decode(uVal[0], chunk);
-        m.add(val);
-      }
-      return m;
-    } else {
-      final m = {};
-      for (var i = 0; i < len; i++) {
-        final uKey = await _expectBytes(chunk, 1);
-        final key = await _decode(uKey[0], chunk);
-        final uVal = await _expectBytes(chunk, 1);
-        final val = await _decode(uVal[0], chunk);
-        m[key] = val;
-      }
-      return m;
-    }
-  }
-
-  Future<List> _readArray(ChunkedStreamReader<int> chunk, int len) async {
-    final l = List<dynamic>.filled(len, null, growable: false);
-    for (var i = 0; i < len; i++) {
-      final u = await _expectBytes(chunk, 1);
-      l[i] = await _decode(u[0], chunk);
-    }
-    return l;
-  }
-
-  Future<Uint8List> _expectBytes(
-      ChunkedStreamReader<int> chunk, int len) async {
-    final b = await chunk.readBytes(len);
-    if (b.length != len) {
-      throw Exception('Upstream closed');
-    }
-    return b;
-  }
+  return _read(bytes, u);
 }
 
 /// A [Converter] from native Dart objects to MessagePack byte representation.
-class MessagePackEncoder extends Combiner<dynamic, Uint8List> {
-  final Utf8Codec _codec = Utf8Codec();
-  final Uint8Buffer _buffer = Uint8Buffer();
+class MessagePackEncoder extends StreamMappingConverter<dynamic, Uint8List> {
+  final _buffer = BytesWriter();
 
   @override
-  encode(input) {
+  convert(input) {
     _buffer.clear();
     _write(input);
-    return Uint8List.fromList(
-        _buffer.buffer.asUint8List(0, _buffer.lengthInBytes));
+    return _buffer.takeBytes();
   }
 
   void _write(dynamic obj) {
     if (null == obj) {
-      _writeUint8(0xc0);
+      _buffer.writeUint8(0xc0);
     } else if (obj is bool) {
-      _writeUint8(obj ? 0xc3 : 0xc2);
+      _buffer.writeUint8(obj ? 0xc3 : 0xc2);
     } else if (obj is int) {
       obj >= 0 ? _writePositiveInt(obj) : _writeNegativeInt(obj);
-    } else if (obj is Float) {
-      _writeDouble32(obj.value);
     } else if (obj is double) {
-      _writeDouble64(obj);
+      _buffer.writeUint8(0xcb);
+      _buffer.writeFloat64(obj);
     } else if (obj is String) {
       _writeString(obj);
-    } else if (obj is Uint8List) {
-      _writeBinary(obj);
-    } else if (obj is ByteData) {
-      _writeBinary(
-          obj.buffer.asUint8List(obj.offsetInBytes, obj.lengthInBytes));
     } else if (obj is Iterable) {
       _writeIterable(obj);
     } else if (obj is Map) {
@@ -224,140 +447,70 @@ class MessagePackEncoder extends Combiner<dynamic, Uint8List> {
 
   void _writePositiveInt(int i) {
     if (i <= 127) {
-      _writeUint8(i);
+      _buffer.writeUint8(i);
     } else if (i <= 0xff) {
-      _writeUint8(0xcc);
-      _writeUint8(i);
+      _buffer.writeUint8(0xcc);
+      _buffer.writeUint8(i);
     } else if (i <= 0xffff) {
-      _writeUint8(0xcd);
-      _writeUint16(i);
+      _buffer.writeUint8(0xcd);
+      _buffer.writeUint16(i);
     } else if (i <= 0xffffffff) {
-      _writeUint8(0xce);
-      _writeUint32(i);
+      _buffer.writeUint8(0xce);
+      _buffer.writeUint32(i);
     } else {
-      _writeUint8(0xcf);
-      _writeUint64(i);
+      _buffer.writeUint8(0xcf);
+      _buffer.writeUint64(i);
     }
   }
 
   void _writeNegativeInt(int i) {
     if (i >= -32) {
-      _writeInt8(i);
+      _buffer.writeInt8(i);
     } else if (i >= -128) {
-      _writeUint8(0xd0);
-      _writeInt8(i);
+      _buffer.writeUint8(0xd0);
+      _buffer.writeInt8(i);
     } else if (i >= -32768) {
-      _writeUint8(0xd1);
-      _writeInt16(i);
+      _buffer.writeUint8(0xd1);
+      _buffer.writeInt16(i);
     } else if (i >= -2147483648) {
-      _writeUint8(0xd2);
-      _writeInt32(i);
+      _buffer.writeUint8(0xd2);
+      _buffer.writeInt32(i);
     } else {
-      _writeUint8(0xd3);
-      _writeInt64(i);
+      _buffer.writeUint8(0xd3);
+      _buffer.writeInt64(i);
     }
-  }
-
-  ByteData _pad(int size) {
-    final len = _buffer.lengthInBytes;
-    _buffer.addAll(Uint8List(size));
-    final view = _buffer.buffer.asUint8List(len);
-    return ByteData.sublistView(view);
-  }
-
-  void _writeUint8(int i) {
-    _pad(1).setUint8(0, i);
-  }
-
-  void _writeUint16(int i) {
-    _pad(2).setUint16(0, i);
-  }
-
-  void _writeUint32(int i) {
-    _pad(4).setUint32(0, i);
-  }
-
-  void _writeUint64(int i) {
-    _pad(8).setUint64(0, i);
-  }
-
-  void _writeInt8(int i) {
-    _pad(1).setInt8(0, i);
-  }
-
-  void _writeInt16(int i) {
-    _pad(2).setInt16(0, i);
-  }
-
-  void _writeInt32(int i) {
-    _pad(4).setInt32(0, i);
-  }
-
-  void _writeInt64(int i) {
-    _pad(8).setInt64(0, i);
-  }
-
-  void _writeDouble32(d) {
-    _writeUint8(0xca);
-    _pad(4).setFloat32(0, d);
-  }
-
-  void _writeDouble64(d) {
-    _writeUint8(0xcb);
-    _pad(8).setFloat64(0, d);
   }
 
   void _writeString(String s) {
     final encoded = _codec.encode(s);
     final len = encoded.length;
     if (len <= 31) {
-      _writeUint8(0xa0 | len);
+      _buffer.writeUint8(0xa0 | len);
     } else if (len <= 0xff) {
-      _writeUint8(0xd9);
-      _writeUint8(len);
+      _buffer.writeUint8(0xd9);
+      _buffer.writeUint8(len);
     } else if (len <= 0xffff) {
-      _writeUint8(0xda);
-      _writeUint16(len);
+      _buffer.writeUint8(0xda);
+      _buffer.writeUint16(len);
     } else if (len <= 0xffffffff) {
-      _writeUint8(0xdb);
-      _writeUint32(len);
+      _buffer.writeUint8(0xdb);
+      _buffer.writeUint32(len);
     } else {
       throw Exception('String too long for msgpack');
     }
-    _writeBytes(Uint8List.fromList(encoded));
-  }
-
-  void _writeBinary(Uint8List b) {
-    final len = b.length;
-    if (len <= 0xff) {
-      _writeUint8(0xc4);
-      _writeUint8(len);
-    } else if (len <= 0xffff) {
-      _writeUint8(0xc5);
-      _writeUint16(len);
-    } else if (len <= 0xffffffff) {
-      _writeUint8(0xc6);
-      _writeUint32(len);
-    } else {
-      throw Exception('String too long for msgpack');
-    }
-    _writeBytes(b);
-  }
-
-  void _writeBytes(Uint8List b) {
-    _buffer.addAll(b);
+    _buffer.writeBytes(encoded);
   }
 
   void _writeIterable(Iterable l) {
     final len = l.length;
     if (len <= 15) {
-      _writeUint8(0x90 | len);
+      _buffer.writeUint8(0x90 | len);
     } else if (len <= 0xffff) {
-      _writeUint8(0xdc);
-      _writeUint16(len);
+      _buffer.writeUint8(0xdc);
+      _buffer.writeUint16(len);
     } else if (len <= 0xffffffff) {
-      _writeUint8(0xdd);
-      _writeUint32(len);
+      _buffer.writeUint8(0xdd);
+      _buffer.writeUint32(len);
     } else {
       throw Exception('Array too long for msgpack');
     }
@@ -369,13 +522,13 @@ class MessagePackEncoder extends Combiner<dynamic, Uint8List> {
   void _writeMap(Map m) {
     final len = m.length;
     if (len <= 15) {
-      _writeUint8(0x80 | len);
+      _buffer.writeUint8(0x80 | len);
     } else if (len <= 0xffff) {
-      _writeUint8(0xde);
-      _writeUint16(len);
+      _buffer.writeUint8(0xde);
+      _buffer.writeUint16(len);
     } else if (len <= 0xffffffff) {
-      _writeUint8(0xdf);
-      _writeUint32(len);
+      _buffer.writeUint8(0xdf);
+      _buffer.writeUint32(len);
     } else {
       throw Exception('Map too long for msgpack');
     }

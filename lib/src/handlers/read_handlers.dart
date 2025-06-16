@@ -2,13 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'array_builder.dart';
 import 'map_builder.dart';
-import '../values/big_decimal.dart';
-import '../values/keyword.dart';
-import '../values/link.dart';
-import '../values/list.dart';
-import '../values/symbol.dart';
-import '../values/uuid.dart';
-import '../values/uri.dart';
 
 typedef ReadHandlersMap = Map<String, ReadHandler>;
 
@@ -30,26 +23,18 @@ class ReadHandlers {
       : _handlers = {..._defaults, ...?customHandlers};
 
   static final ReadHandlersMap _defaults = {
+    "'": IdentityReadHandler(),
     '_': NullReadHandler(),
     '?': BooleanReadHandler(),
     'i': IntegerReadHandler(),
     'd': DoubleReadHandler(),
     'b': BinaryReadHandler(),
-    ':': KeywordReadHandler(),
-    '\$': SymbolReadHandler(),
-    'f': BigDecimalReadHandler(),
-    'n': BigIntegerReadHandler(),
     'm': TimeReadHandler(),
     't': VerboseTimeReadHander(),
-    'u': UuidReadHandler(),
-    'r': TransitUriReadHandler(),
-    'c': CharacterReadHandler(),
-    "'": QuotedReadHandler(),
+    'r': UriReadHandler(),
     'z': SpecialNumberReadHandler(),
     'cmap': CmapReadHandler(),
-    'list': ListReadHandler(),
     'set': SetReadHandler(),
-    'link': LinkReadHandler(),
   };
 }
 
@@ -59,6 +44,11 @@ abstract class AbstractReadHandler<T> extends ReadHandler<T, dynamic> {}
 class NullReadHandler extends AbstractReadHandler<Null> {
   @override
   fromRep(rep) => null;
+}
+
+class IdentityReadHandler extends AbstractReadHandler<dynamic> {
+  @override
+  fromRep(rep) => rep;
 }
 
 class BooleanReadHandler extends AbstractReadHandler<bool> {
@@ -81,31 +71,11 @@ class BinaryReadHandler extends AbstractReadHandler<Uint8List> {
   fromRep(rep) => base64.decode(rep);
 }
 
-class KeywordReadHandler extends AbstractReadHandler<Keyword> {
-  @override
-  fromRep(rep) => Keyword(rep);
-}
-
-class SymbolReadHandler extends AbstractReadHandler<Symbol> {
-  @override
-  fromRep(rep) => Symbol(rep);
-}
-
-class BigDecimalReadHandler extends AbstractReadHandler<BigDecimal> {
-  @override
-  fromRep(rep) => BigDecimal.tryParse(rep)!;
-}
-
-class BigIntegerReadHandler extends AbstractReadHandler<BigInt> {
-  @override
-  fromRep(rep) => BigInt.tryParse(rep)!;
-}
-
 class TimeReadHandler extends AbstractReadHandler<DateTime> {
   @override
   fromRep(rep) {
     var m = (rep is int) ? rep : int.parse(rep);
-    return DateTime.fromMillisecondsSinceEpoch(m);
+    return DateTime.fromMillisecondsSinceEpoch(m, isUtc: true);
   }
 }
 
@@ -114,39 +84,10 @@ class VerboseTimeReadHander extends AbstractReadHandler<DateTime> {
   fromRep(rep) => DateTime.parse(rep);
 }
 
-class UuidReadHandler extends AbstractReadHandler<Uuid> {
+class UriReadHandler extends AbstractReadHandler<Uri> {
   @override
-  fromRep(rep) {
-    if (rep is String) {
-      return Uuid(rep);
-    } else if (rep is List) {
-      List l = rep;
-      var hi = BigInt.from(l[0]).toUnsigned(64).toRadixString(16);
-      var lo = BigInt.from(l[1]).toUnsigned(64).toRadixString(16);
-      var c = '$hi$lo';
-      var u =
-          '${c.substring(0, 8)}-${c.substring(8, 12)}-${c.substring(12, 16)}'
-          '-${c.substring(16, 20)}-${c.substring(20)}';
-      return Uuid(u);
-    } else {
-      throw Error();
-    }
-  }
-}
-
-class TransitUriReadHandler extends AbstractReadHandler<TransitUri> {
-  @override
-  fromRep(rep) => TransitUri(rep);
-}
-
-class CharacterReadHandler extends AbstractReadHandler<String> {
-  @override
-  fromRep(rep) => rep;
-}
-
-class QuotedReadHandler extends AbstractReadHandler<dynamic> {
-  @override
-  fromRep(rep) => rep;
+  // @TODO: tryParse or parse?
+  fromRep(rep) => Uri.parse(rep);
 }
 
 class SpecialNumberReadHandler extends AbstractReadHandler<double> {
@@ -162,11 +103,6 @@ class SpecialNumberReadHandler extends AbstractReadHandler<double> {
       throw Error();
     }
   }
-}
-
-class LinkReadHandler extends AbstractReadHandler<Link> {
-  @override
-  fromRep(rep) => Link.fromMap(rep);
 }
 
 abstract class MapReadHandler<G, M> extends AbstractReadHandler<M> {
@@ -194,25 +130,6 @@ class SetReadHandler extends ArrayReadHandler<Set, Set> {
 
   @override
   arrayBuilder() => _SetArrayReader();
-}
-
-class _ListArrayReader extends ArrayBuilder<TransitList, TransitList, dynamic> {
-  @override
-  init() => TransitList([]);
-
-  @override
-  add(a, item) => a..value.add(item);
-
-  @override
-  complete(a) => a;
-}
-
-class ListReadHandler extends ArrayReadHandler<TransitList, TransitList> {
-  @override
-  fromRep(rep) => throw Exception('Unsupported operation fromRep');
-
-  @override
-  arrayBuilder() => _ListArrayReader();
 }
 
 class _CmapArrayReader extends ArrayBuilder<_CmapArrayReader, Map, dynamic> {

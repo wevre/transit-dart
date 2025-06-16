@@ -1,14 +1,17 @@
 import 'dart:typed_data';
-import '../values/big_decimal.dart';
-import '../values/keyword.dart';
-import '../values/link.dart';
-import '../values/list.dart';
-import '../values/symbol.dart';
 import '../values/tagged_value.dart';
-import '../values/uuid.dart';
-import '../values/uri.dart';
 
-typedef WriteHandlersMap = Map<Type, WriteHandler>;
+typedef WriteHandlersMap = Map<Class, WriteHandler>;
+
+class Class<T> {
+  bool isInstance(dynamic x) => x is T;
+  Type get type => T;
+  const Class();
+  @override
+  operator == (dynamic other) => (other is Class) && (other.type == type);
+  @override
+  get hashCode => T.hashCode ^ 19870801;
+}
 
 abstract class WriteHandler<T, R> {
   String tag(T obj);
@@ -24,17 +27,10 @@ abstract class WriteHandler<T, R> {
 
 class WriteHandlers implements TagProvider {
   final WriteHandlersMap _handlers;
-
   WriteHandler? getHandler(o) {
-    WriteHandler? h = _handlers[o.runtimeType];
-
-    if (null != h) {
-      return h;
-    }
-
-    for (h in _handlers.values) {
-      if (h.handles(o)) {
-        return h;
+    for (final e in _handlers.entries) {
+      if (e.key.isInstance(o)) {
+        return e.value;
       }
     }
 
@@ -43,33 +39,26 @@ class WriteHandlers implements TagProvider {
 
   WriteHandlers.json({WriteHandlersMap? customHandlers})
       : _handlers = {..._defaults, ...?customHandlers} {
-    _handlers[Map] = MapWriteHandler(this);
+    _handlers[const Class<Map>()] = MapWriteHandler(this);
   }
 
   WriteHandlers.messagePack({WriteHandlersMap? customHandlers})
       : _handlers = {..._defaults, ...?customHandlers} {
-    _handlers[Map] = MapWriteHandler(this);
+    _handlers[const Class<Map>()] = MapWriteHandler(this);
   }
 
   static final WriteHandlersMap _defaults = {
-    Null: NullWriteHandler(),
-    String: ToStringWriteHandler<String>('s'),
-    bool: BooleanWriteHandler(),
-    int: IntegerWriteHandler(),
-    double: DoubleWriteHandler(),
-    Uint8List: BinaryWriteHandler(),
-    Keyword: KeywordWriteHandler(),
-    Symbol: ToStringWriteHandler<Symbol>('\$'),
-    BigDecimal: ToStringWriteHandler<BigDecimal>('f'),
-    BigInt: ToStringWriteHandler<BigInt>('n'),
-    DateTime: TimeWriteHandler(),
-    Uuid: ToStringWriteHandler<Uuid>('u'),
-    TransitUri: ToStringWriteHandler<TransitUri>('r'),
-    List: ArrayWriteHandler(),
-    Set: SetWriteHandler(),
-    TransitList: ListWriteHandler(),
-    Link: LinkWriteHandler(),
-    TaggedValue: TaggedValueWriteHandler(),
+    const Class<Null>(): NullWriteHandler(),
+    const Class<String>(): ToStringWriteHandler<String>('s'),
+    const Class<bool>(): BooleanWriteHandler(),
+    const Class<int>(): IntegerWriteHandler(),
+    const Class<double>(): DoubleWriteHandler(),
+    const Class<Uint8List>(): BinaryWriteHandler(),
+    const Class<DateTime>(): TimeWriteHandler(),
+    const Class<Uri>(): UriWriteHandler(),
+    const Class<List>(): ArrayWriteHandler(),
+    const Class<Set>(): SetWriteHandler(),
+    const Class<TaggedValue>(): TaggedValueWriteHandler(),
   };
 
   @override
@@ -114,6 +103,20 @@ class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
   rep(obj, {String? tag}) => stringRep(obj);
 }
 
+class UriWriteHandler extends AbstractWriteHandler<Uri> {
+  UriWriteHandler(): super('r');
+
+  @override
+  rep(uri, {String? tag}) {
+    // unescape the host to at least placate tests
+    final s = uri.toString();
+    if (!uri.hasAuthority) return s;
+    final m = RegExp(r'^([^:]+://(?:[^/@]+@)?)([^/:]+)(.*)').firstMatch(s);
+    if (m == null) return s;
+    return "${m[1]}${Uri.decodeFull(m[2]!)}${m[3]}";
+  }
+}
+
 class BooleanWriteHandler extends AbstractWriteHandler<bool> {
   BooleanWriteHandler() : super('?');
 }
@@ -151,16 +154,6 @@ class DoubleWriteHandler extends AbstractWriteHandler<double> {
 
 class BinaryWriteHandler extends AbstractWriteHandler<Uint8List> {
   BinaryWriteHandler() : super('b');
-}
-
-class KeywordWriteHandler extends AbstractWriteHandler<Keyword> {
-  KeywordWriteHandler() : super(':');
-
-  @override
-  rep(obj, {String? tag}) => stringRep(obj);
-
-  @override
-  stringRep(obj) => obj.toString().substring(1);
 }
 
 class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
@@ -215,20 +208,6 @@ class SetWriteHandler extends AbstractWriteHandler<Set> {
 
   @override
   rep(obj, {String? tag}) => TaggedValue('array', obj.toList(growable: false));
-}
-
-class ListWriteHandler extends AbstractWriteHandler<TransitList> {
-  ListWriteHandler() : super('list');
-
-  @override
-  rep(obj, {String? tag}) => TaggedValue('array', obj.value);
-}
-
-class LinkWriteHandler extends AbstractWriteHandler<Link> {
-  LinkWriteHandler() : super('link');
-
-  @override
-  rep(obj, {String? tag}) => obj.toMap();
 }
 
 class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
