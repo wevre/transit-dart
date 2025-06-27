@@ -8,7 +8,7 @@ class Class<T> {
   Type get type => T;
   const Class();
   @override
-  operator == (dynamic other) => (other is Class) && (other.type == type);
+  operator ==(Object other) => (other is Class) && (other.type == type);
   @override
   get hashCode => T.hashCode ^ 19870801;
 }
@@ -97,20 +97,20 @@ class NullWriteHandler extends AbstractWriteHandler<Null> {
 }
 
 class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
-  ToStringWriteHandler(String tag) : super(tag);
+  ToStringWriteHandler(super.tag);
 
   @override
   rep(obj, {String? tag}) => stringRep(obj);
 }
 
 class UriWriteHandler extends AbstractWriteHandler<Uri> {
-  UriWriteHandler(): super('r');
+  UriWriteHandler() : super('r');
 
   @override
-  rep(uri, {String? tag}) {
+  rep(obj, {String? tag}) {
     // unescape the host to at least placate tests
-    final s = uri.toString();
-    if (!uri.hasAuthority) return s;
+    final s = obj.toString();
+    if (!obj.hasAuthority) return s;
     final m = RegExp(r'^([^:]+://(?:[^/@]+@)?)([^/:]+)(.*)').firstMatch(s);
     if (m == null) return s;
     return "${m[1]}${Uri.decodeFull(m[2]!)}${m[3]}";

@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:typed_data/typed_buffers.dart';
 
 import 'combiner.dart';
 // import 'splitter.dart';
@@ -17,10 +15,10 @@ import 'combiner.dart';
 /// pair order.
 
 class BytesReader {
-  ByteData _data;
+  final ByteData _data;
   int _pos = 0;
 
-  BytesReader(ByteData this._data);
+  BytesReader(this._data);
 
   int readUint8() {
     int p = _pos + 1;
@@ -203,16 +201,16 @@ class BytesWriter {
 }
 
 class Continuation {
-  dynamic Function(BytesReader) _resume;
+  final dynamic Function(BytesReader) _resume;
   Continuation(this._resume);
 }
 
 final Utf8Codec _codec = Utf8Codec(allowMalformed: true);
 
 class MessagePackDecodingSink implements Sink<Uint8List> {
-  Sink<dynamic> _sink;
+  final Sink<dynamic> _sink;
   dynamic Function(BytesReader) _reader;
-  BytesBuilder _builder = BytesBuilder(copy: false);
+  final BytesBuilder _builder = BytesBuilder(copy: false);
 
   MessagePackDecodingSink(this._sink) : _reader = read;
 
@@ -238,8 +236,9 @@ class MessagePackDecodingSink implements Sink<Uint8List> {
   void close() {
     // _reader is identical to _read only iff the while loop properly stopped (or never started)
     // thus if they differ it means some message is actually being partially parsed.
-    if (!identical(_reader, read))
+    if (!identical(_reader, read)) {
       throw Exception("EOF reached while parsing message.");
+    }
     _sink.close();
   }
 }
@@ -250,7 +249,7 @@ class MessagePackDecoder extends Converter<Uint8List, dynamic> {
     try {
       return read(BytesReader(
           input.buffer.asByteData(input.offsetInBytes, input.length)));
-    } on Continuation catch (e) {
+    } on Continuation {
       throw Exception("EOF reached while parsing message.");
     }
   }
@@ -261,8 +260,8 @@ class MessagePackDecoder extends Converter<Uint8List, dynamic> {
   }
 }
 
-_mapContinuation(dynamic resume(BytesReader bytes), Map<dynamic, dynamic> m,
-    int n, dynamic k) {
+_mapContinuation(dynamic Function(BytesReader bytes) resume,
+    Map<dynamic, dynamic> m, int n, dynamic k) {
   return Continuation((BytesReader bytes) {
     try {
       if (identical(k, m)) {
@@ -299,7 +298,7 @@ Map readMap(BytesReader bytes, int n) {
 }
 
 _arrayContinuation(
-    dynamic resume(BytesReader bytes), List<dynamic> a, int i, int n) {
+    dynamic Function(BytesReader bytes) resume, List<dynamic> a, int i, int n) {
   return Continuation((BytesReader bytes) {
     try {
       a[i] = resume(bytes);
@@ -312,7 +311,9 @@ _arrayContinuation(
 
 List _readArray(BytesReader bytes, int n, List<dynamic> a, int i) {
   try {
-    for (; i < n; i++) a[i] = read(bytes);
+    for (; i < n; i++) {
+      a[i] = read(bytes);
+    }
     return a;
   } on Continuation catch (e) {
     throw _arrayContinuation(e._resume, a, i, n);
@@ -324,7 +325,7 @@ List readArray(BytesReader bytes, int n) {
 }
 
 String readString(BytesReader bytes, int n) {
-  late final data;
+  late final Uint8List data;
   try {
     data = bytes.readBytes(n);
   } catch (e) {
@@ -393,13 +394,13 @@ dynamic _read(BytesReader bytes, int u) {
       case 0xdf:
         return readMap(bytes, bytes.readUint32());
     }
-  } on Continuation catch (e) {
+  } on Continuation {
     rethrow;
   } catch (e) {
     if (!identical(e, bytes)) rethrow;
     throw Continuation((bytes) => _read(bytes, u));
   }
-  throw Exception("Unexpected byte ${u} at offset ${bytes._pos}");
+  throw Exception("Unexpected byte $u at offset ${bytes._pos}");
 }
 
 dynamic read(BytesReader bytes) {

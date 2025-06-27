@@ -8,8 +8,7 @@ class TaggedValue {
   operator ==(other) {
     if (identical(this, other)) return true;
     if (other is! TaggedValue) return false;
-    return ((other as TaggedValue).tag == tag) &&
-        ((other as TaggedValue).value == value);
+    return (other.tag == tag) && (other.value == value);
   }
 
   @override

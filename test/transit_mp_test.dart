@@ -1,14 +1,12 @@
 // Inspired by https://github.com/cognitect/transit-java/blob/master/src/test/java/com/cognitect/transit/TransitMPTest.java
-import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:test/test.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
 import 'package:transit_dart/src/codecs/transit.dart';
-import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/values/tagged_value.dart';
 
 class UuidReadHandler extends ReadHandler<String, String> {
+  @override
   String fromRep(String rep) => rep;
 }
 

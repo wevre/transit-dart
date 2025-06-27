@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:transit_dart/src/codecs/transit.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
 
-void test_convert() {
+void testConvert() {
   var transit = TransitJsonCodec();
   var object = {"num1": 3.0, "num2": 4.0};
   // Encode object to string.
@@ -17,7 +17,7 @@ void test_convert() {
   print('Round trip success? ${test ? 'YES' : 'NO'}');
 }
 
-void test_separate() {
+void testSeparate() {
   var emitter = SemanticEncoder.json();
   var parser = SemanticDecoder.json();
   dynamic obj = {"num1": 3.0, "num2": 4.0};
@@ -28,7 +28,7 @@ void test_separate() {
 }
 
 void main() {
-  test_convert();
-  //test_separate();
+  testConvert();
+  //testSeparate();
   // Set up the object.
 }

@@ -4,7 +4,7 @@ import 'dart:convert';
 abstract class StreamMappingConverter<S, T> extends Converter<S, T> {
   StreamMappingConverter();
 
-  factory StreamMappingConverter.from(T f(S s)) {
+  factory StreamMappingConverter.from(T Function(S s) f) {
     return StreamFnMappingConverter(f);
   }
 

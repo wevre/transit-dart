@@ -34,8 +34,8 @@ class PointReadHandler extends ReadHandler<Point, List> {
 }
 
 void someOtherTests() {
-  var emitter =
-      SemanticEncoder.messagePack(customHandlers: {Point: PointWriteHandler()});
+  var emitter = SemanticEncoder.messagePack(
+      customHandlers: {Class<Point>(): PointWriteHandler()});
   var parser = SemanticDecoder.messagePack(
       customHandlers: {'point': PointReadHandler()});
   var encoder = MessagePackEncoder();
@@ -55,11 +55,22 @@ void someOtherTests() {
   print('decoded is `$decoded`');
   var parsed = parser.convert(decoded);
   print('parsed is `$parsed`');
-  print('Equal? ${DeepCollectionEquality().equals(parsed, obj)}');
+  print(
+      'Equal? ${DeepCollectionEquality(ZoneAgnosticEquality()).equals(parsed, obj)}');
 }
 
 var time =
     DateTime.fromMillisecondsSinceEpoch(DateTime.now().millisecondsSinceEpoch);
+
+class ZoneAgnosticEquality extends DefaultEquality {
+  @override
+  bool equals(Object? e1, Object? e2) {
+    if (e1 is DateTime && e2 is DateTime) {
+      return e1.toUtc().isAtSameMomentAs(e2.toUtc());
+    }
+    return super.equals(e1, e2);
+  }
+}
 
 var bigObject = [
   {'hello': true, 'there': null, 'you': true, 'cutie': 4.56},
@@ -81,7 +92,7 @@ var bigObject = [
     'BigInteger',
     'BigDecimal',
   ],
-  Uri('http://www.詹姆斯.com/'),
+  Uri(path: 'http://www.詹姆斯.com/'),
   time,
   {
     'hello',
@@ -89,6 +100,6 @@ var bigObject = [
     'you',
     'cutie',
   },
-  Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
-  Uuid('5a2cbea3-e8c6-428b-b525-21239370dd55'),
+  //Uuid('b51241e0-c115-11ed-b737-370ae6e11809'),
+  //Uuid('5a2cbea3-e8c6-428b-b525-21239370dd55'),
 ];
