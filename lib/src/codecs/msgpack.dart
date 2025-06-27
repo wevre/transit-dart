@@ -260,7 +260,7 @@ class MessagePackDecoder extends Converter<Uint8List, dynamic> {
   }
 }
 
-_mapContinuation(dynamic Function(BytesReader bytes) resume,
+dynamic _mapContinuation(dynamic Function(BytesReader bytes) resume,
     Map<dynamic, dynamic> m, int n, dynamic k) {
   return Continuation((BytesReader bytes) {
     try {
@@ -297,7 +297,7 @@ Map readMap(BytesReader bytes, int n) {
   return _readMap(bytes, n, <dynamic, dynamic>{});
 }
 
-_arrayContinuation(
+dynamic _arrayContinuation(
     dynamic Function(BytesReader bytes) resume, List<dynamic> a, int i, int n) {
   return Continuation((BytesReader bytes) {
     try {

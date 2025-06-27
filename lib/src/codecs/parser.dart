@@ -26,12 +26,12 @@ class Parser {
     _arrayBuilder = arrayBuilder ?? ArrayBuilderImpl();
   }
 
-  parse(obj) {
+  dynamic parse(dynamic obj) {
     _cache.init();
     return parseVal(obj);
   }
 
-  parseVal(obj, {bool asMapKey = false}) {
+  dynamic parseVal(dynamic obj, {bool asMapKey = false}) {
     if (obj is Map) {
       return parseMap(obj, asMapKey, null);
     } else if (obj is List) {
@@ -44,7 +44,7 @@ class Parser {
     }
   }
 
-  parseTag(String tag, dynamic obj, bool asMapKey) {
+  dynamic parseTag(String tag, dynamic obj, bool asMapKey) {
     ReadHandler? valHandler = _readHandlers.getHandler(tag);
     dynamic val;
     if (null != valHandler) {
@@ -61,7 +61,7 @@ class Parser {
     return val;
   }
 
-  parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
+  dynamic parseMap(Map obj, bool asMapKey, MapReadHandler? handler) {
     MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
     var mr = mb.init();
     for (var e in obj.entries) {
@@ -75,7 +75,8 @@ class Parser {
     return mb.complete(mr);
   }
 
-  parseEntries(List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
+  dynamic parseEntries(
+      List<MapEntry> objs, bool asMapKey, MapReadHandler? handler) {
     MapBuilder mb = handler?.mapBuilder() ?? _mapBuilder;
     var mr = mb.init();
     for (var e in objs) {
@@ -85,7 +86,7 @@ class Parser {
     return mb.complete(mr);
   }
 
-  parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
+  dynamic parseArray(List obj, bool asMapKey, ArrayReadHandler? handler) {
     if (obj.isEmpty) {
       // Make an empty list with the default ArrayBuilder
       ArrayBuilder ab = handler?.arrayBuilder() ?? _arrayBuilder;
@@ -110,7 +111,7 @@ class Parser {
     return ab.complete(ar);
   }
 
-  decode(String tag, rep) {
+  dynamic decode(String tag, rep) {
     var h = _readHandlers.getHandler(tag);
     if (null != h) {
       return h.fromRep(rep);
@@ -119,7 +120,7 @@ class Parser {
     }
   }
 
-  parseString(s) {
+  dynamic parseString(dynamic s) {
     if (s is String) {
       if (s.length > 1) {
         switch (s[0]) {

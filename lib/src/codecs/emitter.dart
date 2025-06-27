@@ -17,7 +17,7 @@ abstract class Emitter {
     _cache = cache ?? CacheEncoder();
   }
 
-  marshalTop(obj) {
+  dynamic marshalTop(dynamic obj) {
     _cache.init();
     var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
     if (null == h) {
@@ -30,7 +30,7 @@ abstract class Emitter {
     return marshal(obj);
   }
 
-  marshal(obj, {bool asMapKey = false}) {
+  dynamic marshal(dynamic obj, {bool asMapKey = false}) {
     var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
@@ -64,26 +64,26 @@ abstract class Emitter {
     }
   }
 
-  emit(obj) => marshalTop(obj);
+  dynamic emit(dynamic obj) => marshalTop(obj);
 
-  emitNull(bool asMapKey);
-  emitString(String? prefix, String? tag, String s, bool asMapKey) {
+  dynamic emitNull(bool asMapKey);
+  String emitString(String? prefix, String? tag, String s, bool asMapKey) {
     s = '${prefix ?? ''}${tag ?? ''}$s';
     s = _cache.convert(s, asMapKey: asMapKey);
     return s;
   }
 
-  emitBoolean(bool b, bool asMapKey);
-  emitInteger(int i, bool asMapKey);
-  emitDouble(double d, bool asMapKey);
-  emitBinary(Uint8List b, bool asMapKey);
-  emitMap(Map m, bool asMapKey);
+  dynamic emitBoolean(bool b, bool asMapKey);
+  dynamic emitInteger(int i, bool asMapKey);
+  dynamic emitDouble(double d, bool asMapKey);
+  dynamic emitBinary(Uint8List b, bool asMapKey);
+  dynamic emitMap(Map m, bool asMapKey);
 
-  emitArray(List l, bool asMapKey) {
+  List emitArray(List l, bool asMapKey) {
     return [...l.map((e) => marshal(e))];
   }
 
-  emitEncoded(String t, WriteHandler h, o, bool asMapKey) {
+  dynamic emitEncoded(String t, WriteHandler h, o, bool asMapKey) {
     if (1 == t.length) {
       var r = h.rep(o);
       if (r is String) {
@@ -105,7 +105,7 @@ abstract class Emitter {
     }
   }
 
-  emitTagged(String t, o, bool asMapKey) {
+  List emitTagged(String t, o, bool asMapKey) {
     return [emitString(ESC_TAG, t, '', false), marshal(o)];
   }
 

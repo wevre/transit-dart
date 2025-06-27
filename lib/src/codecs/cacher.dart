@@ -51,7 +51,7 @@ class CacheEncoder extends Converter<String, String> {
             (ESC == s[0] && (':' == s[1] || '\$' == s[1] || TAG == s[1])));
   }
 
-  getCache() => _cache;
+  dynamic getCache() => _cache;
 
   @override
   String convert(String input, {bool asMapKey = false}) {

@@ -15,7 +15,7 @@ var transitDecoder =
     TransitMessagePackCodec(customReadHandlers: {"u": UuidReadHandler()})
         .decoder;
 
-readerOf(dynamic codedTransit) {
+dynamic readerOf(dynamic codedTransit) {
   return transitDecoder.convert(msgpackEncoder.convert(codedTransit));
 }
 

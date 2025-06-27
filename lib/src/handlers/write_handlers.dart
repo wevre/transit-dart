@@ -27,7 +27,7 @@ abstract class WriteHandler<T, R> {
 
 class WriteHandlers implements TagProvider {
   final WriteHandlersMap _handlers;
-  WriteHandler? getHandler(o) {
+  WriteHandler? getHandler(dynamic o) {
     for (final e in _handlers.entries) {
       if (e.key.isInstance(o)) {
         return e.value;
@@ -160,10 +160,14 @@ class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
   TimeWriteHandler() : super('m');
 
   @override
-  rep(obj, {String? tag}) => obj.millisecondsSinceEpoch;
+  stringRep(obj) => obj.millisecondsSinceEpoch.toString();
+}
+
+class VerboseTimeWriteHandler extends AbstractWriteHandler<DateTime> {
+  VerboseTimeWriteHandler() : super('t');
 
   @override
-  stringRep(obj) => rep(obj).toString();
+  stringRep(obj) => obj.toUtc().toString();
 }
 
 class ArrayWriteHandler extends AbstractWriteHandler<List> {
@@ -219,5 +223,5 @@ class TaggedValueWriteHandler extends WriteHandler<TaggedValue, dynamic> {
 }
 
 abstract class TagProvider {
-  String? getTag(obj);
+  String? getTag(dynamic obj);
 }

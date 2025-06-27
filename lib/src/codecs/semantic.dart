@@ -132,7 +132,10 @@ class SemanticEncoder extends Converter {
 
   SemanticEncoder.jsonVerbose({WriteHandlersMap? customHandlers})
       : _emitter = JsonEmitter(
-            WriteHandlers.json(customHandlers: customHandlers),
+            WriteHandlers.json(customHandlers: {
+              Class<DateTime>(): VerboseTimeWriteHandler(),
+              ...?customHandlers
+            }),
             cache: CacheEncoder(active: false));
 
   SemanticEncoder.messagePack({WriteHandlersMap? customHandlers})
