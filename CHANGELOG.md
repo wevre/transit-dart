@@ -1,5 +1,11 @@
 # transit-dart
 
+### 0.8.107
+
+- merge changes from Tensegritics
+- Fix linter errors
+- Support DateTime verbose writes
+
 ### 0.8.90
 
 - fixed async bug with single item convert
