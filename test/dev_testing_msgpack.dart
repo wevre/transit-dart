@@ -43,7 +43,7 @@ void someOtherTests() {
   var decoder = MessagePackDecoder();
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
-  //dynamic obj = DateTime.now(); //FIXME: not working in message pack
+  //dynamic obj = DateTime.now();
   //dynamic obj = {null: null};
   //dynamic obj = "";
   //dynamic obj = Point(10, 15);
