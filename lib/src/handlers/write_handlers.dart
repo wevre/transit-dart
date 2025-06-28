@@ -20,6 +20,8 @@ abstract class WriteHandler<T, R> {
 
   String? stringRep(T obj) => obj.toString();
 
+  WriteHandler? verboseHandler(T obj) => null;
+
   bool handles(dynamic obj) {
     return obj is T;
   }
@@ -49,7 +51,7 @@ class WriteHandlers implements TagProvider {
 
   static final WriteHandlersMap _defaults = {
     const Class<Null>(): NullWriteHandler(),
-    const Class<String>(): ToStringWriteHandler<String>('s'),
+    const Class<String>(): StringWriteHandler(),
     const Class<bool>(): BooleanWriteHandler(),
     const Class<int>(): IntegerWriteHandler(),
     const Class<double>(): DoubleWriteHandler(),
@@ -79,10 +81,10 @@ abstract class AbstractWriteHandler<T> extends WriteHandler<T, dynamic> {
   Type type() => T;
 
   @override
-  String tag(T obj) => _tag;
+  rep(T obj, {String? tag}) => obj;
 
   @override
-  rep(T obj, {String? tag}) => obj;
+  String tag(T obj) => _tag;
 }
 
 // ignore: prefer_void_to_null
@@ -96,11 +98,8 @@ class NullWriteHandler extends AbstractWriteHandler<Null> {
   stringRep(obj) => '';
 }
 
-class ToStringWriteHandler<T> extends AbstractWriteHandler<T> {
-  ToStringWriteHandler(super.tag);
-
-  @override
-  rep(obj, {String? tag}) => stringRep(obj);
+class StringWriteHandler extends AbstractWriteHandler<String> {
+  StringWriteHandler() : super('s');
 }
 
 class UriWriteHandler extends AbstractWriteHandler<Uri> {
@@ -160,7 +159,13 @@ class TimeWriteHandler extends AbstractWriteHandler<DateTime> {
   TimeWriteHandler() : super('m');
 
   @override
-  stringRep(obj) => obj.millisecondsSinceEpoch.toString();
+  rep(obj, {String? tag}) => obj.millisecondsSinceEpoch;
+
+  @override
+  stringRep(obj) => rep(obj).toString();
+
+  @override
+  verboseHandler(obj) => VerboseTimeWriteHandler();
 }
 
 class VerboseTimeWriteHandler extends AbstractWriteHandler<DateTime> {

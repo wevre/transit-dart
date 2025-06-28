@@ -9,64 +9,73 @@ import '../handlers/write_handlers.dart';
 abstract class Emitter {
   final WriteHandlers _writeHandlers;
   late final CacheEncoder _cache;
+  final bool _verbose;
   late final WriteHandler? _defaultHandler;
 
   Emitter(this._writeHandlers,
-      {CacheEncoder? cache, WriteHandler<dynamic, dynamic>? defaultHandler})
-      : _defaultHandler = defaultHandler {
+      {CacheEncoder? cache,
+      bool verbose = false,
+      WriteHandler<dynamic, dynamic>? defaultHandler})
+      : _defaultHandler = defaultHandler,
+        _verbose = verbose {
     _cache = cache ?? CacheEncoder();
   }
 
-  dynamic marshalTop(dynamic obj) {
+  dynamic emit(dynamic obj) {
     _cache.init();
+    return marshalTop(obj);
+  }
+
+  dynamic marshalTop(dynamic obj) {
+    // If single item, wrap it as a quoted value. NOTE: not necessary for
+    // msgpack, but afaict java and clj implementations do it anyway.
     var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
     if (null == h) {
       throw Exception('Not supported: $obj');
     }
     var tag = h.tag(obj);
     if (1 == tag.length) {
-      return emitTagged(QUOTE, obj, false);
+      var tag = '$ESC_TAG$QUOTE';
+      if (_verbose) {
+        return {tag, marshal(obj)};
+      } else {
+        return [tag, marshal(obj)];
+      }
     }
     return marshal(obj);
   }
 
   dynamic marshal(dynamic obj, {bool asMapKey = false}) {
-    var h = _writeHandlers.getHandler(obj) ?? _defaultHandler;
-    if (null == h) {
+    // Emit ground types here, otherwise emit as tagged value.
+    var handler = _writeHandlers.getHandler(obj) ?? _defaultHandler;
+    if (null == handler) {
       throw Exception('Not supported: $obj');
     }
-    var tag = h.tag(obj);
-    if (1 == tag.length) {
-      switch (tag) {
-        case '_':
-          return emitNull(asMapKey);
-        case 's':
-          return emitString(null, null, escape(h.rep(obj)), asMapKey);
-        case '?':
-          return emitBoolean(h.rep(obj), asMapKey);
-        case 'i':
-          return emitInteger(h.rep(obj), asMapKey);
-        case 'd':
-          return emitDouble(h.rep(obj), asMapKey);
-        case 'b':
-          return emitBinary(h.rep(obj), asMapKey);
-        default:
-          return emitEncoded(tag, h, obj, asMapKey);
-      }
-    } else {
-      if ('array' == tag) {
-        return emitArray(h.rep(obj), asMapKey);
-      } else if ('map' == tag) {
-        return emitMap(h.rep(obj, tag: tag), asMapKey);
-      } else {
-        return emitEncoded(tag, h, obj, asMapKey);
-      }
+    var tag = handler.tag(obj);
+    switch (tag) {
+      case '_':
+        return emitNull(asMapKey);
+      case 's':
+        return emitString(null, null, escape(handler.rep(obj)), asMapKey);
+      case '?':
+        return emitBoolean(handler.rep(obj), asMapKey);
+      case 'i':
+        return emitInteger(handler.rep(obj), asMapKey);
+      case 'd':
+        return emitDouble(handler.rep(obj), asMapKey);
+      case 'b':
+        return emitBinary(handler.rep(obj), asMapKey);
+      case 'array':
+        return emitArray(handler.rep(obj), asMapKey);
+      case 'map':
+        return emitMap(handler.rep(obj, tag: tag), asMapKey);
+      default:
+        return emitEncoded(handler, obj, asMapKey);
     }
   }
 
-  dynamic emit(dynamic obj) => marshalTop(obj);
-
   dynamic emitNull(bool asMapKey);
+
   String emitString(String? prefix, String? tag, String s, bool asMapKey) {
     s = '${prefix ?? ''}${tag ?? ''}$s';
     s = _cache.convert(s, asMapKey: asMapKey);
@@ -83,30 +92,34 @@ abstract class Emitter {
     return [...l.map((e) => marshal(e))];
   }
 
-  dynamic emitEncoded(String t, WriteHandler h, o, bool asMapKey) {
-    if (1 == t.length) {
-      var r = h.rep(o);
-      if (r is String) {
-        return emitString(ESC, t, r, asMapKey);
+  dynamic emitEncoded(WriteHandler handler, dynamic obj, bool asMapKey) {
+    if (_verbose) {
+      handler = handler.verboseHandler(obj) ?? handler;
+    }
+    var rep = handler.rep(obj);
+    var tag = handler.tag(obj);
+    if (1 == tag.length) {
+      if (rep is String) {
+        return emitString(ESC, tag, rep, asMapKey);
       } else if (prefersStrings || asMapKey) {
-        String? sr = h.stringRep(o);
+        String? sr = handler.stringRep(obj);
         if (null != sr) {
-          return emitString(ESC, t, sr, asMapKey);
+          return emitString(ESC, tag, sr, asMapKey);
         } else {
-          throw Exception('Cannot be encoded as a string $o');
+          throw Exception('Cannot be encoded as a string $obj');
         }
       } else {
-        return emitTagged(t, r, asMapKey);
+        return emitTagged(tag, rep, asMapKey);
       }
     } else if (asMapKey) {
-      throw Exception('Cannot be used as map key $o');
+      throw Exception('Cannot be used as map key $obj');
     } else {
-      return emitTagged(t, h.rep(o), asMapKey);
+      return emitTagged(tag, rep, asMapKey);
     }
   }
 
-  List emitTagged(String t, o, bool asMapKey) {
-    return [emitString(ESC_TAG, t, '', false), marshal(o)];
+  List emitTagged(String tag, dynamic obj, bool asMapKey) {
+    return [emitString(ESC_TAG, tag, '', false), marshal(obj)];
   }
 
   String escape(String s) {

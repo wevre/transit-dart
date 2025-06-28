@@ -3,6 +3,7 @@ import 'package:transit_dart/src/handlers/write_handlers.dart';
 import 'package:transit_dart/src/handlers/read_handlers.dart';
 import 'package:transit_dart/src/codecs/semantic.dart';
 import 'package:transit_dart/src/codecs/msgpack.dart';
+import 'package:hex/hex.dart';
 
 var writeHandlers = WriteHandlers.messagePack();
 var readHandlers = ReadHandlers.messagePack();
@@ -42,7 +43,7 @@ void someOtherTests() {
   var decoder = MessagePackDecoder();
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
-  // dynamic obj = bigObject;
+  //dynamic obj = DateTime.now(); //FIXME: not working in message pack
   //dynamic obj = {null: null};
   //dynamic obj = "";
   //dynamic obj = Point(10, 15);
@@ -50,7 +51,7 @@ void someOtherTests() {
   var emitted = emitter.convert(obj);
   print('emitted is `$emitted`');
   var encoded = encoder.convert(emitted);
-  print('encoded is `$encoded`');
+  print('encoded is `${HEX.encode(encoded.cast<int>())}`');
   var decoded = decoder.convert(encoded);
   print('decoded is `$decoded`');
   var parsed = parser.convert(decoded);

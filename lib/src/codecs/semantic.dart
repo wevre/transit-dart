@@ -129,6 +129,7 @@ class SemanticEncoder extends Converter {
   SemanticEncoder.json({WriteHandlersMap? customHandlers})
       : _emitter =
             JsonEmitter(WriteHandlers.json(customHandlers: customHandlers));
+  //TODO: caching is not active by default, so no caching is happening???
 
   SemanticEncoder.jsonVerbose({WriteHandlersMap? customHandlers})
       : _emitter = JsonEmitter(

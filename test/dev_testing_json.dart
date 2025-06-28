@@ -42,10 +42,10 @@ void someOtherTests() {
       SemanticDecoder.json(customHandlers: {'point': PointReadHandler()});
   dynamic obj = bigObject;
   //dynamic obj = ["", "a", "ab", "abc", "abcd", "abcde", "abcdef"];
-  // dynamic obj = bigObject;
   //dynamic obj = {null: null};
   //dynamic obj = "";
   //dynamic obj = Point(10, 15);
+  //dynamic obj = DateTime.now().toUtc();
   print('obj is `$obj`');
   var emitted = emitter.convert(obj);
   print('emitted is `$emitted`');
