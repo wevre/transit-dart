@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.109
+
+- fixed bug with DateTime in msgpack
+
 ### 0.8.107
 
 - merge changes from Tensegritics

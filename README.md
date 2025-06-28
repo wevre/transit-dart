@@ -19,7 +19,7 @@ changes._
 
 ## Releases and Dependency Information
 
-* Latest release: 0.8.107 <!--TRANSIT_DART_VERSION-->
+* Latest release: 0.8.109 <!--TRANSIT_DART_VERSION-->
 
 ## Getting started
 
