@@ -41,6 +41,8 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 
 ## Default Type Mapping
 
+NOTE: 2025-06-28 This table is out of date.
+
 |Transit Type   |Write accepts           |Read produces           |
 |------         |------                  |------                  |
 |null           |null                    |null                    |
@@ -65,6 +67,8 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 |link           |transit_dart.Link       |transit_dart.Link       |
 
 ## Testing
+
+NOTE: 2025-06-28 json verbose is not passing all the tests.
 
 To run the roundtrip verification tests in `transit-format`, first ensure
 Dart>=2.19.1 and Java 8 are installed, then do the following:
