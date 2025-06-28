@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.112
+
+- export Class from write_handlers
+
 ### 0.8.109
 
 - fixed bug with DateTime in msgpack

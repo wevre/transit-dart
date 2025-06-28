@@ -3,7 +3,7 @@ name: transit_dart
 description: >-
   This library provides support for marshalling Transit data to/from Dart.
 
-version: 0.8.109   #--TRANSIT_DART_VERSION--
+version: 0.8.112   #--TRANSIT_DART_VERSION--
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
