@@ -68,8 +68,6 @@ NOTE: 2025-06-28 This table is out of date.
 
 ## Testing
 
-NOTE: 2025-06-28 json verbose is not passing all the tests.
-
 To run the roundtrip verification tests in `transit-format`, first ensure
 Dart>=2.19.1 and Java 8 are installed, then do the following:
 
