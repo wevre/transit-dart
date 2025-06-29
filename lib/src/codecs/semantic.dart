@@ -138,7 +138,8 @@ class SemanticEncoder extends Converter {
               Class<DateTime>(): VerboseTimeWriteHandler(),
               ...?customHandlers
             }),
-            cache: CacheEncoder(active: false));
+            cache: CacheEncoder(active: false),
+            verbose: true);
 
   SemanticEncoder.messagePack({WriteHandlersMap? customHandlers})
       : _emitter = MessagePackEmitter(

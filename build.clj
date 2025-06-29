@@ -89,7 +89,7 @@
     (update-pubspec ver)
     (update-changelog ver notes)
     (b/git-process {:git-args ["commit" "-a" "-m" (format "update doc refs to ver %s" ver)]})
-    (b/git-process {:git-args "push"})))
+    (b/git-process {:git-args ["push" "--follow-tags"]})))
 
 ;; Build target: 'publish'
 

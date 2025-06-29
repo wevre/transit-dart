@@ -172,7 +172,7 @@ class VerboseTimeWriteHandler extends AbstractWriteHandler<DateTime> {
   VerboseTimeWriteHandler() : super('t');
 
   @override
-  stringRep(obj) => obj.toUtc().toString();
+  stringRep(obj) => obj.toUtc().toIso8601String();
 }
 
 class ArrayWriteHandler extends AbstractWriteHandler<List> {

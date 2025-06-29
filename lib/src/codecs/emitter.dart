@@ -37,7 +37,7 @@ abstract class Emitter {
     if (1 == tag.length) {
       var tag = '$ESC_TAG$QUOTE';
       if (_verbose) {
-        return {tag, marshal(obj)};
+        return {tag: marshal(obj)};
       } else {
         return [tag, marshal(obj)];
       }
@@ -138,7 +138,8 @@ class JsonEmitter extends Emitter {
   // concrete implementations for emitting strings, booleans, decimals, etc.
   // What we actually emit is formatted data, json-friendly.
 
-  JsonEmitter(super.writeHandlers, {super.cache, super.defaultHandler});
+  JsonEmitter(super.writeHandlers,
+      {super.cache, super.defaultHandler, super.verbose});
 
   @override
   bool get prefersStrings => true;
