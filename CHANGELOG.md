@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.117
+
+- turn caching on for json and msgpack
+
 ### 0.8.114
 
 - fix bug with dates in verbose
