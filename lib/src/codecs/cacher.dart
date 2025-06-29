@@ -41,7 +41,7 @@ class CacheEncoder extends Converter<String, String> {
     _cache.clear();
   }
 
-  CacheEncoder({bool active = false}) : _active = active {
+  CacheEncoder({bool active = true}) : _active = active {
     init();
   }
 

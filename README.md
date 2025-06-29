@@ -41,7 +41,11 @@ See [Example](https://pub.dev/packages/transit_dart/example)
 
 ## Default Type Mapping
 
-NOTE: 2025-06-28 This table is out of date.
+We don't support the full list of types that one would find in, say, the java or
+clj implemenation of transit. In spite of that limitation, everything will round
+trip (which is why transit-dart can pass the transit-format test suite) and any
+missing types can be implemented as custom read/write handlers, or by
+constructing a TaggedValue.
 
 |Transit Type   |Write accepts           |Read produces           |
 |------         |------                  |------                  |
@@ -51,20 +55,12 @@ NOTE: 2025-06-28 This table is out of date.
 |integer        |int                     |int                     |
 |decimal        |double                  |double                  |
 |bytes          |Uint8List               |Uint8List               |
-|keyword        |transit_dart.Keyword    |transit_dart.Keyword    |
-|symbol         |transit_dart.Symbol     |transit_dart.Symbol     |
-|big decimal    |transit_dart.BigDecimal (wraps big_decimal/BigDecimal)|transit_dart.BigDecimal (wraps big_decimal/BigDecimal)|
-|big integer    |BigInt                  |BigInt                  |
 |time           |DateTime                |DateTime                |
-|uuid           |transit_dart.Uuid       |transit_dart.Uuid       |
-|uri            |transit_dart.TransitUri |transit_dart.TransitUri |
-|char           |String                  |String                  |
+|uri            |Uri                     |Uri                     |
 |special numbers|double.nan, double.infinity, double.negativeInfinity|double.nan, double.infinity, double.negativeInfinity|
 |array          |List                    |List                    |
 |map            |Map                     |Map                     |
 |set            |Set                     |Set                     |
-|list           |transit_dart.TransitList|transit_dart.TransitList|
-|link           |transit_dart.Link       |transit_dart.Link       |
 
 ## Testing
 
