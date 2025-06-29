@@ -1,5 +1,9 @@
 # transit-dart
 
+### 0.8.114
+
+- fix bug with dates in verbose
+
 ### 0.8.112
 
 - export Class from write_handlers
